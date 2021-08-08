@@ -101,7 +101,6 @@ define(
                 reopenLastSection, // Set by site admin see settings.php.
                 userId,
                 fitTilesToWidth,
-                usingh5pfilter,
                 enablecompletion,
                 pageType,
                 allowPhotoTiles,

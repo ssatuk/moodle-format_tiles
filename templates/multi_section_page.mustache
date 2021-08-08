@@ -160,3 +160,7 @@
     {{/from_ajax}}
     {{{course_activity_clipboard}}}
 {{/isediting}}
+
+{{#moodlefiltersconfig}}
+    <div class="filters-config" data-filter="{{filter}}"{{#config}} data-{{key}}="{{value}}"{{/config}}></div>
+{{/moodlefiltersconfig}}

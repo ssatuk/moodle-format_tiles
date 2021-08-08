@@ -636,6 +636,7 @@ class course_output implements \renderable, \templatable
                 );
             }
         }
+        $data['moodlefiltersconfig'] = $this->get_filters_config();
         return $data;
     }
 
@@ -1448,4 +1449,38 @@ class course_output implements \renderable, \templatable
 
         return false;
     }
+
+    /**
+     * MathJax does not always seem to load (issue #60) so we assemble data so we can load it ourselves.
+     * Also JS needs to know if "h5p" filter is being used, so we do that at the same time.
+     * @return array|false
+     * @throws \dml_exception
+     */
+    private function get_filters_config() {
+        $activefilters = filter_get_active_in_context($this->coursecontext);
+        $result = [];
+        foreach($activefilters as $filter => $v) {
+            if ($filter == 'mathjaxloader') {
+                // Filter in use.
+                $url = get_config('filter_mathjaxloader', 'httpsurl');
+                if ($url) {
+                    $result[] = [
+                        'filter' => $filter,
+                        'config' => [
+                            ['key' => 'url', 'value' => $url],
+                            ['key' => 'config', 'value' => get_config('filter_mathjaxloader', 'mathjaxconfig')]
+                        ]
+                    ];
+                }
+            } else if ($filter === 'h5p') {
+                // Need to know if we are using H5P filter as this may mean that we don't want to preload next sections.
+                // If we did, when section pre-loads, any H5P filter activities set to 'complete on view' are complete.
+                // This applies even if section is not ultimately viewed at all.
+                $result[] = ['filter' => $filter];
+            }
+        }
+        return $result;
+    }
+
 }
+

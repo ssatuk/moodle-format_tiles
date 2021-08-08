@@ -76,9 +76,10 @@ define(["jquery", "core/templates", "core/ajax", "format_tiles/browser_storage",
             LAUNCH_STANDARD: '[data-action="launch-tiles-standard"]',
             TOOLTIP: "[data-toggle=tooltip]",
             HEADER_BAR: ["header.navbar", "nav.fixed-top.navbar", "#essentialnavbar.moodle-has-zindex", "#navwrap",
-                "nav.navbar-fixed-top", "#adaptable-page-header-wrapper"]
+                "nav.navbar-fixed-top", "#adaptable-page-header-wrapper"],
             // We try several different selectors for header bar as it varies between theme.
             // (Boost based, clean based, essential etc).
+            MATHJAX_EQUATION: ".filter_mathjaxloader_equation"
         };
         var ClassNames = {
             SELECTED: "selected",
@@ -250,7 +251,7 @@ define(["jquery", "core/templates", "core/ajax", "format_tiles/browser_storage",
 
                 if (typeof window.MathJax !== "undefined") {
                     try {
-                        const mathJaxElems = contentArea.find('.filter_mathjaxloader_equation');
+                        const mathJaxElems = contentArea.find(Selector.MATHJAX_EQUATION);
                         if (mathJaxElems.length) {
                             mathJaxElems.each((i, node) => {
                                 window.MathJax.Hub.Queue(["Typeset", window.MathJax.Hub, node]);
@@ -631,7 +632,6 @@ define(["jquery", "core/templates", "core/ajax", "format_tiles/browser_storage",
                 reopenLastSectionInit, // Set by site admin see settings.php.
                 userId,
                 fitTilesToWidth,
-                usingH5pFilter,
                 enableCompletionInit
             ) {
                 courseId = courseIdInit;
@@ -715,6 +715,7 @@ define(["jquery", "core/templates", "core/ajax", "format_tiles/browser_storage",
                             // Silently set the *next* section's content to if it exists and if user is not on mobile.
                             // short delay as more important to get current section content first (above).
                             var nextSecIfExists = $(Selector.SECTION_ID + (dataSection + 1));
+                            const usingH5pFilter = $('.filters-config[data-filter="h5p"]').length === 1;
                             if (!isMobile && !usingH5pFilter && nextSecIfExists.length && dataSection > 0) {
                                 getSectionContentFromServer(courseId, dataSection + 1).done(function(response) {
                                     setCourseContentHTML(
@@ -979,6 +980,17 @@ define(["jquery", "core/templates", "core/ajax", "format_tiles/browser_storage",
                             }
                         }
                     });
+                    const mathJaxConfigDiv = $('.filters-config[data-filter="mathjaxloader"]');
+                    if (mathJaxConfigDiv.length) {
+                        if (typeof window.MathJax === 'undefined') {
+                            // If mathjax is in use and undefined, we try to initialise it.
+                            const script = $('<script/>');
+                            script.attr('src', mathJaxConfigDiv.attr('data-url'))
+                                .attr('type', 'text/javascript')
+                                .html(mathJaxConfigDiv.attr('data-config'));
+                            $('head').append(script);
+                        }
+                    }
                 });
             }
         };
