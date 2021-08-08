@@ -35,7 +35,7 @@ Feature: Section zero can be collapsed or expanded in tiles format
 
   @javascript
   Scenario: Collapse section zero then expand it again
-    And I wait "60" seconds
+    And I wait "2" seconds
     When "#buttonhidesec0" "css_element" should be visible
     And I click on "#buttonhidesec0" "css_element"
     And I wait "1" seconds

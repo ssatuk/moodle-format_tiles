@@ -283,3 +283,8 @@ Other
 =========================================
 - Fix issue with H5P modal being too small sometimes
 - Fix issue 65 Add mod datalynxcoursepage to $labellikecoursemods
+
+3.11.0.6 (2020080623) (RELEASE CANDIDATE)
+=========================================
+- Fix issue #60 mathjax not loading
+- Fix issue with jpeg filter param count
