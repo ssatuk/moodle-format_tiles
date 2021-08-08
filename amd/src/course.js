@@ -249,23 +249,31 @@ define(["jquery", "core/templates", "core/ajax", "format_tiles/browser_storage",
                     });
                 }
 
-                if (typeof window.MathJax !== "undefined") {
-                    try {
-                        const mathJaxElems = contentArea.find(Selector.MATHJAX_EQUATION);
-                        if (mathJaxElems.length) {
-                            mathJaxElems.each((i, node) => {
-                                window.MathJax.Hub.Queue(["Typeset", window.MathJax.Hub, node]);
-                            });
-                        }
-                    } catch (err) {
-                        require(["core/log"], function(log) {
-                            log.debug(err);
-                        });
-                    }
-                }
+                applyMathJax(contentArea);
                 return true;
             }
             return false;
+        };
+
+        /**
+         * Find Mathjax equations in a content area and queue them for processing.
+         * @param {Object} contentArea the jquery object for the content area
+         */
+        const applyMathJax = function(contentArea) {
+            if (typeof window.MathJax !== "undefined") {
+                try {
+                    const mathJaxElems = contentArea.find(Selector.MATHJAX_EQUATION);
+                    if (mathJaxElems.length) {
+                        mathJaxElems.each((i, node) => {
+                            window.MathJax.Hub.Queue(["Typeset", window.MathJax.Hub, node]);
+                        });
+                    }
+                } catch (err) {
+                    require(["core/log"], function(log) {
+                        log.debug(err);
+                    });
+                }
+            }
         };
 
         /**
@@ -989,6 +997,9 @@ define(["jquery", "core/templates", "core/ajax", "format_tiles/browser_storage",
                                 .attr('type', 'text/javascript')
                                 .html(mathJaxConfigDiv.attr('data-config'));
                             $('head').append(script);
+                            setTimeout(() => {
+                                applyMathJax($('#multi_section_tiles'));
+                            }, 2000);
                         }
                     }
                 });
