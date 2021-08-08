@@ -1453,13 +1453,13 @@ class course_output implements \renderable, \templatable
     /**
      * MathJax does not always seem to load (issue #60) so we assemble data so we can load it ourselves.
      * Also JS needs to know if "h5p" filter is being used, so we do that at the same time.
-     * @return array|false
+     * @return array
      * @throws \dml_exception
      */
     private function get_filters_config() {
         $activefilters = filter_get_active_in_context($this->coursecontext);
         $result = [];
-        foreach($activefilters as $filter => $v) {
+        foreach ($activefilters as $filter => $v) {
             if ($filter == 'mathjaxloader') {
                 // Filter in use.
                 $url = get_config('filter_mathjaxloader', 'httpsurl');
