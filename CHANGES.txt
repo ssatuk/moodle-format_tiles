@@ -288,3 +288,7 @@ Other
 =========================================
 - Fix issue #60 mathjax not loading
 - Fix issue with jpeg filter param count
+
+3.11.1.0 (2020080625)
+=====================
+- Change "Release Candidate" tag to "Stable"
