@@ -61,9 +61,8 @@
     {{#completionIsManual}}
         <button class="completioncheckbox" data-action="change-completion-status" data-cmid="{{cmid}}" data-state="{{completionstate}}"
               data-activityname="{{modtitle}}" title="{{#completionstring}}{{completionstring}}{{/completionstring}}{{^completionstring}}{{#str}}togglecompletion, format_tiles{{/str}}{{/completionstring}}">
-            <span class="completion-icon completion_img_{{cmid}} completion-icon-{{completionicon}}">
-        </span>
-
+            <span class="completion-icon completion_img_{{cmid}} completion-icon-{{completionicon}}"></span>
+        </button>
     {{/completionIsManual}}
     {{^completionIsManual}}
         <span class="completioncheckbox completion-auto completion-check-{{cmid}}"
