@@ -839,7 +839,6 @@ class course_output implements \renderable, \templatable
      * @throws \moodle_exception
      */
     private function section_course_mods($section, $output) {
-        global $USER;
         if (!isset($section->section)) {
             debugging("section->section is not set");
         }
@@ -868,22 +867,9 @@ class course_output implements \renderable, \templatable
                 $output
             );
 
-            // From Moodle 3.11 onwards, we may have extra completion conditions info to display under activities.
-            if (class_exists('\core\activity_dates') && isset($this->showcompletionconditions)
-                && $this->showcompletionconditions) {
-                    $activitydates = \core\activity_dates::get_dates_for_module($mod, $USER->id);
-                    $completiondetails = \core_completion\cm_completion_details::get_instance(
-                        $mod, $USER->id, $this->showcompletionconditions
-                    );
-                if ($completiondetails->has_completion() || !empty($activitydates)) {
-                    // No need to render the activity information when there's no completion info and activity dates to show.
-                    $activityinfo = new \core_course\output\activity_information($mod, $completiondetails, $activitydates);
-                    $moduledata['activityinformation'] = $activityinfo->export_for_template($output);
-                }
-            }
-            $previouswaslabel = $treataslabel;
             if (!empty($moduledata)) {
                 $sectioncontent[] = $moduledata;
+                $previouswaslabel = $treataslabel;
             }
 
         }
@@ -904,7 +890,7 @@ class course_output implements \renderable, \templatable
      * @throws \moodle_exception
      */
     private function course_module_data($mod, $treataslabel, $section, $previouswaslabel, $isfirst, $output) {
-        global $PAGE, $CFG, $DB;
+        global $PAGE, $CFG, $DB, $USER;
         $moduleobject = [];
         if ($this->canviewhidden) {
             $moduleobject['uservisible'] = true;
@@ -918,6 +904,20 @@ class course_output implements \renderable, \templatable
             $moduleobject['uservisible'] = $mod->uservisible;
             $moduleobject['clickable'] = $mod->uservisible;
         }
+        // From Moodle 3.11 onwards, we may have extra completion conditions info to display under activities.
+        if (class_exists('\core\activity_dates') && isset($this->showcompletionconditions)
+            && $this->showcompletionconditions) {
+            $activitydates = \core\activity_dates::get_dates_for_module($mod, $USER->id);
+            $completiondetails = \core_completion\cm_completion_details::get_instance(
+                $mod, $USER->id, $this->showcompletionconditions
+            );
+            if ($completiondetails->has_completion() || !empty($activitydates)) {
+                // No need to render the activity information when there's no completion info and activity dates to show.
+                $activityinfo = new \core_course\output\activity_information($mod, $completiondetails, $activitydates);
+                $moduleobject['activityinformation'] = $activityinfo->export_for_template($output);
+            }
+        }
+
         // We check that the stealth function exists in case we are running in Totara or earlier Moodle, where it doesn't.
         $isstealth = method_exists($mod, 'is_stealth') && $mod->is_stealth();
         if (!$moduleobject['uservisible'] || $mod->deletioninprogress || (!$this->canviewhidden && $isstealth)) {
