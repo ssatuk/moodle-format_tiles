@@ -100,7 +100,6 @@ define(["jquery", "core/templates", "core/config", "core/ajax", "format_tiles/co
         /**
          * When a progress change happens, e.g. an item is marked as complete or not, this fires.
          * It changes the current tile's progress up or down by 1 according to the progressChange arg.
-         * It then does the same for the course's overall progress indicator.
          * @param {int} sectionNum the number of this tile/section.
          * @param {object} tileProgressIndicator the indicator for this tile
          * @param {int} newTileProgressValue the new value
@@ -109,6 +108,11 @@ define(["jquery", "core/templates", "core/config", "core/ajax", "format_tiles/co
             if (newTileProgressValue < 0 || newTileProgressValue > tileProgressIndicator.attr(dataKeys.numberOutOf)) {
                 // If we are already at zero, do not reduce.  May happen rarely if user presses repeatedly.
                 // Will not cause a long term issue as will be resolved when user refreshes page.
+                return;
+            }
+
+            if (!sectionNum) {
+                // Section zero doesn't have a section progress indicator.
                 return;
             }
 

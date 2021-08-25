@@ -263,7 +263,7 @@ class format_tiles_renderer extends format_section_renderer_base
      * @throws moodle_exception
      */
     public function print_multiple_section_page($course, $sections, $mods, $modnames, $modnamesused) {
-        $templateable = new \format_tiles\output\course_output($course, false, 0, $this->courserenderer);
+        $templateable = new \format_tiles\output\course_output($course, false, null, $this->courserenderer);
         $data = $templateable->export_for_template($this);
         echo $this->render_from_template('format_tiles/multi_section_page', $data);
     }

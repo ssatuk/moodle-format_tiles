@@ -137,7 +137,7 @@ class course_output implements \renderable, \templatable
      * @param int $sectionnum the id of the current section
      * @param \renderer_base|null $courserenderer
      */
-    public function __construct($course, $fromajax = false, $sectionnum = 0, \renderer_base $courserenderer = null) {
+    public function __construct($course, $fromajax = false, $sectionnum = null, \renderer_base $courserenderer = null) {
         global $PAGE;
         $this->course = $course;
         $this->fromajax = $fromajax;
@@ -177,9 +177,13 @@ class course_output implements \renderable, \templatable
         $data = $this->append_section_zero_data($data, $output);
         // We have assembled the "common data" needed for both single and multiple section pages.
         // Now we can go off and get the specific data for the single or multiple page as required.
-        if ($this->sectionnum) {
+        if ($this->sectionnum !== null) {
             // We are outputting a single section page.
-            return $this->append_single_section_page_data($output, $data);
+            if ($this->sectionnum == 0) {
+                return $this->append_section_zero_data($data, $output);
+            } else {
+                return $this->append_single_section_page_data($output, $data);
+            }
         } else {
             // We are outputting a single section page.
             return $this->append_multi_section_page_data($output, $data);
