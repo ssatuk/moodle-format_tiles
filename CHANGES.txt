@@ -293,7 +293,12 @@ Other
 =====================
 - Change "Release Candidate" tag to "Stable"
 
-3.11.1.1 (20200806255)
+3.11.1.1 (2020080626)
 ======================
 - Fix hidden items showing as empty elems
 - Fix missing </button> tag hiding next item
+
+3.11.1.2 (2020080628)
+======================
+- Fix issue with completion hiding sec zero content
+- Fix issue #82 special chars in mod title
