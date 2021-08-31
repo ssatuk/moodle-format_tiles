@@ -79,10 +79,6 @@
     text-decoration: none;
     padding: 7px 10px 5px 10px;
 }
-.format-tiles .tile a .availabilityinfo,
-.format-tiles .availabilityinfo .badge {
-    color: #fff;
-}
 .format-tiles .progress-indic {
     display: inline-block;
     color: #999;
@@ -1749,6 +1745,10 @@ allow tiles to be taller and thinner so can fit two side by side in portrait on 
     margin-left: 30px;
 }
 
+/*Lambda theme*/
+.format-tiles .activity-information {
+    float: none;
+}
 .format-tiles .margin-rt .section-cm-edit-actions {
     margin-right: 35px;
 }
