@@ -1712,6 +1712,7 @@ allow tiles to be taller and thinner so can fit two side by side in portrait on 
 }
 .format-tiles .course-content ul.section.nosubtiles .actions {
     margin-top: 0.5em;
+    min-width: 30px;
 }
 .format-tiles #selectedicon .icon,
 #page-course-edit.format-site #selectedicon .icon {
