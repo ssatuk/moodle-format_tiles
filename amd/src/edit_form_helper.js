@@ -30,8 +30,8 @@
  * @since       Moodle 3.3
  */
 
-define(["jquery", "core/notification", "core/str", "core/templates", "format_tiles/browser_storage"],
-    function ($, Notification, str, Templates, browserStorage) {
+define(["jquery", "core/notification", "core/str", "core/templates"],
+    function ($, Notification, str, Templates) {
         "use strict";
         return {
             init: function (pageType, courseDefaultIcon, courseId, sectionId, section, userId, allowphototiles, documentationUrl) {
@@ -174,10 +174,6 @@ define(["jquery", "core/notification", "core/str", "core/templates", "format_til
                         .done(function (html) {
                             $(html).appendTo($("#id_courseformathdr .fcontainer"));
                         });
-
-                    // Clean up all browser storage since the settings may have changed so stored content is wrong.
-                    browserStorage.init(courseId, 1, true, 1, 0, true, userId);
-                    browserStorage.cleanUpStorage();
                 });
             }
         };
