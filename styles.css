@@ -930,9 +930,6 @@ body.format-tiles.jsenabled .course-content .headerabovetiles {
     /* stylelint-disable-next-line declaration-no-important */
     opacity: 1 !important;
 }
-.format-tiles .availabilityinfo.isstealth .badge {
-    font-size: 0.6em;
-}
 .format-tiles .hidden #hiddeneye {
     background-image: url([[pix:format_tiles|eye-slash]]);
     margin-left: 10px;
@@ -1682,7 +1679,6 @@ allow tiles to be taller and thinner so can fit two side by side in portrait on 
     position: absolute;
     bottom: 5px;
     left: 0;
-    font-size: 0.8em;
 }
 .format-tiles li.tile .availabilityinfo {
     line-height: 15px;
