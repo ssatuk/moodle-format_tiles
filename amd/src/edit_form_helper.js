@@ -170,7 +170,7 @@ define(["jquery", "core/notification", "core/str", "core/templates"],
 
                     // Add a row to the page with link to plugin documentation.
                     Templates
-                        .render("format_tiles/edit_form_helptext", {documentationurl: documentationUrl + '/teacher'})
+                        .render("format_tiles/edit_form_helptext", {documentationurl: documentationUrl + 'teachers'})
                         .done(function (html) {
                             $(html).appendTo($("#id_courseformathdr .fcontainer"));
                         });
