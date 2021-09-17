@@ -1549,12 +1549,10 @@ allow tiles to be taller and thinner so can fit two side by side in portrait on 
 .format-tiles .embed_cm_modal .embed_file_button.button_download {
     position: absolute;
     right: 70px;
-    padding-top: 5px;
 }
 .format-tiles .embed_cm_modal .embed_file_button.button_expand {
     position: absolute;
     right: 105px;
-    padding-top: 5px;
 }
 .format-tiles .modal-container .modal .modal-header button.close {
     font-size: 1.8em;
@@ -1571,15 +1569,18 @@ allow tiles to be taller and thinner so can fit two side by side in portrait on 
 .format-tiles .embed-module-buttons {
     min-width: 125px;
     text-align: right;
-    top: 0;
-    position: relative;
-    right: 0;
+    top: 5px;
+    position: absolute;
+    right: 5px;
     vertical-align: top;
 }
 .format-tiles .embed-module-buttons button.close {
     width: 28px;
     height: 28px;
     float: none;
+    position: absolute;
+    top: 3px;
+    right: 5px;
 }
 .format-tiles .embed-module-buttons .completion-icon {
     opacity: 1;
