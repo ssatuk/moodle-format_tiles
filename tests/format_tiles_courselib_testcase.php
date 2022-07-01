@@ -1396,6 +1396,40 @@ class format_tiles_courselib_testcase extends advanced_testcase {
     }
 
     /**
+     * Test course_get_user_navigation_options for students in a normal course.
+     */
+    public function test_course_get_user_navigation_options_for_students() {
+        global $DB, $CFG;
+        $this->resetAfterTest();
+        $course = $this->getDataGenerator()->create_course(array('format' => 'tiles'));
+        $context = context_course::instance($course->id);
+
+        $user = $this->getDataGenerator()->create_user();
+        $roleid = $DB->get_field('role', 'id', array('shortname' => 'student'));
+        $this->getDataGenerator()->enrol_user($user->id, $course->id, $roleid);
+
+        $this->setUser($user);
+
+        $navoptions = course_get_user_navigation_options($context);
+        $this->assertTrue($navoptions->blogs);
+        $this->assertFalse($navoptions->notes);
+        $this->assertTrue($navoptions->participants);
+        $this->assertTrue($navoptions->badges);
+
+        // Disable some options.
+        $CFG->badges_allowcoursebadges = 0;
+        $CFG->enableblogs = 0;
+        // Disable view participants capability.
+        assign_capability('moodle/course:viewparticipants', CAP_PROHIBIT, $roleid, $context);
+
+        $navoptions = course_get_user_navigation_options($context);
+        $this->assertFalse($navoptions->blogs);
+        $this->assertFalse($navoptions->notes);
+        $this->assertFalse($navoptions->participants);
+        $this->assertFalse($navoptions->badges);
+    }
+
+    /**
      * Test course_get_user_administration_options for managers in a normal course.
      */
     public function test_course_get_user_administration_options_for_managers() {

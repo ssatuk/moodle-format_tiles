@@ -18,41 +18,34 @@
  * Tiles course format.  Display the whole course as "tiles" made of course modules.
  *
  * @package format_tiles
- * @copyright 2022 David Watson {@link http://evolutioncode.uk}
+ * @copyright 2018 David Watson {@link http://evolutioncode.uk}
  * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
 defined('MOODLE_INTERNAL') || die();
 
-global $PAGE, $USER, $SESSION;
+global $PAGE, $USER;
 
-// Horrible backwards compatible parameter aliasing.
+// Horrible backwards compatible parameter aliasing..
 if ($topic = optional_param('topic', 0, PARAM_INT)) {
     $url = $PAGE->url;
     $url->param('section', $topic);
     debugging('Outdated topic param passed to course/view.php', DEBUG_DEVELOPER);
     redirect($url);
 }
-// End backwards-compatible aliasing.
-
-// Retrieve course format option fields and add them to the $course object.
-$format = course_get_format($course);
-$course = $format->get_course();
+// End backwards-compatible aliasing..
 $context = context_course::instance($course->id);
-$displaysection = optional_param('section', 0, PARAM_INT);
-//if (!empty($displaysection)) {
-//    $format->set_section_number($displaysection);
-//}
 
 if (($marker >= 0) && has_capability('moodle/course:setcurrentsection', $context) && confirm_sesskey()) {
     $course->marker = $marker;
     course_set_marker($course->id, $marker);
 }
 
-//// Make sure all sections are created.
+$courseformat = course_get_format($course);
+// Make sure all sections are created.
+$course = $courseformat->get_course();
 $isediting = $PAGE->user_is_editing();
 $renderer = $PAGE->get_renderer('format_tiles');
-
 $ismobile = core_useragent::get_device_type() == core_useragent::DEVICETYPE_MOBILE ? 1 : 0;
 $allowphototiles = get_config('format_tiles', 'allowphototiles');
 $userstopjsnav = get_user_preferences('format_tiles_stopjsnav', 0);
@@ -66,43 +59,31 @@ $data = $templateable->export_for_template($renderer);
 echo $renderer->render_from_template('format_tiles/inline-css', $data);
 
 if ($isediting) {
-    // If user is editing, we render the page the new way.
-    // TODO we will use this for non editing as well, but not yet.
-    $outputclass = $format->get_output_classname('content');
-    $widget = new $outputclass($format);
-    echo $renderer->render($widget);
-} else {
-    if (display_multiple_section_page($displaysection, $usejsnav, $context, $isediting)) {
-        $templateable = new \format_tiles\output\course_output($course, false, null, $renderer);
-        $data = $templateable->export_for_template($renderer);
-        echo $renderer->render_from_template('format_tiles/multi_section_page', $data);
-    } else {
-        $SESSION->editing_last_edited_section = $course->id . "-" . $displaysection;
-        $templateable = new \format_tiles\output\course_output($course, false, $displaysection, $renderer);
-        $data = $templateable->export_for_template($renderer);
-        echo $renderer->render_from_template('format_tiles/single_section_page', $data);
+    if ($cmid = optional_param('labelconvert', 0, PARAM_INT)) {
+        require_sesskey();
+        require_once($CFG->dirroot . '/course/format/tiles/locallib.php');
+        format_tiles_convert_label_to_page($cmid, $course);
+    }
+
+    // Check if we need to change any session params for teachers expanded section preferences.
+    if (optional_param('expanded', 0, PARAM_INT) == 1) {
+        // User is expanding all sections in course on command.
+        $SESSION->editing_all_sections_expanded_course = $course->id;
+        unset($SESSION->editing_last_edited_section);
+    } else if (optional_param('expanded', 0, PARAM_INT) == -1) {
+        // Cancel all epxanded if user cancels it.
+        unset($SESSION->editing_all_sections_expanded_course);
+        unset($SESSION->editing_last_edited_section);
+    } else if ($secnum = optional_param('expand', 0, PARAM_INT)) {
+        // User is expanding one section.
+        unset($SESSION->editing_all_sections_expanded_course);
+        if ($secnum == -1) {
+            unset($SESSION->editing_last_edited_section);
+        } else {
+            $SESSION->editing_last_edited_section = $course->id . "-" . $secnum;
+        }
     }
 }
-//if ($isediting) {
-//    // Check if we need to change any session params for teachers expanded section preferences.
-//    if (optional_param('expanded', 0, PARAM_INT) == 1) {
-//        // User is expanding all sections in course on command.
-//        $SESSION->editing_all_sections_expanded_course = $course->id;
-//        unset($SESSION->editing_last_edited_section);
-//    } else if (optional_param('expanded', 0, PARAM_INT) == -1) {
-//        // Cancel all epxanded if user cancels it.
-//        unset($SESSION->editing_all_sections_expanded_course);
-//        unset($SESSION->editing_last_edited_section);
-//    } else if ($secnum = optional_param('expand', 0, PARAM_INT)) {
-//        // User is expanding one section.
-//        unset($SESSION->editing_all_sections_expanded_course);
-//        if ($secnum == -1) {
-//            unset($SESSION->editing_last_edited_section);
-//        } else {
-//            $SESSION->editing_last_edited_section = $course->id . "-" . $secnum;
-//        }
-//    }
-//}
 
 // We display the multi section page if the user is not requesting a specific single section.
 // We also display it if user is requesting a specific section (URL &section=xx) with JS enabled.
@@ -111,6 +92,14 @@ if ($isediting) {
 if (optional_param('canceljssession', false, PARAM_BOOL)) {
     // The user is shown a link to cancel the successful JS flag for this session in <noscript> tags if their JS is off.
     unset($SESSION->format_tiles_jssuccessfullyused);
+}
+
+
+if (display_multiple_section_page($displaysection, $usejsnav, $context, $isediting)) {
+    $renderer->print_multiple_section_page($course, null, null, null, null);
+} else {
+    $SESSION->editing_last_edited_section = $course->id . "-" . $displaysection;
+    $renderer->print_single_section_page($course, null, null, null, null, $displaysection);
 }
 
 // Include format.js (required for dragging sections around).
@@ -141,7 +130,6 @@ $jsparams = array(
         && !isset($SESSION->format_tiles_skip_width_check),
     'enablecompletion' => $course->enablecompletion
 );
-
 if (!$isediting) {
     // Initalise the main JS module for non editing users.
     $PAGE->requires->js_call_amd(
@@ -153,6 +141,7 @@ if ($isediting) {
     $jsparams['pagetype'] = $PAGE->pagetype;
     $jsparams['allowphototiles'] = $allowphototiles;
     $jsparams['usesubtiles'] = get_config('format_tiles', 'allowsubtilesview') && $course->courseusesubtiles;
+    $jsparams['areconvertinglabel'] = optional_param('labelconvert', 0, PARAM_INT);
     $jsparams['documentationurl'] = get_config('format_tiles', 'documentationurl');
 
 

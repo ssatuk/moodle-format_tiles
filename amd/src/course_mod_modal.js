@@ -21,7 +21,9 @@
  * When the user clicks a PDF course module subtile or old style resource
  * if we are using modals for it (e.g. PDF) , create, populate, launch and size the modal
  *
- * @module      format_tiles/course_mod_modal
+ * @module      course_mod_modal
+ * @package     course/format
+ * @subpackage  tiles
  * @copyright   2018 David Watson {@link http://evolutioncode.uk}
  * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  * @since       Moodle 3.3
@@ -520,13 +522,7 @@ define(["jquery", "core/modal_factory", "core/config", "core/templates", "core/n
                         e.preventDefault();
                         var tgt = $(e.currentTarget);
                         var clickedCmObject = tgt.closest("li.activity");
-                        if (clickedCmObject.hasClass('completeonview')) {
-                            require(["format_tiles/completion"], function (completion) {
-                                completion.triggerCompletionChangedEvent(
-                                    clickedCmObject.closest(Selector.sectionMain).attr('data-section')
-                                );
-                            });
-                        }
+
                         // If we already have this modal on the page, launch it.
                         var existingModal = modalStore[clickedCmObject.attr("data-cmid")];
                         if (typeof existingModal === "object") {

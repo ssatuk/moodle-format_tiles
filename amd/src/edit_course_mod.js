@@ -18,7 +18,9 @@
 /**
  * Javascript Module to handle edit actions on course modules.
  *
- * @module      format_tiles/edit_course_mod
+ * @module      edit_course_mod
+ * @package     course/format
+ * @subpackage  tiles
  * @copyright   2018 David Watson {@link http://evolutioncode.uk}
  * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  * @since       Moodle 3.3
@@ -47,6 +49,7 @@ define(["jquery", "core/ajax", "core/templates", "core/notification", "core/str"
             INSTANCE_NAME: ".instancename",
             SECTION_CM_EDIT_ACTIONS: ".section-cm-edit-actions",
             EDITING_MOVE: ".editing_move",
+            LABEL_CONVERT: ".editing_labelconvert",
             CM_EDIT_ACTION: ".cm-edit-action",
             ACTIVITY_ICON: ".activityicon",
             EDITING_DELETE: ".editing_delete",
@@ -311,7 +314,7 @@ define(["jquery", "core/ajax", "core/templates", "core/notification", "core/str"
         };
 
         return {
-            init: function (courseId) {
+            init: function (courseId, displaySection, convertedLabel) {
                 $(document).ready(function () {
                     // This is to cover something which can happen when dragging and dropping a course module.
                     // In course/amd/src/action.js is a method called M.course.coursebase.register_module.
@@ -326,6 +329,30 @@ define(["jquery", "core/ajax", "core/templates", "core/notification", "core/str"
                             }, 500);
                         }
                     });
+
+                    // User wants to convert a label to a page using action menu on label.
+                    $(Selector.LABEL_CONVERT).on(Event.CLICK, function (e) {
+                        e.preventDefault();
+                        Notification.confirm(
+                            stringStore.areyousure,
+                            stringStore.converttopage_confirm,
+                            stringStore.yes,
+                            stringStore.no,
+                            function () {
+                                window.location = $(e.currentTarget).attr("href");
+                            },
+                            null
+                        );
+                    });
+
+                    if (convertedLabel !== 0) {
+                        // User has just converted a label to a page, so highlight the new item they just converted.
+                        var newPage = $("#module-" + convertedLabel);
+                        body.animate({scrollTop: newPage.offset().top - 130}, "fast");
+                        for (var x = 0; x < 3; x++) {
+                            newPage.fadeOut(300).fadeIn(300);
+                        }
+                    }
 
                     // If user clicks show/hide on a course module.
                     page.on("click", Selector.CM_EDIT_ACTION, function (e) {
@@ -358,6 +385,7 @@ define(["jquery", "core/ajax", "core/templates", "core/notification", "core/str"
                         {key: "no"},
                         {key: "show"},
                         {key: "hide"},
+                        {key: "converttopage_confirm", component: "format_tiles"},
                         {key: "areyousure"},
                         {key: "complete", component: "format_tiles"},
                         {key: "fileaddedtobottom", component: "format_tiles"},
@@ -368,10 +396,11 @@ define(["jquery", "core/ajax", "core/templates", "core/notification", "core/str"
                             "no": s[1],
                             "show": s[2],
                             "hide": s[3],
-                            "areyousure": s[4],
-                            "complete": s[5],
-                            "fileaddedtobottom": s[6],
-                            "loading": s[7]
+                            "converttopage_confirm": s[4],
+                            "areyousure": s[5],
+                            "complete": s[6],
+                            "fileaddedtobottom": s[7],
+                            "loading": s[8]
                         };
                     });
                 });

@@ -65,11 +65,10 @@ Feature: HTML file can be set to open in modal windows with subtiles off
     And I wait until the page is ready
     Then "Test HTML file" "dialogue" should be visible
 #    TODO test that we can see "Test HTML file content" too (is in embedded HTML document virtual element)?
-    #    todo toggle completion button removed from modal for now in Moodle 4.0 Beta, if subtiles are off.
-#    And I click on "Click to toggle completion status" "button" in the "Test HTML file" "dialogue"
-#    And I click on "Click to toggle completion status" "button" in the "Test HTML file" "dialogue"
+    And I click on "Click to toggle completion status" "button" in the "Test HTML file" "dialogue"
+    And I click on "Click to toggle completion status" "button" in the "Test HTML file" "dialogue"
     And "Close" "button" should exist in the "Test HTML file" "dialogue"
-    And I click on "Close" "button" in the "Test HTML file" "dialogue"
+    And I click on "Close" "button"
     And I wait until the page is ready
     And "Test HTML file" "dialogue" should not be visible
     And I click on close button for tile "1"
@@ -90,7 +89,7 @@ Feature: HTML file can be set to open in modal windows with subtiles off
     And I click on "Click to toggle completion status" "button" in the "Test HTML file" "dialogue"
     And I click on "Click to toggle completion status" "button" in the "Test HTML file" "dialogue"
     And "Close" "button" should exist in the "Test HTML file" "dialogue"
-    And I click on "Close" "button" in the "Test HTML file" "dialogue"
+    And I click on "Close" "button"
     And I wait until the page is ready
     And "Test HTML file" "dialogue" should not be visible
     And I click on close button for tile "1"

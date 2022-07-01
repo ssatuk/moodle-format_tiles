@@ -16,7 +16,9 @@
 /**
  * Javascript Module to help set up user needs browser storage.
  *
- * @module format_tiles/browser_storage_set_up
+ * @module browser_storage_set_up
+ * @package course/format
+ * @subpackage tiles
  * @copyright 2019 David Watson {@link http://evolutioncode.uk}
  * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  * @since Moodle 3.3

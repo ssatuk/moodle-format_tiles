@@ -16,7 +16,9 @@
 /**
  * Javascript Module to help out if registration of pluign via curl fails.
  *
- * @module format_tiles/registration
+ * @module registration
+ * @package course/format
+ * @subpackage tiles
  * @copyright 2019 David Watson {@link http://evolutioncode.uk}
  * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  * @since Moodle 3.3

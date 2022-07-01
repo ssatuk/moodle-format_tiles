@@ -50,16 +50,14 @@
 
 <style type="text/css">
     .format-tiles .course-content ul.tiles .tile,
-    .format-tiles li.section:not(#section-0) .course-section-header {
+    .format-tiles .course-content ul.tiles .tile_bar {
         border-top-color: {{base_colour}};
+        background-color: {{tile_light_colour}};
         border-radius: 0;
     }
     .format-tiles ul.tiles .tile {
         border-top-color: {{base_colour}};
         transition: border-top-color 0s;
-    }
-    .format-tiles .tile-bg {
-        background-color: {{tile_light_colour}};
     }
     .format-tiles ul.tiles .tile-clickable:hover,
     .format-tiles ul.tiles .tile_bar.clickable:hover,
@@ -85,6 +83,14 @@
     .format-tiles .embed_cm_modal .modal-header .close {
         color: #fff;
         opacity: 0.8;
+    }
+    .format-tiles .embed_cm_modal .modal-header,
+    .format-tiles .nav-pills .nav-link.active, .nav-pills .show>.nav-link {
+        background-color: {{base_colour}};
+        color: #fff;
+    }
+    .format-tiles a.nav-link {
+        color: {{base_colour}};
     }
     .format-tiles .sectiontitle::after,
     .format-tiles .badge-info {

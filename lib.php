@@ -40,7 +40,7 @@ require_once($CFG->dirroot . '/course/format/lib.php');
  * @copyright 2016 David Watson {@link http://evolutioncode.uk}
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class format_tiles extends core_courseformat\base {
+class format_tiles extends format_base {
 
     /**
      *  We want to treat label and plugins that behave like labels as labels.
@@ -73,22 +73,6 @@ class format_tiles extends core_courseformat\base {
      */
     public function uses_sections() {
         return true;
-    }
-
-    public function uses_indentation(): bool {
-        return false;
-    }
-
-    /**
-     * Returns true if this course format uses course index
-     *
-     * This function may be called without specifying the course id
-     * i.e. in course_index_drawer()
-     *
-     * @return bool
-     */
-    public function uses_course_index() {
-        return false;
     }
 
     /**
@@ -140,10 +124,6 @@ class format_tiles extends core_courseformat\base {
      * @return bool
      */
     public function supports_news() {
-        return true;
-    }
-
-    public function supports_components() {
         return true;
     }
 
@@ -890,25 +870,6 @@ class format_tiles extends core_courseformat\base {
         }
         return $result;
     }
-    /**
-     * Returns the format options stored for this course or course section
-     *
-     * When overriding please note that this function is called from rebuild_course_cache()
-     * and section_info object, therefore using of get_fast_modinfo() and/or any function that
-     * accesses it may lead to recursion.
-     *
-     * @param null|int|stdClass|section_info $section if null the course format options will be returned
-     *     otherwise options for specified section will be returned. This can be either
-     *     section object or relative section number (field course_sections.section)
-     * @return array
-     */
-    public function get_format_options($section = null) {
-        $options = parent::get_format_options($section);
-        if ($section === null) {
-            $options['coursedisplay'] = COURSE_DISPLAY_MULTIPAGE;
-        }
-        return $options;
-    }
 
     /**
      * Prepares the templateable object to display section name
@@ -921,8 +882,9 @@ class format_tiles extends core_courseformat\base {
      * @return \core\output\inplace_editable
      * @throws coding_exception
      */
-    public function inplace_editable_render_section_name($section, $linkifneeded = false,
+    public function inplace_editable_render_section_name($section, $linkifneeded = true,
                                                          $editable = null, $edithint = null, $editlabel = null) {
+        global $USER;
         if (empty($edithint)) {
             $edithint = new lang_string('editsectionname', 'format_tiles');
         }
@@ -930,7 +892,38 @@ class format_tiles extends core_courseformat\base {
             $title = get_section_name($section->course, $section);
             $editlabel = new lang_string('newsectionname', 'format_tiles', $title);
         }
-        return parent::inplace_editable_render_section_name($section, $linkifneeded, $editable, $edithint, $editlabel);
+
+        if ($editable === null) {
+            $editable = !empty($USER->editing) && has_capability('moodle/course:update',
+                    context_course::instance($section->course));
+        }
+
+        $displayvalue = $title = get_section_name($section->course, $section);
+        if ($linkifneeded) {
+            // Display link under the section name if the course format setting is to display one section per page.
+            $url = new moodle_url(
+                '/course/view.php',
+                array('id' => $section->course, 'section' => $section->section, 'singlesec' => $section->section)
+            );
+            if ($url) {
+                $displayvalue = html_writer::link($url, $title);
+            }
+            $itemtype = 'sectionname';
+        } else {
+            // If $linkifneeded==false, we never display the link (this is used when rendering the section header).
+            // Itemtype 'sectionnamenl' (nl=no link) will tell the callback that link should not be rendered -
+            // there is no other way callback can know where we display the section name.
+            $itemtype = 'sectionnamenl';
+        }
+        if (empty($edithint)) {
+            $edithint = new lang_string('editsectionname');
+        }
+        if (empty($editlabel)) {
+            $editlabel = new lang_string('newsectionname', '', $title);
+        }
+
+        return new \core\output\inplace_editable('format_' . $this->format, $itemtype, $section->id, $editable,
+            $displayvalue, $section->name, $edithint, $editlabel);
     }
 
 

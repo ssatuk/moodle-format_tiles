@@ -12,6 +12,7 @@ Feature: Teacher can restrict course modules to groups
       | Course 1 | C1        | tiles  | 0             | 5           | 1                |
     And the following "activities" exist:
       | activity | name            | intro                      | course | idnumber | section | visible |
+      | page     | Restricted page | Test page description      | C1     | page1    | 1       | 1       |
       | page     | Visible page    | Test page description      | C1     | page2    | 1       | 1       |
       | label    | Visible label   | I am an unrestricted label | C1     | label1   | 1       | 1       |
     And the following "course enrolments" exist:
@@ -42,11 +43,12 @@ Feature: Teacher can restrict course modules to groups
     And I wait "1" seconds
 
     And I am on "Course 1" course homepage with editing mode on
-    And I add a "Page" to section "1"
-    And I set the following fields to these values:
-      | Name         | Restricted page |
-      | Description  | Test   |
-      | Page content | Test   |
+    And I wait until the page is ready
+    And I expand section "1" for edit
+    And I wait "3" seconds
+    And I wait until activity "Restricted page" exists in "subtiles" format
+    And I follow "Restricted page"
+    And I navigate to "Edit settings" in current page administration
     And I expand all fieldsets
     And I click on "Add restriction..." "button"
     And I wait until the page is ready
@@ -104,6 +106,6 @@ Feature: Teacher can restrict course modules to groups
 
 #    Now student can see the restricted page too
     Then I should see "Visible page" in the "region-main" "region"
+    And I should see "Restricted page" in the "region-main" "region"
     And I should see "I am an unrestricted label" in the "region-main" "region"
     And I should see "I am a restricted label" in the "region-main" "region"
-    And I should see "Restricted page" in the "region-main" "region"

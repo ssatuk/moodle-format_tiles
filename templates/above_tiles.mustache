@@ -19,7 +19,7 @@
 
     Example context (json):
     {
-        "editing": "0",
+        "isediting": "0",
         "section_zero_show": "1",
         "is_multi_section": "1",
         "has_filter_buttons": "1",
@@ -31,7 +31,7 @@
         }]
     }
 }}
-{{^editing}}{{#usingjsnav}}
+{{^isediting}}{{#usingjsnav}}
     <div id="abovetiles">
         <div id="headerabovetiles" class="headerabovetiles" aria-hidden="true">
             {{#is_multi_section}}
@@ -55,9 +55,9 @@
                     {{> format_tiles/progress}}
                 {{/overall_progress_indicator}}
             {{/is_multi_section}}
-            {{^editing}}{{#section_zero_show}}
+            {{^isediting}}{{#section_zero_show}}
                 <div class="buttonhidesec0 open" id="buttonhidesec0"></div>
-            {{/section_zero_show}}{{/editing}}
+            {{/section_zero_show}}{{/isediting}}
         </div>
     </div>
-{{/usingjsnav}}{{/editing}}
+{{/usingjsnav}}{{/isediting}}

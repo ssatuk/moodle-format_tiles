@@ -47,7 +47,9 @@ M.course.format.process_sections = function(Y, sectionlist, response, sectionfro
         SECTIONNAME: "sectionname"
     },
     SELECTORS = {
-        SECTIONLEFTSIDE: ".left .section-handle .icon"
+        SECTIONLEFTSIDE: ".left .section-handle .icon",
+        EDITACTVITIESMENU: ".right .section_action_menu a.editing_activities",
+        EDITACTIVITIESLINK: ".tile_bar_text a.editactivities"
     };
 
     if (response.action === "move") {
@@ -72,6 +74,9 @@ M.course.format.process_sections = function(Y, sectionlist, response, sectionfro
             ele.setAttribute("alt", newstr);
             ele.setAttribute("title", newstr); // For FireFox as "alt" is not refreshed.
 
+            // Added for "Tiles" - swap edit activities links (x2) so they point to right place.
+            ele = sectionlist.item(i).one(SELECTORS.EDITACTVITIESMENU); // Right hand link.
+            var ele2 = sectionlist.item(i).one(SELECTORS.EDITACTIVITIESLINK); // Left hand link.
             var url = ele.getAttribute("href");
             stridx = url.lastIndexOf("section=");
             var newurl = url.substr(0, stridx + 8) + i; // Number 8 is length of section.

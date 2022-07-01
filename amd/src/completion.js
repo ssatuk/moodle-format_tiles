@@ -18,7 +18,9 @@
 /**
  * Load the format_tiles JavaScript for the course edit settings page /course/edit.php?id=xxx
  *
- * @module      format_tiles/completion
+ * @module      format_tiles
+ * @package     course/format
+ * @subpackage  tiles
  * @copyright   2018 David Watson {@link http://evolutioncode.uk}
  * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */

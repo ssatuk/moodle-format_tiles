@@ -22,6 +22,8 @@
  * covered by the specific modules
  *
  * @module      format_tiles/course
+ * @package     course/format
+ * @subpackage  tiles
  * @copyright   2018 David Watson {@link http://evolutioncode.uk}
  * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
@@ -31,13 +33,17 @@ define(["jquery", "core/templates", "core/ajax", "format_tiles/browser_storage",
     function ($, Templates, ajax, browserStorage, Notification, str, tileFitter) {
         "use strict";
 
+        var body = $("body");
+        var bodyHtml = $("body, html");
         var isMobile;
         var loadingIconHtml;
         var stringStore = [];
+        var windowOverlay;
         var scrollFuncLock = false;
         var sectionIsOpen = false;
         var HEADER_BAR_HEIGHT = 60; // This varies by theme and version so will be reset once pages loads below.
         var reopenLastVisitedSection = false;
+        var backDropZIndex = 0;
         var courseId;
         var resizeLocked = false;
         var enableCompletion;
@@ -46,7 +52,6 @@ define(["jquery", "core/templates", "core/ajax", "format_tiles/browser_storage",
         var openTile = 0;
 
         var Selector = {
-            BODY: "body",
             PAGE: "#page",
             TILE: ".tile",
             TILEID: "#tile-",
@@ -69,7 +74,6 @@ define(["jquery", "core/templates", "core/ajax", "format_tiles/browser_storage",
             SECTION_ZERO: "#section-0",
             MOODLE_VIDEO: ".mediaplugin.mediaplugin_videojs",
             LAUNCH_STANDARD: '[data-action="launch-tiles-standard"]',
-            MANUAL_COMPLETION: '[data-action="toggle-manual-completion"]',
             TOOLTIP: "[data-toggle=tooltip]",
             HEADER_BAR: ["header.navbar", "nav.fixed-top.navbar", "#essentialnavbar.moodle-has-zindex", "#navwrap",
                 "nav.navbar-fixed-top", "#adaptable-page-header-wrapper"],
@@ -82,8 +86,7 @@ define(["jquery", "core/templates", "core/ajax", "format_tiles/browser_storage",
             OPEN: "open",
             CLOSED: "closed",
             LAUNCH_CM_MODAL: "launch-tiles-cm-modal",
-            STATE_VISIBLE: 'state-visible', // This is a Snap theme class. Was added to make this format cooperate better with it.
-            HAS_OPEN_TILE: 'format-tiles-tile-open'
+            STATE_VISIBLE: 'state-visible' // This is a Snap theme class and was added to make this format cooperate better with it.
         };
 
         var Event = {
@@ -130,7 +133,8 @@ define(["jquery", "core/templates", "core/ajax", "format_tiles/browser_storage",
         };
 
         /**
-         * When JS navigation is being used, when a user un-selects a tile, we have to un-fade other tiles
+         * When JS navigation is being used, when a user un-selects a tile, we have to move the tile's z-index back so that it is
+         * no longer on top of the overlay, as well as removing its "selected" class, and hiding the overlay
          * @param {number} sectionToFocus if we want to focus a tile after closing, which one
          */
         var cancelTileSelections = function (sectionToFocus) {
@@ -143,6 +147,7 @@ define(["jquery", "core/templates", "core/ajax", "format_tiles/browser_storage",
             });
             $(Selector.TILE).removeClass(ClassNames.SELECTED).css(CSS.Z_INDEX, "").css(CSS.BG_COLOUR, "");
             $(".section " + ClassNames.SELECTED).removeClass(ClassNames.SELECTED).css(CSS.Z_INDEX, "");
+            windowOverlay.fadeOut(300);
 
             if (sectionToFocus !== undefined && sectionToFocus !== 0) {
                 $(Selector.TILEID + sectionToFocus).focus();
@@ -152,37 +157,6 @@ define(["jquery", "core/templates", "core/ajax", "format_tiles/browser_storage",
             });
             sectionIsOpen = false;
             openTile = 0;
-            $(Selector.BODY).removeClass(ClassNames.HAS_OPEN_TILE);
-            overlay.fadeOut(300);
-        };
-
-        const overlay = $('<div id="overlay" style="position: absolute; top: 0; left: 0; ' +
-            'background-color:rgba(0,0,0,0.5); width: 100vw; height: 100vh; display: none;"></div>');
-
-        /**
-         * Used where the user clicks the window overlay but we want the active click to be behind the
-         * overlay e.g. the tile or custom menu item behind it.  So we get the co-ordinates of the click
-         * on the overlay and then repeat the click at that spot ignoring the overlay
-         * @param {object} e the click event object
-         */
-        var clickItemBehind = function (e) {
-            var clickedItem = $(e.currentTarget);
-            if (clickedItem.attr("id") === "overlay") {
-                // We need to know what is behind the modal, so hide it for an instant to find out.
-                clickedItem.hide();
-                var BottomElement = $(document.elementFromPoint(e.clientX, e.clientY));
-                clickedItem.show();
-                if (BottomElement.hasClass("filterbutton") || BottomElement.hasClass("list-group-item")) {
-                    // Must ba a filter button clicked or a nav drawer item.
-                    BottomElement.click();
-                } else {
-                    // Must be a tile clicked.
-                    var clickedTile = BottomElement.closest(Selector.TILE);
-                    if (clickedTile) {
-                        clickedTile.click();
-                    }
-                }
-            }
         };
 
         /**
@@ -233,7 +207,7 @@ define(["jquery", "core/templates", "core/ajax", "format_tiles/browser_storage",
                                 setTimeout(function () {
                                     // Allow very short delay so we dont skip forward on the basis of our last key press.
                                     contentArea.find(Selector.SECTION_TITLE).focus();
-                                    // page.animate({scrollTop: contentArea.offset().top - HEADER_BAR_HEIGHT}, "slow");
+                                    bodyHtml.animate({scrollTop: contentArea.offset().top - HEADER_BAR_HEIGHT}, "slow");
                                     contentArea.find(Selector.SECTION_BUTTONS).css("top", "");
                                 }, 200);
                             }
@@ -308,11 +282,10 @@ define(["jquery", "core/templates", "core/ajax", "format_tiles/browser_storage",
          * @param {number} tileId to expand
          */
         var expandSection = function (contentArea, tileId) {
-            const tile = $("#tile-" + tileId);
             var expandAndScroll = function () {
                 // Scroll to the top of content bearing section
                 // we have to wait until possible reOrg and slide down totally before calling this, else co-ords are wrong.
-                var scrollTo = (tile.offset().top) - $(Selector.TILES).offset().top + HEADER_BAR_HEIGHT;
+                var scrollTo = $("#tileText-" + tileId).offset().top - HEADER_BAR_HEIGHT;
                 if (scrollTo === $(window).scrollTop) {
                     // Scroll by at least one pixel otherwise z-index on selected tile is not changed.
                     // Until mouse moves.
@@ -320,16 +293,15 @@ define(["jquery", "core/templates", "core/ajax", "format_tiles/browser_storage",
                 }
                 contentArea.find(Selector.SECTION_TITLE).focus();
                 // If user tries to scroll during animation, stop animation.
-                var events = "mousedown wheel DOMMouseScroll mousewheel keyup touchmove";
-                const page = $(Selector.PAGE);
-                page.on(events, function () {
-                    page.stop();
+                var events = "scroll mousedown wheel DOMMouseScroll mousewheel keyup touchmove";
+                body.on(events, function () {
+                    body.stop();
                 });
 
-                page.animate({scrollTop: scrollTo}, "slow", "swing", function () {
+                bodyHtml.animate({scrollTop: scrollTo}, "slow", function () {
                     // Animation complete, remove stop handler.
-                    page.off(events, function () {
-                        page.stop();
+                    bodyHtml.off(events, function () {
+                        bodyHtml.stop();
                     });
                 });
                 sectionIsOpen = true;
@@ -378,15 +350,26 @@ define(["jquery", "core/templates", "core/ajax", "format_tiles/browser_storage",
                                     && desiredNewPositionInSection < contentArea.outerHeight() - 100) {
                                 desiredNewPositionInSection = (windowTop - contentArea.offset().top + 50);
                                 buttons.css("top", desiredNewPositionInSection);
+                                if (windowOverlay.css(CSS.DISPLAY) === "none") {
+                                    windowOverlay.fadeIn(300);
+                                }
                             } else if (desiredNewPositionInSection < 0) {
                                 buttons.css("top", 0);
                             }
                             if (windowTop > contentArea.offset().top + contentArea.outerHeight() - 50) {
                                 // We have scrolled down and content bottom has gone out of the top of window.
+                                if (windowOverlay.css(CSS.DISPLAY) === "block") {
+                                    windowOverlay.fadeOut(300);
+                                }
                                 buttons.css("top", 0);
                             } else if (contentArea.offset().top > windowTop + $(window).outerHeight()) {
                                 // We have scrolled up and  content bottom has gone out of the bottom of window.
+                                if (windowOverlay.css(CSS.DISPLAY) === "block") {
+                                    windowOverlay.fadeOut(300);
+                                }
                                 buttons.css("top", 0);
+                            } else if (windowOverlay.css(CSS.DISPLAY) === "none") {
+                                windowOverlay.fadeIn(300);
                             }
                             buttons.fadeIn(300, function () {
                                 // Release lock on this function.
@@ -395,12 +378,12 @@ define(["jquery", "core/templates", "core/ajax", "format_tiles/browser_storage",
                         }, 500);
                     }
                 });
+                if (!scrollFuncLock && !sectionIsOpen && windowOverlay.is(":visible")) {
+                    windowOverlay.fadeOut(300);
+                }
             };
 
             contentArea.addClass(ClassNames.STATE_VISIBLE);
-            overlay.fadeIn(300);
-            tile.addClass(ClassNames.SELECTED);
-            $(Selector.BODY).addClass(ClassNames.HAS_OPEN_TILE);
             contentArea.slideDown(350, function () {
                 // Wait until we have finished sliding down before we work out where the top is for scroll.
                 expandAndScroll();
@@ -424,7 +407,7 @@ define(["jquery", "core/templates", "core/ajax", "format_tiles/browser_storage",
             var openedSectionNum = 0;
             if (openedSection.length > 0) {
                 openedSectionNum = openedSection.attr("data-section");
-                cancelTileSelections(0);
+                cancelTileSelections();
             }
             var reOrgFunc = function(delayBefore) {
                 tileFitter.runReOrg(delayBefore)
@@ -502,6 +485,78 @@ define(["jquery", "core/templates", "core/ajax", "format_tiles/browser_storage",
         };
 
         /**
+         * Temporary function to adjust shade of RGB colour
+         * (used for shading tiles to get around transparent background on overlay issue)
+         * @param {number} R
+         * @param {number} G
+         * @param {number} B
+         * @param {number} percent
+         * @returns {string}
+         */
+        var shadeRGBColor = function (R, G, B, percent) {
+            var t = percent < 0 ? 0 : 255;
+            var p = percent < 0 ? percent * -1 : percent;
+            var r = Math.round((t - R) * p) + R;
+            var g = Math.round((t - G) * p) + G;
+            var b = Math.round((t - B) * p) + B;
+            return "rgb(" + r + "," + g + "," + b + ")";
+        };
+
+        /**
+         * Add an opaque modal backdrop like div to obscure all other tiles and bring specified tile and content to front
+         * @param {number} secNumOnTop the section number which should be displayed on top of the overlay
+         */
+        var setOverlay = function (secNumOnTop) {
+            windowOverlay.fadeIn(300);
+            backDropZIndex = parseInt(windowOverlay.css(CSS.Z_INDEX));
+            var tile = $(Selector.TILEID + secNumOnTop);
+            tile.css(CSS.Z_INDEX, (backDropZIndex + 1));
+            $(Selector.SECTION_ID + secNumOnTop).css(CSS.Z_INDEX, (backDropZIndex + 1));
+            if (tile.css(CSS.BG_COLOUR) && tile.css(CSS.BG_COLOUR).substr(0, 4) === "rgba") {
+                // Tile may have transparent background from theme - needs to be solid otherwise modal shows through.
+                var existingColour = tile.css(CSS.BG_COLOUR).replace("rgba(", "").replace(")", "").replace(" ", "").split(",");
+                tile.css(CSS.BG_COLOUR, shadeRGBColor(
+                    parseInt(existingColour[0]),
+                    parseInt(existingColour[1]),
+                    parseInt(existingColour[2]),
+                    0.95
+                ));
+            }
+        };
+
+        /**
+         * Used where the user clicks the window overlay but we want the active click to be behind the
+         * overlay e.g. the tile or custom menu item behind it.  So we get the co-ordinates of the click
+         * on the overlay and then repeat the click at that spot ignoring the overlay
+         * @param {object} e the click event object
+         */
+        var clickItemBehind = function (e) {
+            var clickedItem = $(e.currentTarget);
+            if (clickedItem.attr("id") === "window-overlay") {
+                // We need to know what is behind the modal, so hide it for an instant to find out.
+                clickedItem.hide();
+                var BottomElement = $(document.elementFromPoint(e.clientX, e.clientY));
+                clickedItem.show();
+                if (clickedItem.attr("id") === "window-overlay") {
+                    if (BottomElement.hasClass("filterbutton") || BottomElement.hasClass("list-group-item")) {
+                        // Must ba a filter button clicked or a nav drawer item.
+                        BottomElement.click();
+                    } else {
+                        // Must be a tile clicked.
+                        var clickedTile = BottomElement.closest(Selector.TILE);
+                        if (clickedTile) {
+                            clickedTile.click();
+                        }
+                    }
+                } else {
+                    // Must be a click on the header bar.
+                    cancelTileSelections(0);
+                    BottomElement.click();
+                }
+            }
+        };
+
+        /**
          * If the user had section zero collapsed in this course previously, collapse it now
          */
         var setSectionZeroFromUserPref = function () {
@@ -530,7 +585,9 @@ define(["jquery", "core/templates", "core/ajax", "format_tiles/browser_storage",
          * @param {number} dataSection the id number of the tile.
          */
         var populateAndExpandSection = function(courseId, thisTile, dataSection) {
+            setOverlay(dataSection);
             $(Selector.TILE).removeClass(ClassNames.SELECTED);
+            thisTile.addClass(ClassNames.SELECTED);
             openTile = dataSection;
             // Then close all open secs.
             // Timed to finish in 200 so that it completes well before the opening next.
@@ -630,6 +687,17 @@ define(["jquery", "core/templates", "core/ajax", "format_tiles/browser_storage",
                     if (useJavascriptNav) {
                         // User is not editing but is usingJS nav to view.
 
+                        // When a tile is clicked we add an overlay to grey out the rest of the tiles on the page, so prepare it.
+                        windowOverlay = $("<div></div>").addClass("modal-backdrop fade in").hide()
+                            .attr("id", "window-overlay").appendTo(body);
+
+                        // If user clicks the window overlay behind the visible tile content, deselect tile.
+                        // (They want to remove the overlay).
+                        windowOverlay.click(function (e) {
+                            cancelTileSelections(0);
+                            clickItemBehind(e);
+                        });
+
                          // On a tile click, decide what to do an do it.
                          // (Collapse if already expanded, or expand it and fill with content).
                         pageContent.on(Event.CLICK, Selector.TILE_CLICKABLE, function (e) {
@@ -638,7 +706,8 @@ define(["jquery", "core/templates", "core/ajax", "format_tiles/browser_storage",
                                 return;
                             }
                             e.preventDefault();
-                            // If other tiles have loading icons, fade them out (on the tile not the content sec).
+                            $(window).off(Event.SCROLL); // Stop listening for scroll events on ay previously opened tiles.
+                            // if other tiles have loading icons, fade them out (on the tile not the content sec).
                             $(Selector.TILE_LOADING_ICON).fadeOut(300, function () {
                                 $(Selector.TILE_LOADING_ICON).html();
                             });
@@ -648,7 +717,6 @@ define(["jquery", "core/templates", "core/ajax", "format_tiles/browser_storage",
                                 // This tile is already expanded so collapse it.
                                 cancelTileSelections(dataSection);
                                 browserStorage.setLastVisitedSection(0);
-                                overlay.fadeOut(300);
                             } else {
                                 populateAndExpandSection(courseId, thisTile, dataSection);
                             }
@@ -664,13 +732,6 @@ define(["jquery", "core/templates", "core/ajax", "format_tiles/browser_storage",
                                     );
                                 });
                             }
-                        });
-
-                        $('body').append(overlay);
-                        overlay.on(Event.CLICK, function(e) {
-                            cancelTileSelections(0);
-                            browserStorage.setLastVisitedSection(0);
-                            clickItemBehind(e);
                         });
 
                         // When window is re-sized, content sections under the tiles may be in wrong place.
@@ -715,9 +776,37 @@ define(["jquery", "core/templates", "core/ajax", "format_tiles/browser_storage",
                             }, 600);
                         });
 
+                        // We want the main menu at the top to be on top of the tiles.
+                        // Even the ones which we have brought to the front on top of the window overlay.
+                        // But we also want it to still be greyed out.  So add an opaque overlay.
+                        // We can show this when the main overlay is active.
+                        // When a user clicks this overlay, they want to close the overlay and click menu item behind.
+                        // So provide for that here.
+                        // Z-INDICES: active tile will be at overlayZindex + 1.
+                        // Header bar will be at overlayZindex + 2 so that it is higher than tiles.
+                        // Header bar overlay will be at overlayZindex + 3 so that it is highest of all.
+
+                        var overlayZindex = parseInt(windowOverlay.css(CSS.Z_INDEX));
+                        var headerBar = $(Selector.HEADER_BAR.find(function(selector) {
+                            return $(selector).length > 0;
+                        }));
+                        if (headerBar !== undefined && headerBar.length !== 0) {
+                            headerBar.css(CSS.Z_INDEX, overlayZindex + 3);
+                        }
+
                         // When user clicks to close a section using cross at top right in section.
                         pageContent.on(Event.CLICK, Selector.CLOSE_SEC_BTN, function (e) {
                             cancelTileSelections($(e.currentTarget).attr("data-section"));
+                        });
+
+                        // If user clicks a sub tile body below the link, treat it as a click on the link itself.
+                        pageContent.on(Event.CLICK, Selector.LAUNCH_STANDARD, function(e) {
+                            var clickedLk = $(e.currentTarget);
+                            if (clickedLk.attr("href") !== undefined) {
+                                window.location = clickedLk.attr("href");
+                            } else if (clickedLk.find('a').attr("href") !== undefined) {
+                                window.location = clickedLk.find('a').attr("href");
+                            }
                         });
 
                         setSectionZeroFromUserPref();
@@ -775,21 +864,9 @@ define(["jquery", "core/templates", "core/ajax", "format_tiles/browser_storage",
                             });
                     });
 
-                    if (enableCompletion) {
-                        // We use pageContent for listener here, as competion button is replaced by core JS when it's clicked.
-                        pageContent.on(Event.CLICK, Selector.MANUAL_COMPLETION, function() {
-                            require(["format_tiles/completion"], function (completion) {
-                                setTimeout(() => {
-                                    completion.triggerCompletionChangedEvent();
-                                }, 500);
-                            });
-                        });
-                    }
-
-                    const sectionZero = $(Selector.SECTION_ZERO);
-
                     // When the user presses the button to collapse or expand Section zero (section at the top of the course).
                     pageContent.on(Event.CLICK, Selector.HIDE_SEC0_BTN, function (e) {
+                        var sectionZero = $(Selector.SECTION_ZERO);
                         if (sectionZero.css(CSS.DISPLAY) === "none") {
                             // Sec zero is collapsed so expand it on user click.
                             sectionZero.slideDown(250);
@@ -897,9 +974,20 @@ define(["jquery", "core/templates", "core/ajax", "format_tiles/browser_storage",
                         });
 
                         // Move focus to the first tile in the course (not sec zero contents if present).
-                        // $("ul.tiles .tile").first().focus();
+                        $("ul.tiles .tile").first().focus();
                     }
 
+                    // If Adaptable theme is being used, and Glossary auto link filter is on, we need this.
+                    // Otherwise when the auto link is clicked, the resulting dialogue is under the main overlay.
+                    // Don't need this when Boost or Clean themes are used as they handle it themselves.
+                    $(document).on("filter-content-updated", function (event, msg) {
+                        if (msg.length > 0) {
+                            var elem = $(msg[0]);
+                            if (elem.hasClass("moodle-dialogue") && elem.css("z-index") < backDropZIndex) {
+                                    elem.css("z-index", backDropZIndex + 1);
+                            }
+                        }
+                    });
                     const mathJaxConfigDiv = $('.filters-config[data-filter="mathjaxloader"]');
                     if (mathJaxConfigDiv.length) {
                         if (typeof window.MathJax === 'undefined') {

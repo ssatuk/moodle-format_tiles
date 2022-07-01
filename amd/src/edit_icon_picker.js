@@ -20,7 +20,9 @@
  * which the editing user uses to select an icon for a tile or the default icon
  * for all tiles in the course
  *
- * @module      format_tiles/icon_picker
+ * @module      icon_picker
+ * @package     course/format
+ * @subpackage  tiles
  * @copyright   2018 David Watson {@link http://evolutioncode.uk}
  * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  * @since       Moodle 3.3
@@ -121,8 +123,8 @@ define(["jquery", "core/templates", "core/ajax", "core/str", "core/notification"
                 var templateToRender = '';
                 var templateParams = {
                     tileicon: icon,
-                    num: sectionNum,
-                    id: sectionId,
+                    tileid: sectionNum,
+                    secid: sectionId,
                     isediting: 1
                 };
                 switch (imageType) {
@@ -410,7 +412,7 @@ define(["jquery", "core/templates", "core/ajax", "core/str", "core/notification"
                         // Some themes e.g. RemUI do not have a #page-content div, so use #region-main.
                         pageContent = $("#region-main");
                     }
-                    pageContent.on("click", '[data-action="launch-tiles-icon-picker"]', function (e) {
+                    pageContent.on("click", ".launchiconpicker", function (e) {
                         e.preventDefault();
                         var clickedIcon = $(e.currentTarget);
                         launchIconPicker(

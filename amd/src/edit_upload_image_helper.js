@@ -16,7 +16,9 @@
 /**
  * Javascript Module to help out when editing user is uploading a tile photo.
  *
- * @module format_tiles/edit_upload_image_helper
+ * @module edit_upload_image_helper
+ * @package course/format
+ * @subpackage tiles
  * @copyright 2019 David Watson {@link http://evolutioncode.uk}
  * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  * @since Moodle 3.3

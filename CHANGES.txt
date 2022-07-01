@@ -307,8 +307,3 @@ Other
 ======================
 - Fix JS error on course edit form
 - Minor style/layout adjustments for modals, stealth activities and Lambda theme
-
-4.0.0.1 BETA (2022070100)
-=========================
-- Changes for compatibility with Moodle 4.0
-- Remove label conversion
