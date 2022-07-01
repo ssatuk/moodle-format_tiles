@@ -287,13 +287,6 @@ if ($ADMIN->fulltree) {
     $default = 0;
     $page->add(new admin_setting_configcheckbox($name, $title, $description, $default));
 
-    $name = 'format_tiles/allowlabelconversion';
-    $title = get_string('allowlabelconversion', 'format_tiles')
-        . ' ' . get_string('experimentalsetting', 'format_tiles');
-    $description = get_string('allowlabelconversion_desc', 'format_tiles');
-    $default = 0;
-    $page->add(new admin_setting_configcheckbox($name, $title, $description, $default));
-
     $name = 'format_tiles/usetooltips';
     $title = get_string('usetooltips', 'format_tiles');
     $description = get_string('usetooltips_desc', 'format_tiles');

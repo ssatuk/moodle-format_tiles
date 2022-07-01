@@ -84,7 +84,7 @@
     </a>
 {{/showinitialpageloadingicon}}
 
-{{#isediting}}
+{{#editing}}
     <div class="expand-collapse-all-btns">
         <a class="btn btn-secondary" data-action="expand-all" title="{{#str}}expandall, format_tiles{{/str}}"
            href="{{{config.wwwroot}}}/course/view.php?id={{courseid}}&expanded=1" id="expand-all-btn">
@@ -112,21 +112,21 @@
             </a>
         </div>
     {{/hasoutofsequencetiles}}
-{{/isediting}}
+{{/editing}}
 
 <ul class="tiles" id="multi_section_tiles">
     {{> format_tiles/section_zero}}
 
     {{#tiles}}
-        {{^isediting}}
+        {{^editing}}
             {{> format_tiles/multi_section_tile}}
-        {{/isediting}}
-        {{#isediting}}
+        {{/editing}}
+        {{#editing}}
             {{> format_tiles/multi_section_tilebar}}
-        {{/isediting}}
+        {{/editing}}
     {{/tiles}}
 
-    {{^isediting}}
+    {{^editing}}
     {{!empty tiles at end to ensure correct flex spacing of last row}}
         <li class="tile spacer" aria-hidden="true"></li>
         <li class="tile spacer" aria-hidden="true"></li>
@@ -141,23 +141,23 @@
             <li class="section main moveablesection" style="display: none;" id="section-{{tileid}}"
                 data-section="{{tileid}}"></li>
         {{/tiles}}
-    {{/isediting}}
+    {{/editing}}
 </ul>
 
-{{#isediting}}
+{{#editing}}
     <span id="changenumsections">
         <a data-add-sections="{{#str}}addsections, format_tiles{{/str}}" class="pull-right mt-3" href="{{{ config.wwwroot }}}/course/changenumsections.php?courseid={{courseid}}&sesskey={{sesskey}}&insertsection=0&sectionreturn=0">
             {{#pix}}t/switch_plus, core, {{#str}}addsections, format_tiles{{/str}}{{/pix}} {{#str}}addsections, format_tiles{{/str}}
         </a>
     </span>
-{{/isediting}}
+{{/editing}}
 
-{{#isediting}}
+{{#editing}}
     {{^from_ajax}}
         {{activity_clipboard}}
     {{/from_ajax}}
     {{{course_activity_clipboard}}}
-{{/isediting}}
+{{/editing}}
 
 {{#moodlefiltersconfig}}
     <div class="filters-config" data-filter="{{filter}}"{{#config}} data-{{key}}="{{value}}"{{/config}}></div>

@@ -122,8 +122,7 @@ Feature: Teacher can allocate photos to tiles
     And I wait until the page is ready
     And I wait "2" seconds
 
-    And I navigate to "Restore" in current page administration
-    And I wait until the page is ready
+    And I am on the "Business Law" "restore" page
     And I merge "test_backup.mbz" backup into the current course after deleting it's contents using this options:
     And I am on site homepage
     And I follow "Business Law"

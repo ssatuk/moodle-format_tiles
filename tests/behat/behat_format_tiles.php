@@ -131,11 +131,11 @@ class behat_format_tiles extends behat_base {
                 'userid' => $user->id
             )
         );
-        if ($completionstate == $value || !$completionstate && !$value) {
+        if (($completionstate == $value) || (!$completionstate && !$value)) {
             return;
-        } else if ($completionstate == false) {
+        } else if ($completionstate === false) {
             throw new \Behat\Mink\Exception\ExpectationException(
-                "Completion state should be " . $value . " but no record found for " . $activitytitle,
+                "Completion state should be $value but no record found for cmid $pagecms[$activitytitle] title $activitytitle",
                 $this->getSession()
             );
         } else {
@@ -200,7 +200,7 @@ class behat_format_tiles extends behat_base {
      * @throws Exception
      */
     public function i_expand_section_for_edit($tileumber) {
-        $tileid = behat_context_helper::escape("expand" . $tileumber);
+        $tileid = behat_context_helper::escape("collapssesection" . $tileumber);
 
         // Click the tile.
         $this->wait_for_pending_js();
@@ -261,19 +261,12 @@ class behat_format_tiles extends behat_base {
     /**
      * I click a certain activity.
      *
-     * @Given /^I click format tiles activity "(?P<activitytitle_string>(?:[^"]|\\")*)"$/
-     * @param string $activitytitle
+     * @Given /^I click format tiles activity "(?P<activityname_string>(?:[^"]|\\")*)"$/
+     * @param string $activityname
      * @throws Exception
      */
-    public function click_format_tiles_activity($activitytitle) {
-        // Var $xpath is to find the li (the ancestor) which contains an element where the text is activity name.
-        $xpath = "//text()[contains(.,'" . $activitytitle . "')]/ancestor::*[contains(@class, 'instancename')]";
-        $this->execute('behat_general::wait_until_the_page_is_ready');
-        if ($this->running_javascript()) {
-            $this->wait_for_pending_js();
-            $this->getSession()->wait(self::get_reduced_timeout() * 1000);
-        }
-        $this->execute("behat_general::i_click_on", array($this->escape($xpath), "xpath_element"));
+    public function click_format_tiles_activity($activityname) {
+        $this->execute("behat_general::i_click_on_in_the", [$this->escape($activityname), 'link', '#page-content', 'css_element']);
     }
 
     /**

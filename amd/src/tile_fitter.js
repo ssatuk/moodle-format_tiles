@@ -17,9 +17,7 @@
  * Javascript Module to handle fitting tiles to screen.
  * Called when in non editing mode.
  *
- * @module tile_fitter
- * @package course/format
- * @subpackage tiles
+ * @module format_tiles/tile_fitter
  * @copyright 2019 David Watson {@link http://evolutioncode.uk}
  * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  * @since Moodle 3.3
@@ -343,8 +341,8 @@ define(["jquery", "core/ajax"], function ($, ajax) {
      * This is to cover the initial setting up of div width (i.e. allow us time to get screen width and set up).
      */
     var unHideTiles = function() {
-        $(Selector.TILES).animate({opacity: 1}, "fast");
-        $(Selector.SECTION_ZERO).animate({opacity: 1}, "fast");
+        $(Selector.TILES).animate({opacity: "1"}, "fast");
+        $(Selector.SECTION_ZERO).animate({opacity: "1"}, "fast");
         $("#page-loading-icon").fadeOut(500).remove();
     };
 

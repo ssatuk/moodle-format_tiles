@@ -35,7 +35,7 @@
         * tileid - which tile for
         * completionstate is completion complete or not
         * completionstateInverse inverse of previous
-        * isediting - is user editing
+        * editing - is user editing
         * sesskey - sesskey
         * modtitle - title of this module (i.e. activity name)
         * completionIsManual - is completion set to manual or not
@@ -47,14 +47,14 @@
         "tileid": 1,
         "completionstate": "0",
         "completionstateInverse": "1",
-        "isediting": 0,
+        "editing": 0,
         "sesskey": 1234567890,
         "modtitle": "Lecture 1 slides",
         "completionIsManual": 1,
         "completionstring": "Click to toggle completion status"
     }
 }}
-{{^isediting}}
+{{^editing}}
     {{!complete-y-xxx is a class not an id as there will be two on the page if a modal is open}}
     <span class="completionchangenotify complete-y-{{cmid}}">{{#str}}complete, format_tiles{{/str}}</span>
     <span class="completionchangenotify complete-n-{{cmid}}">{{#str}}notcomplete, format_tiles{{/str}}</span>
@@ -71,11 +71,11 @@
             <span class="completion-icon completion_img_{{cmid}} completion-icon-{{completionicon}}"></span>
         </span>
     {{/completionIsManual}}
-{{/isediting}}
+{{/editing}}
 
-{{#isediting}}
+{{#editing}}
     <div class="completioncheckbox completion-check-{{cmid}}" data-action="change-completion-status" data-cmid="{{cmid}}" data-state="{{completionstate}}"
     title="{{#completionstring}}{{completionstring}}{{/completionstring}}{{^completionstring}}{{#str}}togglecompletion, format_tiles{{/str}}{{/completionstring}}" data-ismanual="0">
         <span class="completion-icon completion_img_{{cmid}} completion-icon-{{completionicon}}"></span>
     </div>
-{{/isediting}}
+{{/editing}}

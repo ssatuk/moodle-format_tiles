@@ -60,7 +60,7 @@ Feature: Teacher can add a page to a course and open it with subtiles off
     And "Test page 2" "dialogue" should be visible
     And "Test page 2 content" "text" should be visible
     And "Close" "button" should exist in the "Test page 2" "dialogue"
-    And I click on "Close" "button"
+    And I click on "Close" "button" in the "Test page 2" "dialogue"
     And I wait until the page is ready
 
 #    Close tile etc
@@ -101,7 +101,7 @@ Feature: Teacher can add a page to a course and open it with subtiles off
     And "Test page 2" "dialogue" should be visible
     And "Test page 2 content" "text" should be visible
     And "Close" "button" should exist in the "Test page 2" "dialogue"
-    And I click on "Close" "button"
+    And I click on "Close" "button" in the "Test page 2" "dialogue"
     And I wait until the page is ready
 
     And I wait "1" seconds

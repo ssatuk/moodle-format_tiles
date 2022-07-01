@@ -64,14 +64,14 @@ Feature: Sections can be edited and deleted in tiles format
     And I wait "1" seconds
     And I delete section "5"
     Then I should see "Are you absolutely sure you want to completely delete \"Tile 5\" and all the activities it contains?"
-    And I press "Delete"
+    And I click on "Delete" "button" in the ".modal" "css_element"
     And I should not see "Tile 5"
     And I should see "Tile 4"
 
   Scenario: Deleting the middle section in tiles format
     And I wait "1" seconds
     And I delete section "4"
-    And I press "Delete"
+    And I click on "Delete" "button" in the ".modal" "css_element"
     Then I should not see "Tile 5"
     And I should see "Tile 4"
 

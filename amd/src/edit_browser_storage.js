@@ -16,9 +16,7 @@
 /**
  * Javascript Module to handle browser storage for editing interface.
  *
- * @module edit_browser_storage
- * @package course/format
- * @subpackage tiles
+ * @module format_tiles/edit_browser_storage
  * @copyright 2019 David Watson {@link http://evolutioncode.uk}
  * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  * @since Moodle 3.3

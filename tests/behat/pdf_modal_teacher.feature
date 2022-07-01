@@ -64,10 +64,11 @@ Feature: PDFs can be set to open in modal windows with subtiles off
     And I click format tiles activity "Test PDF"
     And I wait until the page is ready
     Then "Test PDF" "dialogue" should be visible
-    And I click on "Click to toggle completion status" "button" in the "Test PDF" "dialogue"
-    And I click on "Click to toggle completion status" "button" in the "Test PDF" "dialogue"
+#    todo toggle completion button removed from modal for now in Moodle 4.0 Beta, if subtiles are off.
+#    And I click on "Click to toggle completion status" "button" in the "Test PDF" "dialogue"
+#    And I click on "Click to toggle completion status" "button" in the "Test PDF" "dialogue"
     And "Close" "button" should exist in the "Test PDF" "dialogue"
-    And I click on "Close" "button"
+    And I click on "Close" "button" in the "Test PDF" "dialogue"
     And I wait until the page is ready
     And "Test PDF" "dialogue" should not be visible
     And I click on close button for tile "1"
@@ -86,6 +87,6 @@ Feature: PDFs can be set to open in modal windows with subtiles off
     And I click on "Click to toggle completion status" "button" in the "Test PDF" "dialogue"
     And I click on "Click to toggle completion status" "button" in the "Test PDF" "dialogue"
     And "Close" "button" should exist in the "Test PDF" "dialogue"
-    And I click on "Close" "button"
+    And I click on "Close" "button" in the "Test PDF" "dialogue"
     And I wait until the page is ready
     And "Test PDF" "dialogue" should not be visible

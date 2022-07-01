@@ -48,6 +48,7 @@
 }}
 <li class="tile{{#hidden}} tile-hidden{{/hidden}}{{#restricted}} tile-restricted{{/restricted}}{{#isactive}} current{{/isactive}}{{#userclickable}} tile-clickable{{/userclickable}} {{extraclasses}}"
     id="tile-{{tileid}}" data-section="{{tileid}}" data-true-sectionid="{{secid}}" tabindex="2" aria-role="button"{{#hastilephoto}}{{{phototileinlinestyle}}}{{/hastilephoto}}>
+    {{^hastilephoto}}<div class="tile-bg"></div>{{/hastilephoto}}
     <a class="tile-link"{{#userclickable}} href="{{{config.wwwroot}}}/course/view.php?id={{courseid}}&section={{tileid}}"{{/userclickable}}
        data-section="{{tileid}}" id="sectionlink-{{tileid}}">
 
@@ -55,18 +56,12 @@
         <div class="tile-content" id="tilecontent-{{tileid}}">
             <div class="tile-top" id="tileTop-{{tileid}}">
                 <div class="tileiconcontainer" id="tileicon_{{tileid}}"
-                    {{#isediting}}data-toggle="tooltip" data-placement="left"
+                    {{#editing}}data-toggle="tooltip" data-placement="left"
                      data-original-title="{{^allowphototiles}}{{#str}}picknewicon, format_tiles{{/str}}{{/allowphototiles}}{{#allowphototiles}}{{#str}}picknewiconphoto, format_tiles{{/str}}{{/allowphototiles}}"
-                    {{/isediting}}>
+                    {{/editing}}>
                     {{>format_tiles/tileicon}}
                 </div>
                 <div class="tiletopright pull-right" id="tiletopright-{{tileid}}" aria-hidden="true">
-                    {{#hidden}}
-                        {{#pix}}eye-slash, format_tiles, {{#str}}hidden, format_tiles{{/str}}{{/pix}}
-                    {{/hidden}}
-                    {{#restricted}}{{^progress}}
-                        {{#pix}}lock, format_tiles, {{#str}}restricted{{/str}}{{/pix}}
-                    {{/progress}}{{/restricted}}
                     {{#progress}}{{^hidden}}
                         {{> format_tiles/progress}}
                     {{/hidden}}{{/progress}}
@@ -101,7 +96,7 @@
                  {{#activity_summary}}{{^ismobile}}{{#usetooltips}}
                     data-original-title="{{activity_summary}}" data-toggle="tooltip" data-html="true"
                  {{/usetooltips}}{{/ismobile}}{{/activity_summary}}>
-            <span class="photo-tile-text{{titleclass}}" id="tileTextin-{{tileid}}">
+            <span class="photo-tile-text {{titleclass}}" id="tileTextin-{{tileid}}">
                 {{#title}}<h3>{{{title}}}</h3>{{/title}}
             </span>
                 <div class="tile-text"
