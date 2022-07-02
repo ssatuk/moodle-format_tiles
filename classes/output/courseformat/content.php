@@ -72,6 +72,10 @@ class content extends content_base {
         return parent::export_sections($output);
     }
 
+    /**
+     * Get the release details of this version of Tiles.
+     * @return string
+     */
     private static function get_tiles_plugin_release(): string {
         global $CFG;
         $plugin = new \stdClass();

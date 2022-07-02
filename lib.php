@@ -75,6 +75,9 @@ class format_tiles extends core_courseformat\base {
         return true;
     }
 
+    /**
+     * @return bool
+     */
     public function uses_indentation(): bool {
         return false;
     }
@@ -143,6 +146,9 @@ class format_tiles extends core_courseformat\base {
         return true;
     }
 
+    /**
+     * @return bool
+     */
     public function supports_components() {
         return true;
     }

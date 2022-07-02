@@ -49,7 +49,6 @@ if (($marker >= 0) && has_capability('moodle/course:setcurrentsection', $context
     course_set_marker($course->id, $marker);
 }
 
-//// Make sure all sections are created.
 $isediting = $PAGE->user_is_editing();
 $renderer = $PAGE->get_renderer('format_tiles');
 

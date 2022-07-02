@@ -233,6 +233,11 @@ class course_output implements \renderable, \templatable
         return $data;
     }
 
+    /**
+     * Temporary function for Moodle 4.0 upgrade - todo to be replaced.
+     * @param $section
+     * @return string
+     */
     private function temp_format_summary_text($section) {
         $summarytext = file_rewrite_pluginfile_urls($section->summary, 'pluginfile.php',
             $this->coursecontext->id, 'course', 'section', $section->id);
@@ -243,17 +248,36 @@ class course_output implements \renderable, \templatable
         return format_text($summarytext, $section->summaryformat, $options);
     }
 
+    /**
+     * Temporary function for Moodle 4.0 upgrade - todo to be replaced.
+     * @param $section
+     * @return void
+     * @throws \coding_exception
+     */
     private function temp_section_activity_summary($section) {
         $widgetclass = $this->format->get_output_classname('content\\section\\cmsummary');
         $widget = new $widgetclass($this->format, $section);
         $this->courserenderer->render($widget);
     }
+
+    /**
+     * Temporary function for Moodle 4.0 upgrade - todo to be replaced.
+     * @param $section
+     * @return bool|string
+     * @throws \coding_exception
+     */
     private function temp_section_availability_message($section) {
         $widgetclass = $this->format->get_output_classname('content\\section\\availability');
         $widget = new $widgetclass($this->format, $section);
         return $this->courserenderer->render($widget);
     }
 
+    /**
+     * Temporary function for Moodle 4.0 upgrade - todo to be replaced.
+     * @param $mod
+     * @return bool|string
+     * @throws \coding_exception
+     */
     private function temp_course_section_cm_availability($mod) {
         $availabilityclass = $this->format->get_output_classname('content\\cm\\availability');
         $availability = new $availabilityclass(

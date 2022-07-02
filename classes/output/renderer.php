@@ -21,7 +21,7 @@ use moodle_page;
 
 /**
  * Basic renderer for tiles format.
- *
+ * @package format_tiles
  * @copyright 2022 David Watson
  * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
@@ -31,7 +31,7 @@ class renderer extends section_renderer {
      * Override this so that we can use our own local templates.
      * @return void
      */
-    public function render_content( ) {
+    public function render_content() {
         global $PAGE;
         $renderer = $PAGE->get_renderer('core', 'course');
         $format = course_get_format($this->page->course->id);
