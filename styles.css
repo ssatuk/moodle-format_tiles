@@ -32,17 +32,6 @@
 .format-tiles .modal-backdrop.fade.in {
     opacity: 0.2;
 }
-.format-tiles .header-overlay {
-    opacity: 0.3;
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    z-index: 1040;
-    background-color: #aaa;
-    height: 60px;
-}
-
 .format-tiles ul.tiles li.section .content {
     margin: 0 10px 0 0;
 }
@@ -570,7 +559,7 @@
     cursor: pointer;
     height: 40px;
     width: 40px;
-    z-index: 100;
+    z-index: 2;
     text-align: left;
     background: no-repeat center;
     padding: 0;
@@ -1863,13 +1852,14 @@ allow tiles to be taller and thinner so can fit two side by side in portrait on 
 }
 
 @media (min-width: 768px) {
-    body.format-tiles.limitedwidth:not(.path-mod) #page.drawers .main-inner {
-        max-width: 1200px;
+    body.format-tiles.limitedwidth:not(.path-mod) #page.drawers .main-inner,
+    .format-tiles .header-maxwidth {
+        max-width: unset;
     }
 }
 
 .format-tiles .secondary-navigation {
-    max-width: 1200px;
+    max-width: unset;
 }
 .format-tiles .section .activity.subtile .activityinstance {
     display: block;
@@ -1934,7 +1924,7 @@ allow tiles to be taller and thinner so can fit two side by side in portrait on 
     background-color: rgba(255, 255, 255, 0.7);
 }
 .format-tiles .tile, .format-tiles .moveablesection {
-    z-index: 1000;
+    z-index: 2;
 }
 .format-tiles .tile:not(.phototile) {
     background-color: #fff;

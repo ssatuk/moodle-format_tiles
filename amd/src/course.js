@@ -156,8 +156,7 @@ define(["jquery", "core/templates", "core/ajax", "format_tiles/browser_storage",
             overlay.fadeOut(300);
         };
 
-        const overlay = $('<div id="overlay" style="position: absolute; top: 0; left: 0; ' +
-            'background-color:rgba(0,0,0,0.5); width: 100vw; height: 100vh; display: none;"></div>');
+        const overlay = $('#overlay');
 
         /**
          * Used where the user clicks the window overlay but we want the active click to be behind the
@@ -666,7 +665,6 @@ define(["jquery", "core/templates", "core/ajax", "format_tiles/browser_storage",
                             }
                         });
 
-                        $('body').append(overlay);
                         overlay.on(Event.CLICK, function(e) {
                             cancelTileSelections(0);
                             browserStorage.setLastVisitedSection(0);
