@@ -313,7 +313,7 @@ Other
 - Changes for compatibility with Moodle 4.0
 - Remove label conversion
 
-4.0.0.2 BETA (2022080800)
+4.0.0.3 BETA (2022080800)
 =========================
 - Improve completion buttons/indicators
 - Fix some modal launch issues (e.g. issue 94 duplicate launches)
