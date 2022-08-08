@@ -156,8 +156,7 @@ define(["jquery", "core/templates", "core/ajax", "format_tiles/browser_storage",
             overlay.fadeOut(300);
         };
 
-        const overlay = $('<div id="overlay" style="position: absolute; top: 0; left: 0; ' +
-            'background-color:rgba(0,0,0,0.5); width: 100vw; height: 100vh; display: none;"></div>');
+        const overlay = $('#overlay');
 
         /**
          * Used where the user clicks the window overlay but we want the active click to be behind the
@@ -353,11 +352,11 @@ define(["jquery", "core/templates", "core/ajax", "format_tiles/browser_storage",
                     if (enableCompletion) {
                         // Some iframes may load content set to mark as complete on view.
                         // So maybe need to update tile completion info. E.g. applies with H5P filter.
-                        require(["format_tiles/completion"], function (completion) {
-                            setTimeout(() => {
-                                completion.updateTileInformation();
-                            }, 1000);
-                        });
+                        setTimeout(() => {
+                            $(document).trigger('format-tiles-completion-changed', {
+                                section: tileId
+                            });
+                        }, 1000);
                     }
                 }
             };
@@ -666,7 +665,6 @@ define(["jquery", "core/templates", "core/ajax", "format_tiles/browser_storage",
                             }
                         });
 
-                        $('body').append(overlay);
                         overlay.on(Event.CLICK, function(e) {
                             cancelTileSelections(0);
                             browserStorage.setLastVisitedSection(0);
@@ -691,13 +689,14 @@ define(["jquery", "core/templates", "core/ajax", "format_tiles/browser_storage",
                                 // First assume that we are going to resize, but we have checks to make below.
                                 var resizeRequired = true;
 
-                                // If we have a Moodle media player div in the section in fullscreen, ignore this resize event.
+                                // If we have an iframe in the section in fullscreen, ignore this resize event.
                                 // It was probably caused when user pressed the full screen button.
+                                // This could be a Moodle media player div, or a YouTube embed or other.
                                 var openContentSection = $(".moveablesection:visible");
                                 if (openContentSection.length !== 0) {
-                                    var mediaPlayers = openContentSection.find(".mediaplugin iframe");
-                                    if (mediaPlayers.length !== 0) {
-                                        mediaPlayers.each(function (index, player) {
+                                    var iframes = openContentSection.find("iframe");
+                                    if (iframes.length !== 0) {
+                                        iframes.each(function (index, player) {
                                             player = $(player);
                                             if (player.outerWidth() > openContentSection.outerWidth()) {
                                                 // Video is present and playing full screen so don't react to resize event.
@@ -733,13 +732,14 @@ define(["jquery", "core/templates", "core/ajax", "format_tiles/browser_storage",
                         }).toArray();
                         // Need to include sec zero as may have completion tracked items.
                         allSectionNums.push(0);
+                        const isSingleSectionPage = $('ul#single_section_tiles').length > 0;
                         const requests = ajax.call([
                             {
                                 methodname: "format_tiles_get_single_section_page_html",
                                 args: {
                                     courseid: courseId,
                                     sectionid: data.section,
-                                    setjsusedsession: true
+                                    setjsusedsession: !isSingleSectionPage
                                 }
                             },
                             {
@@ -776,11 +776,13 @@ define(["jquery", "core/templates", "core/ajax", "format_tiles/browser_storage",
                     });
 
                     if (enableCompletion) {
-                        // We use pageContent for listener here, as competion button is replaced by core JS when it's clicked.
-                        pageContent.on(Event.CLICK, Selector.MANUAL_COMPLETION, function() {
+                        // We use pageContent for listener here, as completion button is replaced by core JS when it's clicked.
+                        // We wait half a second to enable the completion change to be registered first.
+                        pageContent.on(Event.CLICK, Selector.MANUAL_COMPLETION, function(e) {
+                            const sectionNum = $(e.currentTarget).closest(Selector.SECTION_MAIN).attr("data-section");
                             require(["format_tiles/completion"], function (completion) {
                                 setTimeout(() => {
-                                    completion.triggerCompletionChangedEvent();
+                                    completion.triggerCompletionChangedEvent(sectionNum);
                                 }, 500);
                             });
                         });
@@ -832,7 +834,7 @@ define(["jquery", "core/templates", "core/ajax", "format_tiles/browser_storage",
                         {key: "sectionerrortitle", component: "format_tiles"},
                         {key: "sectionerrorstring", component: "format_tiles"},
                         {key: "refresh"},
-                        {key: "cancel"},
+                        {key: "cancel", component: "moodle"},
                         {key: "noconnectionerror", component: "format_tiles"},
                         {key: "show"},
                         {key: "hide"},
@@ -874,12 +876,8 @@ define(["jquery", "core/templates", "core/ajax", "format_tiles/browser_storage",
                                         cmid: cm.attr("data-cmid")
                                     }
                                 }])[0].done(function () {
-                                    // Because we intercepted the normal event for the click, process auto completion.
-                                    require(["format_tiles/completion"], function (completion) {
-                                        completion.markAsAutoCompleteInUI(courseId, cm);
-                                    });
+                                    window.location = url;
                                 });
-                                window.location = url;
                             }
                         });
                     } else {

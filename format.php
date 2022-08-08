@@ -23,8 +23,8 @@
  */
 
 defined('MOODLE_INTERNAL') || die();
-
-global $PAGE, $USER, $SESSION;
+global $PAGE, $USER, $SESSION, $CFG;
+require_once($CFG->dirroot . '/course/format/tiles/locallib.php');
 
 // Horrible backwards compatible parameter aliasing.
 if ($topic = optional_param('topic', 0, PARAM_INT)) {
@@ -39,18 +39,17 @@ if ($topic = optional_param('topic', 0, PARAM_INT)) {
 $format = course_get_format($course);
 $course = $format->get_course();
 $context = context_course::instance($course->id);
+$isediting = $PAGE->user_is_editing();
 $displaysection = optional_param('section', 0, PARAM_INT);
-//if (!empty($displaysection)) {
-//    $format->set_section_number($displaysection);
-//}
+if (!empty($displaysection)) {
+    $format->set_section_number($displaysection);
+}
 
 if (($marker >= 0) && has_capability('moodle/course:setcurrentsection', $context) && confirm_sesskey()) {
     $course->marker = $marker;
     course_set_marker($course->id, $marker);
 }
 
-//// Make sure all sections are created.
-$isediting = $PAGE->user_is_editing();
 $renderer = $PAGE->get_renderer('format_tiles');
 
 $ismobile = core_useragent::get_device_type() == core_useragent::DEVICETYPE_MOBILE ? 1 : 0;
@@ -60,7 +59,7 @@ $userstopjsnav = get_user_preferences('format_tiles_stopjsnav', 0);
 // JS navigation and modals in Internet Explorer are not supported by this plugin so we disable JS nav here.
 $usejsnav = !$userstopjsnav && get_config('format_tiles', 'usejavascriptnav') && !core_useragent::is_ie();
 
-// Inline CSS may be requried if this course is using different tile colours to default - echo this first if so.
+// Inline CSS may be required if this course is using different tile colours to default - echo this first if so.
 $templateable = new \format_tiles\output\inline_css_output($course, $ismobile, $usejsnav, $allowphototiles);
 $data = $templateable->export_for_template($renderer);
 echo $renderer->render_from_template('format_tiles/inline-css', $data);
@@ -70,6 +69,7 @@ if ($isediting) {
     // TODO we will use this for non editing as well, but not yet.
     $outputclass = $format->get_output_classname('content');
     $widget = new $outputclass($format);
+
     echo $renderer->render($widget);
 } else {
     if (display_multiple_section_page($displaysection, $usejsnav, $context, $isediting)) {
@@ -82,35 +82,6 @@ if ($isediting) {
         $data = $templateable->export_for_template($renderer);
         echo $renderer->render_from_template('format_tiles/single_section_page', $data);
     }
-}
-//if ($isediting) {
-//    // Check if we need to change any session params for teachers expanded section preferences.
-//    if (optional_param('expanded', 0, PARAM_INT) == 1) {
-//        // User is expanding all sections in course on command.
-//        $SESSION->editing_all_sections_expanded_course = $course->id;
-//        unset($SESSION->editing_last_edited_section);
-//    } else if (optional_param('expanded', 0, PARAM_INT) == -1) {
-//        // Cancel all epxanded if user cancels it.
-//        unset($SESSION->editing_all_sections_expanded_course);
-//        unset($SESSION->editing_last_edited_section);
-//    } else if ($secnum = optional_param('expand', 0, PARAM_INT)) {
-//        // User is expanding one section.
-//        unset($SESSION->editing_all_sections_expanded_course);
-//        if ($secnum == -1) {
-//            unset($SESSION->editing_last_edited_section);
-//        } else {
-//            $SESSION->editing_last_edited_section = $course->id . "-" . $secnum;
-//        }
-//    }
-//}
-
-// We display the multi section page if the user is not requesting a specific single section.
-// We also display it if user is requesting a specific section (URL &section=xx) with JS enabled.
-// We know they have JS if $SESSION->format_tiles_jssuccessfullyused is set.
-// In that case we show them the multi section page and use JS to open the section.
-if (optional_param('canceljssession', false, PARAM_BOOL)) {
-    // The user is shown a link to cancel the successful JS flag for this session in <noscript> tags if their JS is off.
-    unset($SESSION->format_tiles_jssuccessfullyused);
 }
 
 // Include format.js (required for dragging sections around).
@@ -155,7 +126,6 @@ if ($isediting) {
     $jsparams['usesubtiles'] = get_config('format_tiles', 'allowsubtilesview') && $course->courseusesubtiles;
     $jsparams['documentationurl'] = get_config('format_tiles', 'documentationurl');
 
-
     $PAGE->requires->js_call_amd('format_tiles/edit_course', 'init', $jsparams);
     if (strpos($PAGE->pagetype, 'course-view-') === 0 && $PAGE->theme->name == 'snap') {
         \core\notification::ERROR(
@@ -170,18 +140,13 @@ if ($isediting) {
 // Now the modules which we want whether editing or not.
 
 // If we are allowing course modules to be displayed in modal windows when clicked.
-if (!$userstopjsnav && (count($allowedmodmodals['resources']) > 0 || count($allowedmodmodals['modules']) > 0)) {
+if (!empty($allowedmodmodals['resources']) || !empty($allowedmodmodals['modules'])) {
     $PAGE->requires->js_call_amd(
         'format_tiles/course_mod_modal', 'init', array($course->id, $isediting)
     );
 }
 if ($course->enablecompletion) {
-    $PAGE->requires->js_call_amd('format_tiles/completion', 'init',
-        array(
-            $course->id,
-            get_string('complete-y-auto', 'format_tiles'),
-        )
-    );
+    $PAGE->requires->js_call_amd('format_tiles/completion', 'init', array($course->id));
 }
 
 /**
@@ -197,6 +162,15 @@ if ($course->enablecompletion) {
  */
 function display_multiple_section_page($displaysection, $usejsnav, $context, $isediting) {
     global $SESSION;
+    // We display the multi section page if the user is not requesting a specific single section.
+    // We also display it if user is requesting a specific section (URL &section=xx) with JS enabled.
+    // We know they have JS if $SESSION->format_tiles_jssuccessfullyused is set.
+    // In that case we show them the multi section page and use JS to open the section.
+    if (optional_param('canceljssession', false, PARAM_BOOL)) {
+        // The user is shown a link to cancel the successful JS flag for this session in <noscript> tags if their JS is off.
+        unset($SESSION->format_tiles_jssuccessfullyused);
+    }
+
     if (empty($displaysection)) {
         // If the URL does not request a specific section page (&section=xx) we always show multiple secs.
         return true;

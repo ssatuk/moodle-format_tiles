@@ -312,3 +312,14 @@ Other
 =========================
 - Changes for compatibility with Moodle 4.0
 - Remove label conversion
+
+4.0.0.2 BETA (2022080800)
+=========================
+- Improve completion buttons/indicators
+- Fix some modal launch issues (e.g. issue 94 duplicate launches)
+- Reinstate disable JS nav option and single section page
+- Update main screen completion indicators when new window activity launches
+- Fix full screen embedded video (issue 87)
+- Use $mod->has_custom_cmlist_item() if Tiles should display a course module inline like label (issue 97)
+- Avoid PHP8 error on section edit
+- Minor theme compatibility fixes

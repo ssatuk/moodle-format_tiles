@@ -43,14 +43,6 @@ require_once($CFG->dirroot . '/course/format/lib.php');
 class format_tiles extends core_courseformat\base {
 
     /**
-     *  We want to treat label and plugins that behave like labels as labels.
-     * E.g. we don't render them as subtiles but show their content directly on page.
-     * This includes plugins like mod_customlabel and mod_unilabel, as defined here.
-     * @var []
-     */
-    public $labellikecoursemods = ['label', 'customlabel', 'unilabel', 'datalynxcoursepage'];
-
-    /**
      * Creates a new instance of class
      *
      * Please use {@see course_get_format($courseorid)} to get an instance of the format class
@@ -75,6 +67,9 @@ class format_tiles extends core_courseformat\base {
         return true;
     }
 
+    /**
+     * @return bool
+     */
     public function uses_indentation(): bool {
         return false;
     }
@@ -88,7 +83,8 @@ class format_tiles extends core_courseformat\base {
      * @return bool
      */
     public function uses_course_index() {
-        return false;
+        global $PAGE;
+        return $PAGE->user_is_editing();
     }
 
     /**
@@ -143,6 +139,9 @@ class format_tiles extends core_courseformat\base {
         return true;
     }
 
+    /**
+     * @return bool
+     */
     public function supports_components() {
         return true;
     }
@@ -264,67 +263,6 @@ class format_tiles extends core_courseformat\base {
             if ($generalsection) {
                 // We found the node - now remove it.
                 $generalsection->remove();
-            }
-        }
-        if (get_config('format_tiles', 'usejavascriptnav') && !(\core_useragent::is_ie())) {
-            if (!get_user_preferences('format_tiles_stopjsnav', 0)) {
-                $url = new moodle_url('/course/view.php', array('id' => $course->id, 'stopjsnav' => 1));
-                $settingnode = $node->add(
-                    get_string('jsdeactivate', 'format_tiles'),
-                    $url->out(),
-                    navigation_node::TYPE_SETTING,
-                    null,
-                    null,
-                    new pix_icon(
-                        'toggle-on',
-                        get_string('jsdeactivate', 'format_tiles'),
-                        'format_tiles'
-                    )
-                );
-                $settingnode->nodetype = navigation_node::NODETYPE_LEAF;
-                // Can't add classes or ids here if using boost (works in clean).
-                $settingnode->id = 'tiles_stopjsnav';
-                $settingnode->add_class('tiles_coursenav hidden');
-
-                // Now the Data Preference menu item.
-                if (!get_config('format_tiles', 'assumedatastoreconsent')) {
-                    $url = new moodle_url('/course/view.php', array('id' => $course->id, 'datapref' => 1));
-                    $settingnode = $node->add(
-                        get_string('datapref', 'format_tiles'),
-                        $url->out(),
-                        navigation_node::TYPE_SETTING,
-                        null,
-                        null,
-                        new pix_icon(
-                            'i/db',
-                            get_string('datapref', 'format_tiles')
-                        )
-                    );
-                    $settingnode->nodetype = navigation_node::NODETYPE_LEAF;
-
-                    // Can't add classes or ids here if using boost (works in clean).
-                    $settingnode->id = 'tiles_datapref';
-                    $settingnode->add_class('tiles_coursenav hidden');
-                }
-
-            } else {
-                $settingnode = $node->add(
-                    get_string('jsactivate', 'format_tiles'),
-                    new moodle_url('/course/view.php', array('id' => $course->id, 'stopjsnav' => 1)),
-                    navigation_node::TYPE_SETTING,
-                    null,
-                    null,
-                    new pix_icon(
-                        'toggle-off',
-                        get_string('jsactivate', 'format_tiles'),
-                        'format_tiles'
-                    )
-                );
-                $settingnode->nodetype = navigation_node::NODETYPE_LEAF;
-
-                // Can't add classes or ids here if using boost (works in clean).
-                $settingnode->id = 'tiles_stopjsnav';
-                $settingnode->add_class('tiles_coursenav hidden');
             }
         }
     }
@@ -650,8 +588,7 @@ class format_tiles extends core_courseformat\base {
             if (get_config('format_tiles', 'allowphototiles')) {
                 $sectionformatoptionsedit['tilephoto'] = array(
                     'label' => get_string('uploadnewphoto', 'format_tiles'),
-                    'element_type' => 'hidden',
-                    'element_attributes' => array('' => '')
+                    'element_type' => 'hidden'
                 );
             }
             $sectionformatoptions = array_merge_recursive($sectionformatoptions, $sectionformatoptionsedit);

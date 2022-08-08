@@ -23,17 +23,17 @@
  * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-define(["jquery", "core/templates", "core/config", "core/ajax", "format_tiles/completion"],
+define(["jquery", "core/templates", "core/config", "core/ajax"],
     function ($, Templates, config, ajax) {
         "use strict";
 
         var courseId;
-        var strings = {};
         var dataKeys = {
             cmid: "data-cmid",
             numberComplete: "data-numcomplete",
             numberOutOf: "data-numoutof",
-            section: "data-section"
+            section: "data-section",
+            completionState: "data-state"
         };
         var Selector = {
             launchModuleModal: '[data-action="launch-tiles-module-modal"]',
@@ -52,11 +52,6 @@ define(["jquery", "core/templates", "core/config", "core/ajax", "format_tiles/co
             spacer: '.spacer',
             availabilityinfo: '.availabilityinfo',
             sectionId: '#section-'
-        };
-
-        var Icon = {
-            completionYes: 'completion-icon-y',
-            completionNo: 'completion-icon-n'
         };
 
         /**
@@ -152,20 +147,20 @@ define(["jquery", "core/templates", "core/config", "core/ajax", "format_tiles/co
             }])[0]
                 .done((res) => {
                     if (res.status) {
-                        const section = $('#module-' + cmid).closest(Selector.section).attr('data-section');
+                        const section = $('#module-' + cmid).closest(Selector.section).attr(dataKeys.section);
                         if (section) {
                             triggerCompletionChangedEvent(section);
                         }
+
                         // Change the modal icon if appropriate.
                         const checkBox = $(Selector.togglecompletion + '[data-cmid="' + cmid + '"]');
+
                         if (checkBox) {
-                            checkBox.attr('data-state', completed ? "1" : "0");
+                            checkBox.attr(dataKeys.completionState, completed ? "1" : "0");
                             if (completed) {
-                                checkBox.find('.completion_img_' + cmid)
-                                    .addClass(Icon.completionYes).removeClass(Icon.completionNo);
+                                checkBox.addClass('complete');
                             } else {
-                                checkBox.find('.completion_img_' + cmid)
-                                    .addClass(Icon.completionNo).removeClass(Icon.completionYes);
+                                checkBox.removeClass('complete');
                             }
                         }
                     }
@@ -179,50 +174,10 @@ define(["jquery", "core/templates", "core/config", "core/ajax", "format_tiles/co
         };
 
         /**
-         * When automatic completion tracking is being used, on modal launch we need to:
-         * - change the completion icon to complete.
-         * - recalculate the % complete for this tile and overall.
-         * We do not need to notify the server that the item is complete.
-         * This is because that is already covered when course_mod_modal calls log_mod_view().
-         * I.e. we just update the UI here because the data is handled elsewhere.
-         * @param {object} activity the activity which contains the completion icon
-         */
-        var markAsAutoCompleteInUI = function(activity) {
-            var sectionNum = activity.closest(Selector.section).attr('data-section');
-            if (activity.hasClass("completeonview")) {
-                var completionIcon = activity.find('.completion-icon');
-                var parent = completionIcon.closest(".completioncheckbox");
-                if (parent.attr('data-ismanual') === "0" && parent.attr('data-completionstate') === "0") {
-                    completionIcon.addClass(Icon.completionYes).removeClass(Icon.completionNo);
-                    parent.attr('data-completionstate', 1);
-                    parent.attr('data-original-title', strings.completeauto);
-
-                    const tileProgressIndicator = $(Selector.progressIndicatorId + sectionNum);
-                    // Get the tile's new progress value.
-                    var newTileProgressValue = Math.min(
-                        parseInt(tileProgressIndicator.attr(dataKeys.numberComplete)) + 1,
-                        tileProgressIndicator.attr(dataKeys.numberOutOf)
-                    );
-                    changeProgressIndicatorSection(sectionNum, tileProgressIndicator, newTileProgressValue);
-
-                    // Get the new overall progress value.
-                    const overallProgressIndicator = $("#tileprogress-0");
-                    const newOverallProgressValue = Math.min(
-                        parseInt(overallProgressIndicator.attr(dataKeys.numberComplete)) + 1,
-                        overallProgressIndicator.attr(dataKeys.numberOutOf)
-                    );
-                    setOverallProgressIndicator(
-                        newOverallProgressValue, parseInt(overallProgressIndicator.attr(dataKeys.numberOutOf))
-                    );
-                }
-            }
-        };
-
-        /**
          * Trigger an event so that other JS modules can be notified to check completion status.
          * Used to refresh section contents when completion is checked.
          * Can also be used by other components e.g. blocks that show completion.
-         * @param {number} sectionNum the number of the section where completion changed.
+         * @param {string} sectionNum the number of the section where completion changed.
          */
         const triggerCompletionChangedEvent = function (sectionNum) {
             $(document).trigger('format-tiles-completion-changed', {
@@ -250,7 +205,11 @@ define(["jquery", "core/templates", "core/config", "core/ajax", "format_tiles/co
                 } else if (!sec.isclickable && tile.hasClass('tile-clickable')) {
                     tile.removeClass('tile-clickable');
                 }
-
+                if (sec.iscomplete) {
+                    tile.addClass('is-complete');
+                } else {
+                    tile.removeClass('is-complete');
+                }
                 // Now re-render the progress indicator if necessary with correct data.
                 const progressIndicator = $(Selector.progressIndicatorId + sec.sectionnum);
                 changeProgressIndicatorSection(sec.sectionnum, progressIndicator, sec.numcomplete);
@@ -291,7 +250,7 @@ define(["jquery", "core/templates", "core/config", "core/ajax", "format_tiles/co
             if (sectionNums === undefined) {
                 // Use all sections if no arg.
                 sectionNums = $(Selector.tile).not(Selector.spacer).map((i, t) => {
-                    return parseInt($(t).attr('data-section'));
+                    return parseInt($(t).attr(dataKeys.section));
                 }).toArray();
             }
             ajax.call([{
@@ -314,10 +273,9 @@ define(["jquery", "core/templates", "core/config", "core/ajax", "format_tiles/co
         };
 
         return {
-            init: function (courseIdInit, strCompleteAuto) {
+            init: function (courseIdInit) {
                 courseId = courseIdInit;
                 $(document).ready(function () {
-                    strings.completeauto = strCompleteAuto;
                     // Trigger toggle completion event if check box is clicked.
                     // Included like this so that later dynamically added boxes are covered.
                     $("body").on("click", Selector.togglecompletion, function (e) {
@@ -325,8 +283,8 @@ define(["jquery", "core/templates", "core/config", "core/ajax", "format_tiles/co
                         e.preventDefault();
                         const target = $(e.currentTarget);
                         setCompletionState(
-                            target.attr('data-cmid'),
-                            target.attr('data-state') !== "1",
+                            target.attr(dataKeys.cmid),
+                            target.attr(dataKeys.completionState) !== "1",
                         );
                     });
 
@@ -339,15 +297,17 @@ define(["jquery", "core/templates", "core/config", "core/ajax", "format_tiles/co
                         .on("click", Selector.launchModuleModal + ", " + Selector.launchResourceModal, function (e) {
                             var clickedActivity = $(e.currentTarget).closest(Selector.activity);
                             if (clickedActivity.hasClass("completeonview")) {
-                                markAsAutoCompleteInUI(clickedActivity);
+                                triggerCompletionChangedEvent(clickedActivity.closest(Selector.section).attr(dataKeys.section));
                             }
                         });
+
+                    // When the user returns to the main tab/window, refresh completion data.
+                    // (Completion may have changed since the last focus, e.g. activity opened in new window).
+                    $(window).on('focus', function() {
+                        const openSection = $('li.section.state-visible').attr('data-section');
+                        triggerCompletionChangedEvent(openSection);
+                    });
                 });
-            },
-            // Allow this to be accessed from elsewhere e.g. format_tiles module.
-            markAsAutoCompleteInUI: function(courseIdInit, activity) {
-                courseId = courseIdInit;
-                markAsAutoCompleteInUI(activity);
             },
             triggerCompletionChangedEvent: function(sectionNum) {
                 triggerCompletionChangedEvent(sectionNum);

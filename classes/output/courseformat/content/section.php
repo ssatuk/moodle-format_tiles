@@ -73,7 +73,7 @@ class section extends section_base {
         global $DB;
         $data = parent::export_for_template($output);
 
-        //todo class to handle this
+        // TODO class to handle this.
         $data->hasphoto = 0;
         // If photo tile backgrounds are allowed by site admin, prepare the image for this section.
         if (get_config('format_tiles', 'allowphototiles')) {
@@ -93,7 +93,9 @@ class section extends section_base {
         }
         // TODO OPTIMISE THIS.
         if (!$data->hasphoto) {
-            $data->tileicon = $DB->get_field('course_format_options', 'value', ['format' => 'tiles', 'sectionid' => $this->section->id, 'name' => 'tileicon']);
+            $data->tileicon = $DB->get_field(
+                'course_format_options', 'value', ['format' => 'tiles', 'sectionid' => $this->section->id, 'name' => 'tileicon']
+            );
             if (!$data->tileicon) {
                 $formatoptions = $this->format->get_format_options();
                 $data->tileicon = $formatoptions['defaulttileicon'];

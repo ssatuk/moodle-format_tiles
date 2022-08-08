@@ -65,8 +65,11 @@ define(["jquery", "core/modal_factory", "core/config", "core/templates", "core/n
         };
 
         const CLASS = {
-            COMPLETION_MANUAL: "completeonmanual",
-            COMPLETION_AUTO: "completion-auto"
+            COMPLETION_ENABLED: "completion-enabled",
+            COMPLETION_MANUAL: "completion-manual",
+            COMPLETION_AUTO: "completion-auto",// e.g. grade based.
+            COMPLETION_VIEW: "completion-view",
+            COMPLETION_CHECK_BOX: "completioncheckbox"
         };
 
         var LaunchModalDataActions = {
@@ -152,15 +155,12 @@ define(["jquery", "core/modal_factory", "core/config", "core/templates", "core/n
                     config: {wwwroot: config.wwwroot},
                     showDownload: 0,
                     showNewWindow: 0,
-                    completionInUseForCm: 0,
+                    hascompletion: 0,
                     completionstring: ''
                 };
-
                 // If it's a PDF in this modal, change from the defaults assigned above.
                 if (clickedCmObject.attr('data-modtype') === "resource_pdf") {
                     templateData.objectType = 'application/pdf';
-                    templateData.showDownload = 1;
-                    templateData.showNewWindow = 1;
                 }
 
                 Templates.render("format_tiles/embed_file_modal_body", templateData).done(function (html) {
@@ -182,24 +182,7 @@ define(["jquery", "core/modal_factory", "core/config", "core/templates", "core/n
 
                 }).fail(Notification.exception);
                 // Render the modal header / title and set it to the page.
-                const checkBox = clickedCmObject.find(Selector.completioncheckbox);
-                if (checkBox.length !== 0) {
-                    templateData.completionstate = clickedCmObject.hasClass(CLASS.COMPLETION_AUTO)
-                        ? 1 : parseInt(checkBox.attr('data-completionstate'));
-                    templateData.completionInUseForCm = 1;
-                    templateData.completionicon = templateData.completionstate === 1 ? 'y' : 'n';
-                    templateData.completionstateInverse = 1 - templateData.completionstate;
-                    templateData.completionIsManual = clickedCmObject.hasClass(CLASS.COMPLETION_MANUAL);
-                    templateData.completionstring = checkBox.attr('title');
-                    // Trigger event to check if other items in course have updated availability.
-                    require(["format_tiles/completion"], function (completion) {
-                        completion.triggerCompletionChangedEvent(sectionNum);
-                    });
-                }
-                Templates.render("format_tiles/embed_module_modal_header_btns", templateData).done(function (html) {
-                    modalRoot.find(Selector.modalHeader).append(html);
-                    modalRoot.find(Selector.closeBtn).detach().appendTo(modalRoot.find(Selector.embedModuleButtons));
-                }).fail(Notification.exception);
+                renderModalHeader(clickedCmObject, modalRoot, templateData.pluginfileUrl,true, true);
 
                 return true;
             });
@@ -246,9 +229,6 @@ define(["jquery", "core/modal_factory", "core/config", "core/templates", "core/n
                     sesskey: config.sesskey,
                     modtitle: clickedCmObject.attr("data-title"),
                     config: {wwwroot: config.wwwroot},
-                    showDownload: 0,
-                    showNewWindow: 1,
-                    completionInUseForCm: 0,
                     secondaryurl: clickedCmObject.closest(Selector.ACTIVITY).attr("data-url-secondary")
                 };
 
@@ -262,24 +242,7 @@ define(["jquery", "core/modal_factory", "core/config", "core/templates", "core/n
                     modalRoot.find(Selector.modalBody).addClass("text-center");
                 }).fail(Notification.exception);
                 // Render the modal header / title and set it to the page.
-                const checkBox = clickedCmObject.find(Selector.completioncheckbox);
-                if (checkBox.length !== 0) {
-                    templateData.completionstate = clickedCmObject.hasClass(CLASS.COMPLETION_AUTO)
-                        ? 1 : parseInt(checkBox.attr('data-completionstate'));
-                    templateData.completionInUseForCm = 1;
-                    templateData.completionicon = templateData.completionstate === 1 ? 'y' : 'n';
-                    templateData.completionstateInverse = 1 - templateData.completionstate;
-                    templateData.completionIsManual = clickedCmObject.hasClass(CLASS.COMPLETION_MANUAL);
-                    templateData.completionstring = checkBox.attr('title');
-                    // Trigger event to check if other items in course have updated availability.
-                    require(["format_tiles/completion"], function (completion) {
-                        completion.triggerCompletionChangedEvent(sectionNum);
-                    });
-                }
-                Templates.render("format_tiles/embed_module_modal_header_btns", templateData).done(function (html) {
-                    modalRoot.find(Selector.modalHeader).append(html);
-                    modalRoot.find(Selector.closeBtn).detach().appendTo(modalRoot.find(Selector.embedModuleButtons));
-                }).fail(Notification.exception);
+                renderModalHeader(clickedCmObject, modalRoot, templateData.pluginfileUrl, false, true);
 
                 // Listen to see if user clicks to view the modal contents in a new window.  Dismiss modal if so.
                 // Important for video which may end up playing twice otherwise.
@@ -376,6 +339,57 @@ define(["jquery", "core/modal_factory", "core/config", "core/templates", "core/n
             }
         };
 
+        /**
+         * Handle rendering the items to go into course module modal header.
+         * @param {object} clickedCmObject
+         * @param {object} modalRoot
+         * @param {string} pluginfileUrl
+         * @param {bool} showDownload
+         * @param {bool} showNewWindow
+         */
+        const renderModalHeader = function(clickedCmObject, modalRoot, pluginfileUrl, showDownload, showNewWindow) {
+            const sectionNum = clickedCmObject.closest(Selector.sectionMain).attr("data-section");
+            const cmid = clickedCmObject.attr("data-cmid");
+            var templateData = {
+                cmid: cmid,
+                modtitle: clickedCmObject.attr("data-title"),
+                tileid: sectionNum
+            };
+            if (clickedCmObject.hasClass(CLASS.COMPLETION_ENABLED)) {
+                // Subtiles have a "checkbox" element but non-subtiles do not.
+                const checkBox = clickedCmObject.find(Selector.completioncheckbox);
+                const oldState = checkBox && parseInt(checkBox.attr('data-state'));
+                templateData.completionstate = clickedCmObject.hasClass(CLASS.COMPLETION_MANUAL)
+                    ? oldState : 1;
+                clickedCmObject.attr('data-completion-state', templateData.completionstate);
+                templateData.hascompletion = 1;
+                templateData.completionstateInverse = 1 - templateData.completionstate;
+                templateData.completionIsManual = clickedCmObject.hasClass(CLASS.COMPLETION_MANUAL);
+                templateData.completionstring = checkBox.attr('title');
+                templateData.showDownload = showDownload !== undefined ? showDownload : 0;
+                templateData.showNewWindow = showNewWindow !== undefined ? showNewWindow : 0;
+                templateData.pluginfileUrl = pluginfileUrl;
+                templateData.forModal = true;
+                // Trigger event to check if other items in course have updated availability.
+                if (oldState !== templateData.completionstate) {
+                    require(["format_tiles/completion"], function (completion) {
+                        completion.triggerCompletionChangedEvent(sectionNum);
+                    });
+                }
+            }
+            Templates.render("format_tiles/embed_module_modal_header_btns", templateData).done(function (html) {
+                modalRoot.find(Selector.embedModuleButtons).remove();
+                modalRoot.find($('button.close')).remove();
+                modalRoot.find(Selector.modalHeader).append(html);
+                modalRoot.find(Selector.closeBtn).detach().appendTo(modalRoot.find(Selector.embedModuleButtons));
+            }).fail(Notification.exception);
+
+            // Allow a short delay before we resize the modal, and check a few times, as content may be loading.
+            setTimeout(() => {
+                modalHeightChangeWatcher(modalRoot, 3, 1000);
+            }, 500);
+        };
+
         // TODO refactor these to avoid repetition.
         /**
          * Launch a Course activity Modal if we have it already, or make one and launch e.g. for "Page"
@@ -408,38 +422,8 @@ define(["jquery", "core/modal_factory", "core/config", "core/templates", "core/n
                         cmid: cmid
                     }
                 }])[0].done(function(response) {
-                    const sectionNum = clickedCmObject.closest(Selector.sectionMain).attr("data-section");
-                    var templateData = {
-                        cmid: cmid,
-                        modtitle: clickedCmObject.attr("data-title"),
-                        tileid: sectionNum,
-                        content: response.html
-                    };
-                    const checkBox = clickedCmObject.find(Selector.completioncheckbox);
-                    if (checkBox.length !== 0) {
-                        templateData.completionstate = clickedCmObject.hasClass(CLASS.COMPLETION_AUTO)
-                            ? 1 : parseInt(checkBox.attr('data-completionstate'));
-                        templateData.completionInUseForCm = 1;
-                        templateData.completionicon = templateData.completionstate === 1 ? 'y' : 'n';
-                        templateData.completionstateInverse = 1 - templateData.completionstate;
-                        templateData.completionIsManual = clickedCmObject.hasClass(CLASS.COMPLETION_MANUAL);
-                        templateData.completionstring = checkBox.attr('title');
-                        // Trigger event to check if other items in course have updated availability.
-                        require(["format_tiles/completion"], function (completion) {
-                            completion.triggerCompletionChangedEvent(sectionNum);
-                        });
-                    }
-                    modal.setBody(templateData.content);
-                    Templates.render("format_tiles/embed_module_modal_header_btns", templateData).done(function (html) {
-                        modalRoot.find(Selector.modalHeader).append(html);
-                        modalRoot.find(Selector.closeBtn).detach().appendTo(modalRoot.find(Selector.embedModuleButtons));
-                    }).fail(Notification.exception);
-
-                    // Allow a short delay before we resize the modal, and check a few times, as content may be loading.
-                    setTimeout(() => {
-                        modalHeightChangeWatcher(modalRoot, 3, 1000);
-                    }, 500);
-
+                    renderModalHeader(clickedCmObject, modalRoot,'',false, false);
+                    modal.setBody(response.html);
 
                     return true;
                 }).fail(function(ex) {
@@ -472,7 +456,7 @@ define(["jquery", "core/modal_factory", "core/config", "core/templates", "core/n
                 }])[0].done(function () {
                     // Because we intercepted the normal event for the click, process auto completion.
                     require(["format_tiles/completion"], function (completion) {
-                        completion.markAsAutoCompleteInUI(courseId, clickedActivity);
+                        completion.triggerCompletionChangedEvent(clickedActivity.closest(Selector.section).attr('data-section'));
                     });
                     // Then open the pop up.
                     var newWin = window.open(clickedActivity.attr("data-url"));
@@ -488,7 +472,7 @@ define(["jquery", "core/modal_factory", "core/config", "core/templates", "core/n
                             var stringKeys = [
                                 {key: "sectionerrortitle", component: "format_tiles"},
                                 {key: "blockedpopup", component: "format_tiles"},
-                                {key: "cancel"}
+                                {key: "cancel", component: "moodle"}
                             ];
                             Str.get_strings(stringKeys).done(function (s) {
                                 Notification.alert(
@@ -517,9 +501,14 @@ define(["jquery", "core/modal_factory", "core/config", "core/templates", "core/n
                         pageContent = $(Selector.regionMain);
                     }
                     pageContent.on("click", modalSelectors, function (e) {
+                        // If click is on a completion checkbox within activity, ignore here as handled elsewhere.
+                        const tgt = $(e.target);
+                        if (tgt.hasClass(CLASS.COMPLETION_CHECK_BOX) || tgt.parent().hasClass(CLASS.COMPLETION_CHECK_BOX)) {
+                            return;
+                        }
                         e.preventDefault();
-                        var tgt = $(e.currentTarget);
-                        var clickedCmObject = tgt.closest("li.activity");
+                        const currTgt = $(e.currentTarget);
+                        var clickedCmObject = currTgt.closest("li.activity");
                         if (clickedCmObject.hasClass('completeonview')) {
                             require(["format_tiles/completion"], function (completion) {
                                 completion.triggerCompletionChangedEvent(
@@ -530,10 +519,17 @@ define(["jquery", "core/modal_factory", "core/config", "core/templates", "core/n
                         // If we already have this modal on the page, launch it.
                         var existingModal = modalStore[clickedCmObject.attr("data-cmid")];
                         if (typeof existingModal === "object") {
+                            const checkBox = $(existingModal.root).find('.completioncheckbox');
+                            const completionState = clickedCmObject.attr('data-completion-state');
+                            if (completionState === "1" && !checkBox.hasClass('complete')) {
+                                checkBox.addClass('complete');
+                            } else if (completionState === "0" && checkBox.hasClass('complete')) {
+                                checkBox.removeClass('complete');
+                            }
                             existingModal.show();
                         } else {
                             // We don't already have it, so make it.
-                            switch (tgt.attr("data-action")) {
+                            switch (currTgt.attr("data-action")) {
                                 case LaunchModalDataActions.launchModuleModal:
                                     launchCourseActivityModal(clickedCmObject);
                                     break;
@@ -544,7 +540,7 @@ define(["jquery", "core/modal_factory", "core/config", "core/templates", "core/n
                                     launchEmbeddedUrlModal(clickedCmObject);
                                     break;
                                 default:
-                                    throw new Error("Unknown modal type " + tgt.attr("data-action"));
+                                    throw new Error("Unknown modal type " + currTgt.attr("data-action"));
                             }
                             // Log the fact we viewed it (only do this once not every time the modal launches).
                             ajax.call([{

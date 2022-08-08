@@ -335,6 +335,7 @@ class format_tiles_external extends external_api
         $renderer = $PAGE->get_renderer('format_tiles');
         $templateable = new \format_tiles\output\course_output($course, true, $params['sectionid']);
         $data = $templateable->export_for_template($renderer);
+        $data['showsinglesectionlegacynav'] = !$setjsusedsession;
         $template = $params['sectionid'] == 0 ? 'format_tiles/section_zero' : 'format_tiles/single_section';
         $result = array(
             'html' => $renderer->render_from_template($template, $data)

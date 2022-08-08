@@ -17,11 +17,10 @@
 namespace format_tiles\output;
 
 use core_courseformat\output\section_renderer;
-use moodle_page;
 
 /**
  * Basic renderer for tiles format.
- *
+ * @package format_tiles
  * @copyright 2022 David Watson
  * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
@@ -31,13 +30,10 @@ class renderer extends section_renderer {
      * Override this so that we can use our own local templates.
      * @return void
      */
-    public function render_content( ) {
-        global $PAGE;
-        $renderer = $PAGE->get_renderer('core', 'course');
+    public function render_content() {
         $format = course_get_format($this->page->course->id);
         $contentclass = $format->get_output_classname('content');
-//        $contentclass = 'format_tiles\output\local\content';
-        $section = 1;
+        $section = 1; // TODO.
         $displayoptions = [];
         $contentoutput = new $contentclass(
             $format,
@@ -46,9 +42,9 @@ class renderer extends section_renderer {
             $displayoptions
         );
 
-        $data = $contentoutput->export_for_template($renderer);
+        $data = $contentoutput->export_for_template($this);
 
-        echo $renderer->render_from_template('format_tiles/local/content/content', $data);
+        echo $this->render_from_template('format_tiles/local/content/content', $data);
     }
 
     /**

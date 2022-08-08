@@ -36,6 +36,10 @@ use core_courseformat\output\local\content\sectionselector as sectionselector_ba
  */
 class sectionselector extends sectionselector_base {
 
+    /**
+     * @param course_format $format
+     * @param int $sectionno
+     */
     public function __construct(course_format $format, int $sectionno) {
         parent::__construct($format, $sectionno);
     }

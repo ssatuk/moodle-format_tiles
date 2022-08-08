@@ -16,7 +16,7 @@
 }}
 
 {{!
-    @template format_tiles/completion_icon
+    @template format_tiles/completion_button
 
     Course module completion icon template
 
@@ -55,27 +55,31 @@
     }
 }}
 {{^editing}}
-    {{!complete-y-xxx is a class not an id as there will be two on the page if a modal is open}}
-    <span class="completionchangenotify complete-y-{{cmid}}">{{#str}}complete, format_tiles{{/str}}</span>
-    <span class="completionchangenotify complete-n-{{cmid}}">{{#str}}notcomplete, format_tiles{{/str}}</span>
     {{#completionIsManual}}
-        <button class="completioncheckbox" data-action="change-completion-status" data-cmid="{{cmid}}" data-state="{{completionstate}}"
-              data-activityname="{{modtitle}}" title="{{#completionstring}}{{completionstring}}{{/completionstring}}{{^completionstring}}{{#str}}togglecompletion, format_tiles{{/str}}{{/completionstring}}">
-            <span class="completion-icon completion_img_{{cmid}} completion-icon-{{completionicon}}"></span>
+        <button class="completioncheckbox{{#iscomplete}} complete{{/iscomplete}}{{#useSubtiles}} background-course-base{{/useSubtiles}} pull-right" data-action="change-completion-status"
+                data-test="test" data-cmid="{{cmid}}" data-state="{{completionstate}}" data-activityname="{{{modtitle}}}"
+                title="{{#completionstate}}{{#str}}togglecompletioncomplete, format_tiles{{/str}}{{/completionstate}}{{^completionstate}}{{#str}}togglecompletionincomplete, format_tiles{{/str}}{{/completionstate}}">
+            {{#pix}}completion-check, format_tiles, {{completionstring}}{{/pix}}
         </button>
     {{/completionIsManual}}
     {{^completionIsManual}}
-        <span class="completioncheckbox completion-auto completion-check-{{cmid}}"
+        <div class="completioncheckbox completion-auto completion-check-{{cmid}}{{#iscomplete}} complete{{/iscomplete}}{{#useSubtiles}} background-course-base{{/useSubtiles}} pull-right{{#isfail}} fail{{/isfail}}"
               title="{{#completionstring}}{{completionstring}}{{/completionstring}}{{^completionstring}}{{#str}}togglecompletion, format_tiles{{/str}}{{/completionstring}}"
-              data-ismanual="0" data-completionstate="{{completionstate}}">
-            <span class="completion-icon completion_img_{{cmid}} completion-icon-{{completionicon}}"></span>
-        </span>
+              data-ismanual="0" data-state="{{completionstate}}">
+            {{^isfail}}
+                {{#pix}}completion-check, format_tiles{{/pix}}
+            {{/isfail}}
+            {{#isfail}}
+                {{#pix}}completion-fail, format_tiles{{/pix}}
+            {{/isfail}}
+
+        </div>
     {{/completionIsManual}}
 {{/editing}}
 
 {{#editing}}
-    <div class="completioncheckbox completion-check-{{cmid}}" data-action="change-completion-status" data-cmid="{{cmid}}" data-state="{{completionstate}}"
+    <button class="completioncheckbox completion-check-{{cmid}}{{#iscomplete}} complete{{/iscomplete}}{{#useSubtiles}} background-course-base{{/useSubtiles}} pull-right" data-action="change-completion-status" data-cmid="{{cmid}}" data-state="{{completionstate}}"
     title="{{#completionstring}}{{completionstring}}{{/completionstring}}{{^completionstring}}{{#str}}togglecompletion, format_tiles{{/str}}{{/completionstring}}" data-ismanual="0">
-        <span class="completion-icon completion_img_{{cmid}} completion-icon-{{completionicon}}"></span>
-    </div>
+        {{#pix}}completion-check, format_tiles{{/pix}}
+    </button>
 {{/editing}}

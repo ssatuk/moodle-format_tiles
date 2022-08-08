@@ -36,6 +36,10 @@ use core_courseformat\output\local\content\sectionnavigation as sectionnavigatio
  */
 class sectionnavigation extends sectionnavigation_base {
 
+    /**
+     * @param course_format $format
+     * @param sectionnavigation_base $navigation
+     */
     public function __construct(course_format $format, \core_courseformat\output\local\content\sectionnavigation $navigation) {
         parent::__construct($format, $navigation);
     }
