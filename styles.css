@@ -590,9 +590,10 @@
     cursor: pointer;
     height: 40px;
     width: 40px;
+    text-align: center;
     padding: 0;
     border: 0;
-    background-color: #fff;
+    background-color: #f8f8f8;
 }
 .format-tiles .tiles-top-button i {
     margin-right: 0;
