@@ -23,5 +23,6 @@
  * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
+class format_tiles_renderer {
 
-defined('MOODLE_INTERNAL') || die();
+}

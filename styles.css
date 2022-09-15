@@ -705,7 +705,7 @@ body.jsenabled.format-tiles #collapsiblesec0 {
     border-color: #a90202ff;
 }
 .format-tiles .modal-header .completioncheckbox:not(.complete) {
-    border: 2px solid #ffffffaa;
+    border: 2px solid #ffffffa8;
     color: #fff;
     background-color: #efefef;
 }
