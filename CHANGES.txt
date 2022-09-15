@@ -323,3 +323,7 @@ Other
 - Use $mod->has_custom_cmlist_item() if Tiles should display a course module inline like label (issue 97)
 - Avoid PHP8 error on section edit
 - Minor theme compatibility fixes
+
+4.0.0.4 BETA (2022082100)
+=========================
+- Fix empty activities caused by core change MDL-74800 (Moodle core commit #68b3f1, merged in core version 4.0.2+ (Build: 20220805))
