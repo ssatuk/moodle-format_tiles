@@ -67,7 +67,7 @@ define(["jquery", "core/modal_factory", "core/config", "core/templates", "core/n
         const CLASS = {
             COMPLETION_ENABLED: "completion-enabled",
             COMPLETION_MANUAL: "completion-manual",
-            COMPLETION_AUTO: "completion-auto",// e.g. grade based.
+            COMPLETION_AUTO: "completion-auto", // E.g. grade based.
             COMPLETION_VIEW: "completion-view",
             COMPLETION_CHECK_BOX: "completioncheckbox"
         };
@@ -422,7 +422,7 @@ define(["jquery", "core/modal_factory", "core/config", "core/templates", "core/n
                         cmid: cmid
                     }
                 }])[0].done(function(response) {
-                    renderModalHeader(clickedCmObject, modalRoot,'',false, false);
+                    renderModalHeader(clickedCmObject, modalRoot,'',false,false);
                     modal.setBody(response.html);
 
                     return true;

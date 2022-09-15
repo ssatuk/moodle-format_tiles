@@ -324,6 +324,8 @@ Other
 - Avoid PHP8 error on section edit
 - Minor theme compatibility fixes
 
-4.0.0.4 BETA (2022082100)
+4.0.0.5 BETA (2022091501)
 =========================
-- Fix empty activities caused by core change MDL-74800 (Moodle core commit #68b3f1, merged in core version 4.0.2+ (Build: 20220805))
+- Fix empty activities caused by core change MDL-74800 (Moodle core commit #68b3f1, merged in core version 4.0.2+ (Build: 20220805)).
+- Update format.js to follow current core version.
+- Typos and comments.

@@ -232,7 +232,6 @@ define(["jquery", "core/templates", "core/ajax", "format_tiles/browser_storage",
                                 setTimeout(function () {
                                     // Allow very short delay so we dont skip forward on the basis of our last key press.
                                     contentArea.find(Selector.SECTION_TITLE).focus();
-                                    // page.animate({scrollTop: contentArea.offset().top - HEADER_BAR_HEIGHT}, "slow");
                                     contentArea.find(Selector.SECTION_BUTTONS).css("top", "");
                                 }, 200);
                             }
