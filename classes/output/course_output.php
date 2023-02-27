@@ -1310,7 +1310,7 @@ class course_output implements \renderable, \templatable {
     private function check_modify_embedded_url(string $url) {
         // Youtube.
         $matches = null;
-        $pattern  = '/^(http(s)??\:\/\/)?(www\.)?((youtube\.com\/watch\?v=)|(youtu.be\/))([a-zA-Z0-9\-_]+)(\?t=[0-9]+)*$/';
+        $pattern = '/^(http(s)??\:\/\/)?(www\.)?((youtube\.com\/watch\?v=)|(youtu.be\/))([a-zA-Z0-9\-_]+)(\?t=[0-9]+)*$/';
         preg_match($pattern, $url, $matches);
         if ($matches && isset($matches[7])) {
             if (isset($matches[8])) {
@@ -1324,7 +1324,7 @@ class course_output implements \renderable, \templatable {
 
         // Vimeo.
         $matches = null;
-        $pattern  = '/^(https?:\/\/)?(www.)?(player.)?vimeo.com\/([a-z]*\/)*([0-9]{6,11})([?]?.*)$/';
+        $pattern = '/^(https?:\/\/)?(www.)?(player.)?vimeo.com\/([a-z]*\/)*([0-9]{6,11})([?]?.*)$/';
         preg_match($pattern, $url, $matches);
         if ($matches && isset($matches[5])) {
             if (isset($matches[6])) {
