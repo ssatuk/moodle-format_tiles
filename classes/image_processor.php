@@ -35,8 +35,7 @@ require_once($CFG->libdir . '/gdlib.php');
  * @copyright 2018 David Watson {@link http://evolutioncode.uk} in respect of modifications to format_grid versions by G J Barnard.
  * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class image_processor
-{
+class image_processor {
 
     /**
      * When the user uploads a new file, it is saved as tempfile which may be large.
@@ -151,7 +150,7 @@ class image_processor
                     127
                 ));
                 imagesavealpha($tempimage, true);
-            } else if (array_search($imageparams['function'], array('imagejpeg', 'imagewebp', 'imagegif')) !== false) {
+            } else if (in_array($imageparams['function'], array('imagejpeg', 'imagewebp', 'imagegif'))) {
                 imagealphablending($tempimage, false);
                 imagefill(
                     $tempimage,

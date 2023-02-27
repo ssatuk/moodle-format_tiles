@@ -19,9 +19,7 @@
  * Handles the UI changes when tiles are selected and anything else not
  * covered by the specific modules
  *
- * @module edit_course
- * @package course/format
- * @subpackage tiles
+ * @module format_tiles/edit_course
  * @copyright 2019 David Watson {@link http://evolutioncode.uk}
  * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  * @since Moodle 3.3
@@ -105,7 +103,6 @@ define(
                 pageType,
                 allowPhotoTiles,
                 useSubTiles,
-                areConvertingLabel,
                 documentationurl
             ) {
                 courseId = courseIdInit;
@@ -118,11 +115,7 @@ define(
 
                 if (useSubTiles) {
                     require(['format_tiles/edit_course_mod'], function (editCourseMod) {
-                        editCourseMod.init(
-                            courseId,
-                            sectionNum,
-                            areConvertingLabel
-                        );
+                        editCourseMod.init(courseId);
                     });
                 }
 
@@ -177,6 +170,16 @@ define(
                                 sectionMain.find(Selector.SECTION).find(Selector.ACTIVITY).slideUp(300).remove();
                             }
                         });
+
+                    const anchor = window.location.hash;
+                    if (anchor) {
+                        const section = anchor.replace('#section-', '', anchor);
+                        const courseContent = $('#coursecontentcollapse' + section);
+                        if (courseContent && !courseContent.hasClass('show')) {
+                            courseContent.addClass('show');
+                            $('#collapssesection' + section).removeClass('collapsed').attr('aria-expanded', true);
+                        }
+                    }
                 });
             }
         };

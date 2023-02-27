@@ -38,7 +38,7 @@ Feature: Student can open a page
     And "Test page name" "dialogue" should be visible
     And "Test page content" "text" should be visible
     And "Close" "button" should exist in the "Test page name" "dialogue"
-    And I click on "Close" "button"
+    And I click on "Close" "button" in the "Test page name" "dialogue"
     And I wait until the page is ready
     And I wait "1" seconds
 
@@ -58,7 +58,7 @@ Feature: Student can open a page
     And "Test page name" "dialogue" should be visible
     And "Test page content" "text" should be visible
     And "Close" "button" should exist in the "Test page name" "dialogue"
-    And I click on "Close" "button"
+    And I click on "Close" "button" in the "Test page name" "dialogue"
     And I wait until the page is ready
     And I wait "1" seconds
     And I click on close button for tile "6"

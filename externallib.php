@@ -38,8 +38,7 @@ require_once($CFG->dirroot . '/course/format/tiles/locallib.php');
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  * @since      Moodle 3.3
  */
-class format_tiles_external extends external_api
-{
+class format_tiles_external extends external_api {
     /**
      * Teacher is changing the icon for a course section or whole course using AJAX
      * @param Integer $courseid the id of this course
@@ -48,7 +47,7 @@ class format_tiles_external extends external_api
      * @param string $imagetype whether it's a tile icon or a background photo.
      * @param int $sourcecontextid the context id of the source photo or icon.
      * @param int $sourceitemid the item id of the course photo or icon.
-     * @return [] status and image URL if applicable.
+     * @return array status and image URL if applicable.
      * @throws dml_exception
      * @throws invalid_parameter_exception
      * @throws moodle_exception
@@ -255,7 +254,7 @@ class format_tiles_external extends external_api
             $tilephoto->clear();
         }
         return  array(
-            'status' => $result ? true : false,
+            'status' => (bool)$result,
             'imageurl' => ''
         );
     }
@@ -335,9 +334,11 @@ class format_tiles_external extends external_api
         $renderer = $PAGE->get_renderer('format_tiles');
         $templateable = new \format_tiles\output\course_output($course, true, $params['sectionid']);
         $data = $templateable->export_for_template($renderer);
+        $data['showsinglesectionlegacynav'] = !$setjsusedsession;
         $template = $params['sectionid'] == 0 ? 'format_tiles/section_zero' : 'format_tiles/single_section';
         $result = array(
-            'html' => $renderer->render_from_template($template, $data)
+            'html' => $renderer->render_from_template($template, $data),
+            'js' => $data['jsfooter']
         );
         // This session var is used later, when user revisits main course page, or a single section, for a course using this format.
         // If set to true, the page can safely be rendered from PHP in the javascript friendly format.
@@ -380,7 +381,8 @@ class format_tiles_external extends external_api
     public static function get_single_section_page_html_returns () {
         return new external_single_structure(
             array(
-                'html' => new external_value(PARAM_RAW, 'HTML for the single section (tile contents)')
+                'html' => new external_value(PARAM_RAW, 'HTML for the single section (tile contents)'),
+                'js' => new external_value(PARAM_RAW, 'JS for the single section (tile)')
             )
         );
     }
@@ -394,7 +396,7 @@ class format_tiles_external extends external_api
      * @throws moodle_exception
      */
     public static function get_mod_page_html($courseid, $cmid) {
-        global $DB, $PAGE;
+        global $DB;
         $params = self::validate_parameters(
             self::get_mod_page_html_parameters(),
             array('courseid' => $courseid, 'cmid' => $cmid)
@@ -407,14 +409,13 @@ class format_tiles_external extends external_api
         $mod = get_fast_modinfo($params['courseid'])->get_cm($params['cmid']);
         require_capability('mod/' . $mod->modname . ':view', $modcontext);
         if ($mod && $mod->uservisible) {
-            if (array_search($mod->modname, explode(",", get_config('format_tiles', 'modalmodules'))) === false) {
+            if (!in_array($mod->modname, explode(",", get_config('format_tiles', 'modalmodules')))) {
                 throw new invalid_parameter_exception('Not allowed to call this mod type - disabled by site admin');
             }
             if ($mod->modname == 'page') {
                 // Record from the page table.
                 $record = $DB->get_record($mod->modname, array('id' => $mod->instance), 'intro, content, revision, contentformat');
-                $renderer = $PAGE->get_renderer('format_tiles');
-                $content = $renderer->format_cm_content_text($mod, $record, $modcontext);
+                $content = self::format_cm_content_text($mod, $record, $modcontext);
                 $result['status'] = true;
                 $result['html'] = $content;
                 return $result;
@@ -427,6 +428,46 @@ class format_tiles_external extends external_api
             $result['warnings'][] = 'Course module is not available';
         }
         return $result;
+    }
+
+    /**
+     * Generate html for course module content
+     * (i.e. for the time being, the content of a page
+     * Necessary to ensure that references to src="@@PLUGINFILE@@..." in $record->content
+     * are re-written to the correct URL
+     *
+     * @param cm_info $mod the course module
+     * @param stdClass $record the database record from the module table (e.g. the page table if it's a page)
+     * @param context $context the context of the course module.
+     * @return string HTML to output.
+     */
+    private static function format_cm_content_text($mod, $record, $context) {
+        $text = '';
+        if (isset($record->intro)) {
+            $text .= file_rewrite_pluginfile_urls(
+                $record->intro,
+                'pluginfile.php',
+                $context->id,
+                'mod_' . $mod->modname,
+                'intro',
+                null
+            );
+        }
+        if (isset($record->content)) {
+            $text .= file_rewrite_pluginfile_urls(
+                $record->content,
+                'pluginfile.php',
+                $context->id,
+                'mod_' . $mod->modname,
+                'content',
+                $record->revision
+            );
+        }
+        $formatoptions = new stdClass();
+        $formatoptions->noclean = true;
+        $formatoptions->overflowdiv = true;
+        $formatoptions->context = $context;
+        return format_text($text, $record->contentformat, $formatoptions);
     }
 
     /**
@@ -539,7 +580,7 @@ class format_tiles_external extends external_api
         require_capability('mod/' . $cm->modname . ':view', $context);
 
         $allowedmodalmodules  = format_tiles_allowed_modal_modules();
-        if (array_search($cm->modname, $allowedmodalmodules['modules']) === false
+        if (!in_array($cm->modname, $allowedmodalmodules['modules'])
             && count($allowedmodalmodules['resources']) == 0) {
             throw new invalid_parameter_exception(
                 'Not allowed to log views of this mod type - disabled by site admin or incorrect device type.'
@@ -805,6 +846,7 @@ class format_tiles_external extends external_api
         $sectioninfo = $modinfo->get_section_info_all();
         $canviewhidden = has_capability('moodle/course:viewhiddensections', $context);
         $renderer = $PAGE->get_renderer('format_tiles');
+        $format = course_get_format($course);
         $templateable = new \format_tiles\output\course_output($course, true);
         $showprogressaspercent = $templateable->courseformatoptions['courseshowtileprogress'] == 2;
         $overall = ['complete' => 0, 'outof' => 0];
@@ -812,12 +854,14 @@ class format_tiles_external extends external_api
         foreach ($sectionnums as $sectionnum) {
             if (isset($sectioninfo[$sectionnum]) && ($sectioninfo[$sectionnum]->visible || $canviewhidden)) {
                 $section = $sectioninfo[$sectionnum];
+                $availabilitywidgetclass = $format->get_output_classname('content\\section\\availability');
+                $availabilitywidget = new $availabilitywidgetclass($format, $section);
                 $sections[$sectionnum] = array(
                     'sectionid' => $section->id,
                     'sectionnum' => $sectionnum,
                     'isavailable' => $section->available,
                     'isclickable' => $section->available || $section->uservisible,
-                    'availabilitymessage' => $renderer->section_availability_message($section, $canviewhidden),
+                    'availabilitymessage' => $renderer->render($availabilitywidget),
                     'numcomplete' => -1, // If we have data, we replace this below.
                     'numoutof' => -1 // If we have data, we replace this below.
                 );

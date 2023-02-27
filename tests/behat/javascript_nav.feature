@@ -74,8 +74,7 @@ Feature: Interface can be enhabced with JS nav if allowed by site admin
     And I should see "Test book name s1"
     And I should not see "Test chat name s2"
     # No close button as we are not using JS this time
-#    And I click on "#navigation-arrows[title='Course home']" "css_element"
-    And I click on "C1" "text" in the "#page-navbar" "css_element"
+    And I click on ".navigation-arrows [title='Course home']" "css_element"
     And I am on "Course 1" course homepage
     And section "1" should be visible
     And section "2" should be visible
@@ -86,7 +85,7 @@ Feature: Interface can be enhabced with JS nav if allowed by site admin
     And I should not see "Test book name s1"
     And I should see "Test chat name s2"
 
-    And I click on "C1" "text" in the "#page-navbar" "css_element"
+    And I click on ".navigation-arrows [title='Course home']" "css_element"
     And I should not see "Test chat name s2"
     And I should not see "Test choice name hidden"
     And section "1" should be visible

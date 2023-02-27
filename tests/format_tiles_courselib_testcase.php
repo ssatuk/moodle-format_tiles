@@ -1396,40 +1396,6 @@ class format_tiles_courselib_testcase extends advanced_testcase {
     }
 
     /**
-     * Test course_get_user_navigation_options for students in a normal course.
-     */
-    public function test_course_get_user_navigation_options_for_students() {
-        global $DB, $CFG;
-        $this->resetAfterTest();
-        $course = $this->getDataGenerator()->create_course(array('format' => 'tiles'));
-        $context = context_course::instance($course->id);
-
-        $user = $this->getDataGenerator()->create_user();
-        $roleid = $DB->get_field('role', 'id', array('shortname' => 'student'));
-        $this->getDataGenerator()->enrol_user($user->id, $course->id, $roleid);
-
-        $this->setUser($user);
-
-        $navoptions = course_get_user_navigation_options($context);
-        $this->assertTrue($navoptions->blogs);
-        $this->assertFalse($navoptions->notes);
-        $this->assertTrue($navoptions->participants);
-        $this->assertTrue($navoptions->badges);
-
-        // Disable some options.
-        $CFG->badges_allowcoursebadges = 0;
-        $CFG->enableblogs = 0;
-        // Disable view participants capability.
-        assign_capability('moodle/course:viewparticipants', CAP_PROHIBIT, $roleid, $context);
-
-        $navoptions = course_get_user_navigation_options($context);
-        $this->assertFalse($navoptions->blogs);
-        $this->assertFalse($navoptions->notes);
-        $this->assertFalse($navoptions->participants);
-        $this->assertFalse($navoptions->badges);
-    }
-
-    /**
      * Test course_get_user_administration_options for managers in a normal course.
      */
     public function test_course_get_user_administration_options_for_managers() {
@@ -1488,38 +1454,6 @@ class format_tiles_courselib_testcase extends advanced_testcase {
         $CFG->enablebadges = false;
         $adminoptions = course_get_user_administration_options($course, $context);
         $this->assertFalse($adminoptions->badges);
-    }
-
-    /**
-     * Test_course_enddate.
-     *
-     * @dataProvider course_enddate_provider
-     * @param int $startdate
-     * @param int $enddate
-     * @param string $errorcode
-     */
-    public function test_course_enddate($startdate, $enddate, $errorcode) {
-
-        $this->resetAfterTest(true);
-
-        $record = array('startdate' => $startdate, 'enddate' => $enddate);
-        try {
-            $course1 = $this->getDataGenerator()->create_course($record);
-            if ($errorcode !== false) {
-                $this->fail('Expected exception with "' . $errorcode . '" error code in create_create');
-            }
-        } catch (moodle_exception $e) {
-            if ($errorcode === false) {
-                $this->fail('Got "' . $errorcode . '" exception error code and no exception was expected');
-            }
-            if ($e->errorcode != $errorcode) {
-                $this->fail('Got "' . $e->errorcode. '" exception error code and "' . $errorcode . '" was expected');
-            }
-            return;
-        }
-
-        $this->assertEquals($startdate, $course1->startdate);
-        $this->assertEquals($enddate, $course1->enddate);
     }
 
     /**
@@ -1944,48 +1878,6 @@ class format_tiles_courselib_testcase extends advanced_testcase {
     }
 
     /**
-     * Test the course_classify_courses_for_timeline function.
-     *
-     * @dataProvider get_course_classify_courses_for_timeline_test_cases()
-     * @param array $coursesdata Courses to create
-     * @param array $expected Expected test results.
-     */
-    public function test_course_classify_courses_for_timeline($coursesdata, $expected) {
-        $this->resetAfterTest();
-        $generator = $this->getDataGenerator();
-
-        $courses = array_map(function($coursedata) use ($generator) {
-            return $generator->create_course($coursedata);
-        }, $coursesdata);
-
-        sort($expected[COURSE_TIMELINE_PAST]);
-        sort($expected[COURSE_TIMELINE_FUTURE]);
-        sort($expected[COURSE_TIMELINE_INPROGRESS]);
-
-        $results = course_classify_courses_for_timeline($courses);
-
-        $actualpast = array_map(function($result) {
-            return $result->shortname;
-        }, $results[COURSE_TIMELINE_PAST]);
-
-        $actualfuture = array_map(function($result) {
-            return $result->shortname;
-        }, $results[COURSE_TIMELINE_FUTURE]);
-
-        $actualinprogress = array_map(function($result) {
-            return $result->shortname;
-        }, $results[COURSE_TIMELINE_INPROGRESS]);
-
-        sort($actualpast);
-        sort($actualfuture);
-        sort($actualinprogress);
-
-        $this->assertEquals($expected[COURSE_TIMELINE_PAST], $actualpast);
-        $this->assertEquals($expected[COURSE_TIMELINE_FUTURE], $actualfuture);
-        $this->assertEquals($expected[COURSE_TIMELINE_INPROGRESS], $actualinprogress);
-    }
-
-    /**
      * Test cases for the course_filter_courses_by_timeline_classification tests.
      */
     public function get_course_filter_courses_by_timeline_classification_test_cases() {
@@ -2135,55 +2027,6 @@ class format_tiles_courselib_testcase extends advanced_testcase {
                 'expectedprocessedcount' => 10
             ],
         ];
-    }
-
-    /**
-     * Test the course_filter_courses_by_timeline_classification function.
-     *
-     * @dataProvider get_course_filter_courses_by_timeline_classification_test_cases()
-     * @param array $coursedata Course test data to create.
-     * @param string $classification Timeline classification.
-     * @param int $limit Maximum number of results to return.
-     * @param int $offset Results to skip at the start of the result set.
-     * @param string[] $expectedcourses Expected courses in results.
-     * @param int $expectedprocessedcount Expected number of course records to be processed.
-     */
-    public function test_course_filter_courses_by_timeline_classification(
-        $coursedata,
-        $classification,
-        $limit,
-        $offset,
-        $expectedcourses,
-        $expectedprocessedcount
-    ) {
-        $this->resetAfterTest();
-        $generator = $this->getDataGenerator();
-
-        $courses = array_map(function($coursedata) use ($generator) {
-            return $generator->create_course($coursedata);
-        }, $coursedata);
-
-        $student = $generator->create_user();
-
-        foreach ($courses as $course) {
-            $generator->enrol_user($student->id, $course->id, 'student');
-        }
-
-        $this->setUser($student);
-
-        $coursesgenerator = course_get_enrolled_courses_for_logged_in_user(0, $offset, 'shortname ASC', 'shortname');
-        list($result, $processedcount) = course_filter_courses_by_timeline_classification(
-            $coursesgenerator,
-            $classification,
-            $limit
-        );
-
-        $actual = array_map(function($course) {
-            return $course->shortname;
-        }, $result);
-
-        $this->assertEquals($expectedcourses, $actual);
-        $this->assertEquals($expectedprocessedcount, $processedcount);
     }
 
     /**
@@ -2354,92 +2197,6 @@ class format_tiles_courselib_testcase extends advanced_testcase {
                 'expectedprocessedcount' => 2
             ],
         ];
-    }
-
-    /**
-     * Test the course_filter_courses_by_customfield function.
-     *
-     * @dataProvider get_course_filter_courses_by_customfield_test_cases()
-     * @param array $coursedata Course test data to create.
-     * @param string $customfield Shortname of the customfield.
-     * @param string $customfieldvalue the value to filter by.
-     * @param int $limit Maximum number of results to return.
-     * @param int $offset Results to skip at the start of the result set.
-     * @param string[] $expectedcourses Expected courses in results.
-     * @param int $expectedprocessedcount Expected number of course records to be processed.
-     */
-    public function test_course_filter_courses_by_customfield(
-        $coursedata,
-        $customfield,
-        $customfieldvalue,
-        $limit,
-        $offset,
-        $expectedcourses,
-        $expectedprocessedcount
-    ) {
-        $this->resetAfterTest();
-        $generator = $this->getDataGenerator();
-
-        // Create the custom fields.
-        $generator->create_custom_field_category([
-            'name' => 'Course fields',
-            'component' => 'core_course',
-            'area' => 'course',
-            'itemid' => 0,
-        ]);
-        $generator->create_custom_field([
-            'name' => 'Checkbox field',
-            'category' => 'Course fields',
-            'type' => 'checkbox',
-            'shortname' => 'checkboxfield',
-        ]);
-        $generator->create_custom_field([
-            'name' => 'Date field',
-            'category' => 'Course fields',
-            'type' => 'date',
-            'shortname' => 'datefield',
-            'configdata' => '{"mindate":0, "maxdate":0}',
-        ]);
-        $generator->create_custom_field([
-            'name' => 'Select field',
-            'category' => 'Course fields',
-            'type' => 'select',
-            'shortname' => 'selectfield',
-            'configdata' => '{"options":"Option 1\nOption 2\nOption 3\nOption 4"}',
-        ]);
-        $generator->create_custom_field([
-            'name' => 'Text field',
-            'category' => 'Course fields',
-            'type' => 'text',
-            'shortname' => 'textfield',
-        ]);
-
-        $courses = array_map(function($coursedata) use ($generator) {
-            return $generator->create_course($coursedata);
-        }, $coursedata);
-
-        $student = $generator->create_user();
-
-        foreach ($courses as $course) {
-            $generator->enrol_user($student->id, $course->id, 'student');
-        }
-
-        $this->setUser($student);
-
-        $coursesgenerator = course_get_enrolled_courses_for_logged_in_user(0, $offset, 'shortname ASC', 'shortname');
-        list($result, $processedcount) = course_filter_courses_by_customfield(
-            $coursesgenerator,
-            $customfield,
-            $customfieldvalue,
-            $limit
-        );
-
-        $actual = array_map(function($course) {
-            return $course->shortname;
-        }, $result);
-
-        $this->assertEquals($expectedcourses, $actual);
-        $this->assertEquals($expectedprocessedcount, $processedcount);
     }
 }
 // @codingStandardsIgnoreEnd

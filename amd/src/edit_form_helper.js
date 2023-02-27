@@ -22,9 +22,7 @@
  * if the user picks an invalid option it will be detected by format_tiles::edit_form_validation (lib.php)
  * but this is to help them avoid triggering that if they have JS enabled
  *
- * @module      edit_form_helper
- * @package     course/format
- * @subpackage  tiles
+ * @module      format_tiles/edit_form_helper
  * @copyright   2018 David Watson {@link http://evolutioncode.uk}
  * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  * @since       Moodle 3.3

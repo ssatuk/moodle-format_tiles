@@ -16,9 +16,7 @@
 /**
  * Javascript Module to help set up user needs browser storage.
  *
- * @module browser_storage_set_up
- * @package course/format
- * @subpackage tiles
+ * @module format_tiles/browser_storage_set_up
  * @copyright 2019 David Watson {@link http://evolutioncode.uk}
  * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  * @since Moodle 3.3
@@ -90,7 +88,7 @@ define(["jquery"], function ($) {
                 {key: "datapref", component: "format_tiles"},
                 {key: "dataprefquestion", component: "format_tiles"},
                 {key: "yes"},
-                {key: "cancel"}
+                {key: "cancel", component: "moodle"}
             ]).done(function (s) {
                 Notification.confirm(
                     s[0],
