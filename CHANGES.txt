@@ -355,6 +355,9 @@ Other
 - Change release to "stable"
 - More comments
 
-4.4.0.1 (tbc)
-=============
+4.1.0.1 (2023022800)
+====================
 - Fix issue 144 Activity icons not centered in tiles format
+- Fix issue 148 completion warning
+- Fix issue 138 blocked pop up warning
+- Fix issue 134 avoid URL activity pop up warning when set to display "open"

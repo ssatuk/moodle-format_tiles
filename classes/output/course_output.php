@@ -185,7 +185,6 @@ class course_output implements \renderable, \templatable {
         // Now we can go off and get the specific data for the single or multiple page as required.
         if ($this->sectionnum !== null) {
             // We are outputting a single section page.
-            $data['showsinglesectionlegacynav'] = true;
             if ($this->sectionnum == 0) {
                 return $this->append_section_zero_data($data, $output);
             } else {
@@ -225,6 +224,8 @@ class course_output implements \renderable, \templatable {
         $data['showinitialpageloadingicon'] = format_tiles_width_template_data($this->course->id)['hidetilesinitially'];
         $data['jsnavadminallowed'] = get_config('format_tiles', 'usejavascriptnav');
         $data['jsnavuserenabled'] = !get_user_preferences('format_tiles_stopjsnav');
+        $data['usingjsnav'] = $data['jsnavadminallowed'] && $data['jsnavuserenabled'];
+
         $data['useSubtiles'] = get_config('format_tiles', 'allowsubtilesview') && $this->courseformatoptions['courseusesubtiles'];
         $data['usetooltips'] = get_config('format_tiles', 'usetooltips');
 
@@ -421,7 +422,7 @@ class course_output implements \renderable, \templatable {
         if (strlen('single_sec_content') > $longsectionlength) {
             $data['single_sec_content_is_long'] = true;
         }
-        if (!$this->fromajax) {
+        if (!$data['usingjsnav']) {
             $previousnext = $this->get_previous_next_section_numbers($thissection->section);
             $data['previous_tile_id'] = $previousnext['previous'];
             $data['next_tile_id'] = $previousnext['next'];
@@ -1082,7 +1083,6 @@ class course_output implements \renderable, \templatable {
                     RESOURCELIB_DISPLAY_EMBED,
                     RESOURCELIB_DISPLAY_FRAME,
                     RESOURCELIB_DISPLAY_NEW,
-                    RESOURCELIB_DISPLAY_DOWNLOAD,
                     RESOURCELIB_DISPLAY_POPUP
                 ];
                 $displaytype = url_get_final_display_type($url);

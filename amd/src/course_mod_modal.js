@@ -498,30 +498,7 @@ define(["jquery", "core/modal_factory", "core/config", "core/templates", "core/n
                         );
                     });
                     // Then open the pop up.
-                    var newWin = window.open(clickedActivity.attr("data-url"));
-                    try {
-                        newWin.focus();
-                    } catch (e) {
-                        // Blocked pop-up?
-                        var popUpLink = '<div>'
-                            + '<a href="' + clickedActivity.attr("data-url") + '">'
-                            + clickedActivity.attr("data-url")
-                            + '</a></div>';
-                        require(['core/str', 'core/notification'], function(Str, Notification) {
-                            var stringKeys = [
-                                {key: "sectionerrortitle", component: "format_tiles"},
-                                {key: "blockedpopup", component: "format_tiles"},
-                                {key: "cancel", component: "moodle"}
-                            ];
-                            Str.get_strings(stringKeys).done(function (s) {
-                                Notification.alert(
-                                   s[0],
-                                    s[1] + popUpLink,
-                                    s[2]
-                                );
-                            });
-                        });
-                    }
+                    window.open(clickedActivity.attr("data-url"));
                 }).fail(Notification.exception);
             }
         };
