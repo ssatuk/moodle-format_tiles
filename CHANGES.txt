@@ -361,3 +361,7 @@ Other
 - Fix issue 148 completion warning
 - Fix issue 138 blocked pop up warning
 - Fix issue 134 avoid URL activity pop up warning when set to display "open"
+
+4.1.0.2 (2023030500)
+====================
+- Fix issue 145 Return to current tile after editing
