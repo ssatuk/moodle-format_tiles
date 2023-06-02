@@ -606,28 +606,19 @@ class course_output implements \renderable, \templatable {
         }
 
         // Now the filter buttons (if used).
-        $data['has_filter_buttons'] = false;
         if ($this->courseformatoptions['displayfilterbar']) {
-            $firstidoutcomebuttons = 1;
             if ($this->courseformatoptions['displayfilterbar'] == FORMAT_TILES_FILTERBAR_NUMBERS
                 || $this->courseformatoptions['displayfilterbar'] == FORMAT_TILES_FILTERBAR_BOTH) {
-                $data['fiternumberedbuttons'] = $this->get_filter_numbered_buttons_data($data['tiles']);
-                if (count($data['fiternumberedbuttons']) > 0) {
-                    $firstidoutcomebuttons = count($data['fiternumberedbuttons']) + 1;
-                    $data['has_filter_buttons'] = true;
-                }
+                $data['filternumberedbuttons'] = $this->get_filter_numbered_buttons_data($data['tiles']);
             }
             if ($this->courseformatoptions['displayfilterbar'] == FORMAT_TILES_FILTERBAR_OUTCOMES
                 || $this->courseformatoptions['displayfilterbar'] == FORMAT_TILES_FILTERBAR_BOTH) {
                 $outcomes = course_get_format($this->course)->format_tiles_get_course_outcomes($this->course->id);
-                $data['fiteroutcomebuttons'] = $this->get_filter_outcome_buttons_data(
-                    $data['tiles'], $outcomes, $firstidoutcomebuttons
-                );
-                if (count($data['fiternumberedbuttons']) > 0) {
-                    $data['has_filter_buttons'] = true;
-                }
+                $firstid = empty($data['filternumberedbuttons']) ? 1 : count($data['filternumberedbuttons']) + 1;
+                $data['filteroutcomebuttons'] = $this->get_filter_outcome_buttons_data($data['tiles'], $outcomes, $firstid);
             }
         }
+        $data['has_filter_buttons'] = !empty($data['filternumberedbuttons']) || !empty($data['filteroutcomebuttons']);
         $data['section_zero_add_cm_control_html'] = $this->courserenderer->course_section_add_cm_control($this->course, 0, 0);
         if ($this->completionenabled && $data['overall_progress']['num_out_of'] > 0) {
             if (get_config('format_tiles', 'showoverallprogress')) {
@@ -710,7 +701,7 @@ class course_output implements \renderable, \templatable {
         // Now populate each button and map the tile details to it.
         $buttonmap = [];
         $buttonid = 1;
-        foreach ($buttons as $button => $tilesthisbutton) {
+        foreach ($buttons as $tilesthisbutton) {
             if (!empty($tiles)) {
                 $tilestatednumers = array_keys($tilesthisbutton);
                 if ($tilestatednumers[0] == end($tilestatednumers)) {
@@ -760,6 +751,7 @@ class course_output implements \renderable, \templatable {
                         'id' => 'filterbutton' . $buttonid,
                         'title' => $outcomenames[$outcomeid],
                         'sections' => json_encode(array_values($outcomesectionsthisoutcome)),
+                        'buttonnum' => $buttonid
                     );
                 }
                 $buttonid++;
