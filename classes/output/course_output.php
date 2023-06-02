@@ -171,13 +171,18 @@ class course_output implements \renderable, \templatable {
         if ($this->fromajax) {
             try {
                 // Set current URL and force bootstrap_renderer to initiate moodle page.
+                // Overwriting page_requirements_manager with fragment one so only JS included from here is returned to user.
+                // JS e.g. for Mathjax init will be added to $data['jsfooter'].
                 $PAGE->set_url(new \moodle_url('/course/view.php', ['id' => $this->course->id]));
                 $output->header();
                 $PAGE->start_collecting_javascript_requirements();
+
+                // Issue #153 avoid multiple glossary auto link JS onclick events.
+                $PAGE->requires->set_one_time_item_created('filter_glossary_autolinker');
+
             } catch (\Exception $e) {
                 debugging('Could not start collecing JS requirements');
             }
-
         }
         $data = $this->get_basic_data();
         $data = $this->append_section_zero_data($data, $output);

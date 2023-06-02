@@ -732,6 +732,7 @@ define(["jquery", "core/templates", "core/ajax", "format_tiles/browser_storage",
 
                     // If this event is triggered, user has updated a completion check box.
                     // We need to retrieve section content from server in case availability of items has changed.
+                    // Will also be triggered on focus change e.g. user has returned to this tab from a new window.
                     $(document).on('format-tiles-completion-changed', function(e, data) {
                         const allSectionNums = $(Selector.TILE).not(Selector.SPACER).map((i, t) => {
                             return parseInt($(t).attr('data-section'));

@@ -370,3 +370,8 @@ Other
 ====================
 - Minor adjustments to styles/tests for Moodle 4.2 incl completion icons.
 - Avoid PHP 8.1 warning (issue #154).
+
+4.2.0.1 (2023060200)
+====================
+- Fixes issue #152 filter buttons
+- Fixes issue #153 glossary multiple windows
