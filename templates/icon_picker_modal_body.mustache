@@ -15,7 +15,6 @@
     along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 }}
 
-
 {{!
     @template format_tiles/icon_picker_modal_body
 
@@ -67,7 +66,7 @@
 
     <div class="tab-content mt-5" id="icon-tab-content">
     {{#showicons}}
-        <div class="tab-pane show active" id="tileicons" role="tabpanel" aria-labelledby="tileicons-tab">
+        <div class="tab-pane show active" id="tileicons" role="tabpanel">
             <div class="iconpickerheader">
                 <label for="icon-search">
                     {{#str}}search{{/str}}
@@ -83,7 +82,7 @@
         </div>
     {{/showicons}}
     {{#showphotos}}
-        <div class="tab-pane fade" id="photolibrary" role="tabpanel" aria-labelledby="photolibrary-tab">
+        <div class="tab-pane fade" id="photolibrary" role="tabpanel">
             {{!Leave blank for now will lazy load from JS if needed}}
             <h3>{{#str}}photolibrary, format_tiles{{/str}}</h3>
             <div>{{#str}}photolibrary_desc, format_tiles{{/str}}</div>

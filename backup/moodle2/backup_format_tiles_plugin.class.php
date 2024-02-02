@@ -81,7 +81,12 @@ class backup_format_tiles_plugin extends backup_format_plugin {
         return $plugin;
     }
 
-
+    /**
+     * Carry out some initial steps before we start backup.
+     * @return void
+     * @throws dml_exception
+     * @throws moodle_exception
+     */
     private function pre_backup_steps() {
         global $DB;
         $courseid = $this->step->get_task()->get_courseid();
@@ -103,6 +108,7 @@ class backup_format_tiles_plugin extends backup_format_plugin {
      * Issue 45.
      * If incompatible Moodle 3.7 version of Tiles plugin was used in Moodle 3.9, incorrectly numbered sections may exist.
      * To avoid creating a empty sections on import or restore, check for incorrect sections and throw error if found.
+     * @param int $courseid
      * @throws moodle_exception
      * @throws dml_exception
      */

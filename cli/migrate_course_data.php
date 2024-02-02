@@ -16,14 +16,14 @@
 
 /**
  * CLI script for course data migration on upgrade to tiles 4.3 version.
- * Developer should not need to run this script in most cases as it will be handled by upgrade.php.
- * It is left in for now since it may be useful for troubleshooting.
  * @see \format_tiles\task\migrate_legacy_data;
  * @package    format_tiles
  * @copyright  2023 David Watson {@link http://evolutioncode.uk}
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
+// Developer should not need to run this script in most cases as it will be handled by upgrade.php.
+// It is left in for now since it may be useful for troubleshooting.
 
 define('CLI_SCRIPT', true);
 require_once(__DIR__ . "/../../../../config.php");

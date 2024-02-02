@@ -118,8 +118,15 @@ class course_output implements \renderable, \templatable {
      */
     private $moodlerelease;
 
+
+    /**
+     * Identifier of the standard tile style (see settings.php).
+     */
     const TILE_STYLE_STANDARD = 1;
 
+    /**
+     * Identifier of the tile style with title at bottom (see settings.php).
+     */
     const TILE_STYLE_BOTTOM_TITLE = 2;
 
     /**
@@ -251,6 +258,13 @@ class course_output implements \renderable, \templatable {
         return $data;
     }
 
+    /**
+     * Get config data to be provided to JavaScript client side.
+     * @param int $courseid
+     * @param array $allowedmodals
+     * @return array
+     * @throws \dml_exception
+     */
     public static function get_js_config_data(int $courseid, array $allowedmodals) {
         // Config values to be added to templates for JS to retrieve.
         // May move more to this from existing JS init in format.php.

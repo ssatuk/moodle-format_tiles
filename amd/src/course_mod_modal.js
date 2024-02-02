@@ -141,7 +141,7 @@ define(["jquery", "core/modal_factory", "core/config", "core/templates", "core/n
                 modalRoot.data("section", sectionNum);
                 modalRoot.addClass("embed_cm_modal");
 
-                // if it's a page activity, we simply add the page HTML as the modal body.
+                // If it's a page activity, we simply add the page HTML as the modal body.
                 // Otherwise, we set the body by rendering from a template.
                 if (objectType === 'page') {
                     modalRoot.addClass('mod_' + objectType);
@@ -177,7 +177,7 @@ define(["jquery", "core/modal_factory", "core/config", "core/templates", "core/n
                         templateData.objectType = "text/html";
                         template = 'format_tiles/embed_file_modal_body';
                     } else if (objectType === "resource_pdf") {
-                        templateData.objectType ='application/pdf';
+                        templateData.objectType = 'application/pdf';
                         template = 'format_tiles/embed_file_modal_body';
                     } else if (objectType === "url") {
                         templateData.objectType = 'url';
@@ -206,8 +206,6 @@ define(["jquery", "core/modal_factory", "core/config", "core/templates", "core/n
 
                     }).fail(Notification.exception);
                 }
-
-
 
                 // Render the modal header / title and set it to the page.
                 var headerTemplateData = {
@@ -498,7 +496,7 @@ define(["jquery", "core/modal_factory", "core/config", "core/templates", "core/n
                                         data.sectionnumber,
                                         data.name,
                                         data.modname === 'resource' ? `resource_${data.resourcetype}` : data.modname,
-                                        data.modname === 'url' ? data.pluginfileurl : '',//todo is this right? Need to log
+                                        data.modname === 'url' ? data.pluginfileurl : '',
                                         data.completionenabled ? 1 : 0,
                                         data.iscomplete ? 1 : 0,
                                         data.ismanualcompletion,
@@ -526,7 +524,7 @@ define(["jquery", "core/modal_factory", "core/config", "core/templates", "core/n
                                 || tgt.parent().hasClass(CLASS.COMPLETION_CHECK_BOX)
                                 || tgt.hasClass(CLASS.COMPLETION_DROPDOWN)
                                 || tgt.parent().hasClass(CLASS.COMPLETION_DROPDOWN)
-                                || tgt.is( ":button" );
+                                || tgt.is(":button");
                             if (isCompletionControl) {
                                 return;
                             }

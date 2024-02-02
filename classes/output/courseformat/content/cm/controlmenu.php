@@ -17,8 +17,8 @@
 /**
  * Contains the default activity control menu.
  *
- * @package   core_courseformat
- * @copyright 2020 Ferran Recio <ferran@moodle.com>
+ * @package   format_tiles
+ * @copyright 2024 David Watson
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
@@ -28,7 +28,7 @@ namespace format_tiles\output\courseformat\content\cm;
  * Base class to render a course module menu inside a course format.
  *
  * @package   format_tiles
- * @copyright 2020 Ferran Recio <ferran@moodle.com>
+ * @copyright 2024 David Watson
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class controlmenu extends \core_courseformat\output\local\content\cm\controlmenu {

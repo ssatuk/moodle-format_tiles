@@ -280,7 +280,7 @@ class external extends external_api {
 
     /**
      * Set the default icon for this course (set from course edit page).
-     * @param $data
+     * @param array $data
      * @return bool|int
      * @throws dml_exception
      */
@@ -821,11 +821,26 @@ class external extends external_api {
         );
     }
 
+    /**
+     * Parameters for external function.
+     * @return external_function_parameters
+     */
     public static function get_course_mod_info_parameters() {
         return new external_function_parameters(
             ['cmid' => new external_value(PARAM_INT, 'The course module id')]
         );
     }
+
+    /**
+     * Get information used by tiles format about a course module.
+     * @param int $cmid
+     * @return object
+     * @throws \core_external\restricted_context_exception
+     * @throws coding_exception
+     * @throws dml_exception
+     * @throws invalid_parameter_exception
+     * @throws moodle_exception
+     */
     public static function get_course_mod_info(int $cmid) {
         $params = self::validate_parameters(self::get_course_mod_info_parameters(), ['cmid' => $cmid]);
         $context = context_module::instance($params['cmid']);
@@ -840,6 +855,11 @@ class external extends external_api {
         throw new invalid_parameter_exception('Invalid or inaccessible course module ID');
     }
 
+    /**
+     *
+     * Returns description of method result value.
+     * @return external_description
+     */
     public static function get_course_mod_info_returns() {
         return new external_single_structure([
             'id' => new external_value(PARAM_INT, 'The course module ID'),

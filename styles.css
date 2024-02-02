@@ -600,16 +600,16 @@ li.activity .tileiconcontainer .tile-icon .icon.fa {
 .format-tiles .buttonhidesec0 {
     display: none;
 }
-.format-tiles .buttonhidesec0.closed #sec-zero-open-icon {
+.format-tiles .buttonhidesec0.closed .sec-zero-open-icon {
     display: none;
 }
-.format-tiles .buttonhidesec0.open #sec-zero-closed-icon {
+.format-tiles .buttonhidesec0.open .sec-zero-closed-icon {
     display: none;
 }
-.format-tiles .buttonhidesec0.open #sec-zero-open-icon {
+.format-tiles .buttonhidesec0.open .sec-zero-open-icon {
     display: flex;
 }
-.format-tiles .buttonhidesec0.closed #sec-zero-closed-icon {
+.format-tiles .buttonhidesec0.closed .sec-zero-closed-icon {
     display: flex;
 }
 body.jsenabled.format-tiles .buttonhidesec0 {
@@ -934,173 +934,6 @@ body.format-tiles.jsenabled .course-content .headerabovetiles {
     overflow-x: visible;
 }
 
-@media screen and (max-width: 680px) {
-    .format-tiles .subtiles {
-        width: 100% !important;
-        justify-content: center !important;
-    }
-    .format-tiles li.activity.subtile {
-        /* stylelint-disable-next-line declaration-no-important */
-        flex-basis: 160px !important;
-        min-height: 210px;
-        position: relative;
-        /* stylelint-disable-next-line declaration-no-important */
-        margin: 0 5px 3px 0 !important;
-        /* stylelint-disable-next-line declaration-no-important */
-        max-width: 44% !important;
-    }
-    .format-tiles li.activity.subtile.spacer {
-        display:none;
-    }
-    .format-tiles .clickable-region {
-        /* stylelint-disable-next-line declaration-no-important */
-        width: 100% !important;
-    }
-    .format-tiles li.subtile.spacer {
-        /* stylelint-disable-next-line declaration-no-important */
-        flex-basis: 160px !important;
-        /* stylelint-disable-next-line declaration-no-important */
-        min-width: 160px !important;
-        display: none;
-    }
-    .format-tiles .section .activity.subtile .activityinstance {
-        display: block;
-    }
-}
-/* get rid of wide margins when viewing course on narrow (mobile) device and
-allow tiles to be taller and thinner so can fit two side by side in portrait on iphone 6/7 */
-@media screen and (max-width: 600px) {
-    .format-tiles ul.tiles,
-    .format-tiles #section-0 ul.section,
-    .format-tiles .course-content .card-block {
-        /* stylelint-disable-next-line declaration-no-important */
-        padding-left: 0 !important;
-    }
-    .format-tiles .card .card-body {
-        /* Moove theme.*/
-        padding: 0;
-    }
-    .format-tiles .course-content ul.section {
-        padding: 1em;
-    }
-    .format-tiles .course-content ul.section.subtiles {
-        /* stylelint-disable-next-line declaration-no-important */
-        margin: auto !important;
-    }
-    .format-tiles .course-content ul.section {
-        /* stylelint-disable-next-line declaration-no-important */
-        margin: 1px !important;
-        /* stylelint-disable-next-line declaration-no-important */
-        padding: 1px !important;
-    }
-    .format-tiles.path-course-view #region-main {
-        padding: 0;
-    }
-    .format-tiles.path-course-view .card-block {
-        padding-left: 0.3em;
-        padding-right: 0.3em;
-    }
-    .format-tiles .course-content .section {
-        /* stylelint-disable-next-line declaration-no-important */
-        margin-left: 0 !important;
-        background-color: #fff;
-    }
-    .format-tiles ul.tiles li.section .format-tiles_section_content {
-        /* stylelint-disable-next-line declaration-no-important */
-        margin: 0 !important;
-    }
-    .format-tiles .subtiles .course-content ul.section {
-        padding: 0.5em 0.5em 0.5em 1em;
-    }
-    .format-tiles .pagesechead {
-        max-width: unset;
-        margin: 0 0 0 5px;
-    }
-    .format-tiles .sectiontitlecontainer {
-        /* stylelint-disable-next-line declaration-no-important */
-        margin: 0 !important;
-    }
-    .format-tiles .sectiontitle {
-        width: 100%;
-        margin-left: 5px;
-        max-width: 98%;
-    }
-    .format-tiles .sectiontitle h2 {
-        font-size: 1em;
-    }
-    .format-tiles #page.container-fluid,
-    .path-course-view li.activity > div {
-        /* stylelint-disable-next-line declaration-no-important */
-        padding: 0 !important;
-    }
-    .format-tiles ul.tiles#multi_section_tiles {
-        justify-content: center;
-    }
-    .format-tiles .course-content ul.tiles .tile {
-        /* stylelint-disable-next-line declaration-no-important */
-        flex-basis: 160px !important;
-        position: relative;
-        /* stylelint-disable-next-line declaration-no-important */
-        max-width: 45% !important;
-        margin: 5px;
-    }
-    .format-tiles .course-content ul.tiles .tile:not(.spacer) {
-        min-height: 210px;
-        /* stylelint-disable-next-line declaration-no-important */
-        padding: 7px 2px 5px 7px !important;
-    }
-    .format-tiles .clickable-region {
-        /* stylelint-disable-next-line declaration-no-important */
-        width: 150px !important;
-    }
-    .format-tiles ul.tiles .tile .tile-text {
-        height: 130px;
-    }
-    .format-tiles .collapsiblesec0.expanded .buttonhidesec0 {
-        /* stylelint-disable-next-line declaration-no-important */
-        background-color: rgba(255, 255, 255, 1) !important;
-    }
-    .format-tiles .progress-indic.percent {
-        font-size: 0.7em;
-    }
-    .format-tiles .overall-prog-radial {
-        display: none;
-    }
-    .format-tiles ul.tiles#multi_section_tiles li.section {
-        margin: 0;
-        padding: 5px;
-    }
-    .format-tiles ul.tiles#multi_section_tiles li.section.moveablesection {
-        padding: 30px 0 30px 0;
-    }
-    .format-tiles li.activity.subtile .activityname {
-        font-size: 1em;
-        word-break: break-word;
-        margin-top: 0;
-    }
-    .format-tiles .progress-indic {
-        font-size: 0.8em;
-    }
-    .format-tiles ul.tiles .tile h3 {
-        font-size: 1.0em;
-        word-break: break-word;
-    }
-    .format-tiles .course-content ul.tiles .tile .photo-tile-text.longtitle h3 {
-        font-size: 1em;
-    }
-    .format-tiles #abovetiles {
-        width: 100%;
-    }
-    .format-tiles #above-tiles-buttons {
-        margin-bottom: 10px;
-    }
-}
-
-@media screen and (max-width: 330px) {
-    .format-tiles li.activity.subtile .activityname {
-        font-size: 0.9em;
-    }
-}
 .format-tiles textarea#id_headertextabovetiles.form-control {
     width: 100%;
 }
@@ -1852,18 +1685,6 @@ allow tiles to be taller and thinner so can fit two side by side in portrait on 
     width: 36px;
     height: 36px;
 }
-
-@media (min-width: 768px) {
-    body.format-tiles.limitedwidth:not(.path-mod) #page.drawers .main-inner,
-    .format-tiles .header-maxwidth {
-        max-width: unset;
-    }
-    body.jsenabled.format-tiles #above-tiles-buttons {
-        position: absolute;
-        right: 0
-    }
-}
-
 .format-tiles .secondary-navigation {
     max-width: unset;
 }
@@ -1931,12 +1752,8 @@ allow tiles to be taller and thinner so can fit two side by side in portrait on 
 .format-tiles .tile.tile-restricted .badge-info {
     background-color: #565656;
 }
-.format-tiles .tile.tile-hidden.phototile a,
-.format-tiles .tile.tile-restricted.phototile a {
-    background-color: rgba(255, 255, 255, 0.7);
-}
-.format-tiles .tile.tile-restricted.phototile,
-.format-tiles .tile.tile-hidden.phototile {
+.format-tiles .tile.tile-restricted,
+.format-tiles .tile.tile-hidden {
     filter: grayscale(1);
 }
 .format-tiles .tile {
@@ -1982,4 +1799,192 @@ allow tiles to be taller and thinner so can fit two side by side in portrait on 
 
 .format-tiles .course-content ul li.section.moveablesection .side {
     display: block;
+}
+
+@media (min-width: 768px) {
+    body.format-tiles.limitedwidth:not(.path-mod) #page.drawers .main-inner,
+    .format-tiles .header-maxwidth {
+        max-width: unset;
+    }
+    body.jsenabled.format-tiles .above-tiles-buttons {
+        position: absolute;
+        right: 0;
+    }
+}
+@media screen and (max-width: 680px) {
+    .format-tiles .subtiles {
+        /* stylelint-disable-next-line declaration-no-important */
+        width: 100% !important;
+        /* stylelint-disable-next-line declaration-no-important */
+        justify-content: center !important;
+    }
+    .format-tiles li.activity.subtile {
+        /* stylelint-disable-next-line declaration-no-important */
+        flex-basis: 160px !important;
+        min-height: 210px;
+        position: relative;
+        /* stylelint-disable-next-line declaration-no-important */
+        margin: 0 5px 3px 0 !important;
+        /* stylelint-disable-next-line declaration-no-important */
+        max-width: 44% !important;
+    }
+    .format-tiles li.activity.subtile.spacer {
+        display: none;
+    }
+    .format-tiles .clickable-region {
+        /* stylelint-disable-next-line declaration-no-important */
+        width: 100% !important;
+    }
+    .format-tiles li.subtile.spacer {
+        /* stylelint-disable-next-line declaration-no-important */
+        flex-basis: 160px !important;
+        /* stylelint-disable-next-line declaration-no-important */
+        min-width: 160px !important;
+        display: none;
+    }
+    .format-tiles .section .activity.subtile .activityinstance {
+        display: block;
+    }
+}
+/* get rid of wide margins when viewing course on narrow (mobile) device and
+allow tiles to be taller and thinner so can fit two side by side in portrait on iphone 6/7 */
+@media screen and (max-width: 600px) {
+    .format-tiles ul.tiles,
+    .format-tiles #section-0 ul.section,
+    .format-tiles .course-content .card-block {
+        /* stylelint-disable-next-line declaration-no-important */
+        padding-left: 0 !important;
+    }
+    .format-tiles .card .card-body {
+        /* Moove theme.*/
+        padding: 0;
+    }
+    .format-tiles .course-content ul.section {
+        padding: 1em;
+    }
+    .format-tiles .course-content ul.section.subtiles {
+        /* stylelint-disable-next-line declaration-no-important */
+        margin: auto !important;
+    }
+    .format-tiles .course-content ul.section {
+        /* stylelint-disable-next-line declaration-no-important */
+        margin: 1px !important;
+        /* stylelint-disable-next-line declaration-no-important */
+        padding: 1px !important;
+    }
+    .format-tiles.path-course-view #region-main {
+        padding: 0;
+    }
+    .format-tiles.path-course-view .card-block {
+        padding-left: 0.3em;
+        padding-right: 0.3em;
+    }
+    .format-tiles .course-content .section {
+        /* stylelint-disable-next-line declaration-no-important */
+        margin-left: 0 !important;
+        background-color: #fff;
+    }
+    .format-tiles ul.tiles li.section .format-tiles_section_content {
+        /* stylelint-disable-next-line declaration-no-important */
+        margin: 0 !important;
+    }
+    .format-tiles .subtiles .course-content ul.section {
+        padding: 0.5em 0.5em 0.5em 1em;
+    }
+    .format-tiles .pagesechead {
+        max-width: unset;
+        margin: 0 0 0 5px;
+    }
+    .format-tiles .sectiontitlecontainer {
+        /* stylelint-disable-next-line declaration-no-important */
+        margin: 0 !important;
+    }
+    .format-tiles .sectiontitle {
+        width: 100%;
+        margin-left: 5px;
+        max-width: 98%;
+    }
+    .format-tiles .sectiontitle h2 {
+        font-size: 1em;
+    }
+    .format-tiles #page.container-fluid,
+    .path-course-view li.activity > div {
+        /* stylelint-disable-next-line declaration-no-important */
+        padding: 0 !important;
+    }
+    .format-tiles ul.tiles#multi_section_tiles {
+        justify-content: center;
+    }
+    .format-tiles .course-content ul.tiles .tile {
+        /* stylelint-disable-next-line declaration-no-important */
+        flex-basis: 160px !important;
+        position: relative;
+        /* stylelint-disable-next-line declaration-no-important */
+        max-width: 45% !important;
+        margin: 5px;
+    }
+    .format-tiles li.tile:not(.phototile) .availabilityinfo {
+        bottom: unset;
+        left: 0;
+        top: 4px;
+    }
+    .format-tiles .clickable-region {
+        /* stylelint-disable-next-line declaration-no-important */
+        width: 150px !important;
+    }
+    .format-tiles ul.tiles .tile .tile-text {
+        height: 130px;
+    }
+    .format-tiles .collapsiblesec0.expanded .buttonhidesec0 {
+        /* stylelint-disable-next-line declaration-no-important */
+        background-color: rgba(255, 255, 255, 1) !important;
+    }
+    .format-tiles .progress-indic.percent {
+        font-size: 0.7em;
+    }
+    .format-tiles .overall-prog-radial {
+        display: none;
+    }
+    .format-tiles ul.tiles#multi_section_tiles li.section {
+        margin: 0;
+        padding: 5px;
+    }
+    .format-tiles ul.tiles#multi_section_tiles li.section.moveablesection {
+        padding: 30px 0 30px 0;
+    }
+    .format-tiles li.activity.subtile .activityname {
+        font-size: 1em;
+        word-break: break-word;
+        margin-top: 0;
+    }
+    .format-tiles .progress-indic {
+        font-size: 0.8em;
+    }
+    .format-tiles ul.tiles .tile h3 {
+        font-size: 16px;
+        word-break: break-word;
+    }
+    .format-tiles .course-content ul.tiles .tile.phototile.tilestyle-1 .photo-tile-text h3,
+    .format-tiles .course-content ul.tiles .tile.phototile.tilestyle-2 .photo-tile-text h3 {
+        font-size: 16px;
+    }
+    .format-tiles .course-content ul.tiles .tile.phototile.tilestyle-1 .photo-tile-text h3,
+    .format-tiles .course-content ul.tiles .tile.phototile.tilestyle-2 .photo-tile-text h3 {
+        line-height: 27px;
+    }
+    .format-tiles .course-content ul.tiles .tile .photo-tile-text.longtitle h3 {
+        font-size: 1em;
+    }
+    .format-tiles #abovetiles {
+        width: 100%;
+    }
+    .format-tiles .above-tiles-buttons {
+        margin-bottom: 10px;
+    }
+}
+
+@media screen and (max-width: 330px) {
+    .format-tiles li.activity.subtile .activityname {
+        font-size: 0.9em;
+    }
 }

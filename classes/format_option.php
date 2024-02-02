@@ -34,7 +34,15 @@ class format_option {
     /**
      * When we store the photo in db format_tiles_tile_options table, specify if it's a section or cm photo.
      */
+
+    /**
+     * Option type identifier for section photo.
+     */
     const OPTION_SECTION_PHOTO = 1;
+
+    /**
+     * Option type identifier for section icon.
+     */
     const OPTION_SECTION_ICON = 3;
 
     /**
@@ -91,6 +99,14 @@ class format_option {
         return $record ? $record->optionvalue : false;
     }
 
+    /**
+     * Get multiple options of a type for a course.
+     * @param int $courseid
+     * @param int $optiontype
+     * @return array
+     * @throws \dml_exception
+     * @throws \moodle_exception
+     */
     public static function get_multiple(int $courseid, int $optiontype): array {
         global $DB;
         self::validate_option_type($optiontype);
@@ -122,6 +138,14 @@ class format_option {
         return false;
     }
 
+    /**
+     * Unset multiple options of specifcied types for a course and element.
+     * @param int $courseid
+     * @param int $elementid
+     * @param array $optiontypes
+     * @return bool
+     * @throws \dml_exception
+     */
     public static function unset_multiple_types(int $courseid, int $elementid, array $optiontypes): bool {
         global $DB;
         $result = false;
@@ -136,7 +160,7 @@ class format_option {
 
     /**
      * Unset all course format option values in the format_tiles_tile_options table for a course.
-     * @param $courseid
+     * @param int $courseid
      * @return bool
      */
     public static function unset_all_course(int $courseid) {
@@ -207,9 +231,10 @@ class format_option {
     }
 
     /**
+     * Migrate a specific type of legacy format option in a course to the new table.
      * @param int $courseid
      * @param int $optiontype
-     * @param int $sectionid
+     * @param int $sectionid optional section ID to limit to.
      * @throws \dml_exception
      * @throws \invalid_parameter_exception
      * @throws \moodle_exception
@@ -274,6 +299,15 @@ class format_option {
         $legacyoptions->close();
     }
 
+    /**
+     * For a given course, get any legacy format options from the DB.
+     * @param int $courseid
+     * @param string $optiontype
+     * @param int $sectionid
+     * @return \moodle_recordset
+     * @throws \dml_exception
+     * @throws \invalid_parameter_exception
+     */
     public static function get_legacy_format_options_recordset(
             int $courseid, string $optiontype, int $sectionid = 0): \moodle_recordset {
         global $DB;

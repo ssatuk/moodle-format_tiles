@@ -29,7 +29,6 @@ namespace format_tiles;
  * @copyright  2023 David Watson {@link http://evolutioncode.uk}
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-
 class util {
     /**
      * Which course modules is the site administrator allowing to be displayed in a modal?
@@ -261,6 +260,12 @@ class util {
         return $extension;
     }
 
+    /**
+     * Get the file relating to a resource course module from context ID.
+     * @param int $modcontextid
+     * @return \stored_file|null
+     * @throws \coding_exception
+     */
     public static function get_mod_resource_file(int $modcontextid): ?\stored_file {
         $fs = get_file_storage();
         $files = $fs->get_area_files($modcontextid, 'mod_resource', 'content');

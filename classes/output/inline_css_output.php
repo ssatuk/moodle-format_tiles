@@ -59,16 +59,21 @@ class inline_css_output implements \renderable, \templatable {
      */
     private $usejsnav;
 
+    /**
+     * Whether we are editing nav or not.
+     * @var bool
+     */
     private $isediting;
 
     /**
      * course_output constructor
-     * @param \stdClass $course the course DB object.
+     * @param object $course the course DB object.
      * @param bool $ismobile if the user is on mobile.
      * @param bool $usejsnav are we using JS navigation.
      * @param bool $allowphototiles are we allowing photo tiles.
-     * @param bool $isediting.
+     * @param bool $isediting whether we are editing.
      */
+
     public function __construct($course, bool $ismobile, bool $usejsnav, bool $allowphototiles, bool $isediting) {
         $this->course = $course;
         $this->ismobile = $ismobile;

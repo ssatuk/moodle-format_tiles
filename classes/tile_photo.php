@@ -87,6 +87,10 @@ class tile_photo {
         $this->get_filename();
     }
 
+    /**
+     * Get the filename for this tile photo.
+     * @return string|null
+     */
     public function get_filename() {
         if (!isset($this->filename) || !$this->filename) {
             $this->filename = $this->courseid
@@ -96,6 +100,13 @@ class tile_photo {
         return $this->filename;
     }
 
+    /**
+     * Set the filename for this tile photo.
+     * @param $filename
+     * @return void
+     * @throws \dml_exception
+     * @throws \moodle_exception
+     */
     public function set_filename($filename) {
         $this->filename = $filename;
         format_option::set($this->courseid, $this->tilesoptiontype, $this->get_element_id(), $this->filename);
@@ -160,20 +171,21 @@ class tile_photo {
     /**
      * When course_section_deleted / course_module_deleted is trigger we remove related files.
      * @param int $courseid the course id.
-     * @param int|bool $sectionid the section id (if limiting to a section)
+     * @param int $sectionid the section id (if limiting to a section)
+     * @param int $cmid
      * @return bool
      */
-    public static function delete_files_from_ids($courseid, $sectionid = false, $cmid = null) {
+    public static function delete_files_from_ids($courseid, $sectionid = 0, $cmid = 0) {
         $params = self::file_api_params();
         $fs = get_file_storage();
-        if ($cmid == null) {
+        if (!$cmid) {
             $context = \context_course::instance($courseid, IGNORE_MISSING);
             if ($context) {
                 return $fs->delete_area_files(
                     $context->id,
                     $params['component'],
                     $params['filearea'],
-                    $sectionid
+                    $sectionid ?? false
                 );
             }
         } else {

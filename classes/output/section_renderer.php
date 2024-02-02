@@ -24,6 +24,13 @@
 
 namespace format_tiles\output;
 
+/**
+ * Section renderer for tiles format.
+ *
+ * @package   format_tiles
+ * @copyright 2023 David Watson
+ * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
 class section_renderer extends \core_courseformat\output\section_renderer {
 
     /**

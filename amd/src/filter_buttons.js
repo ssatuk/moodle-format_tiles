@@ -122,7 +122,9 @@ define(["jquery"], function ($) {
                         } else {
                             // We don't have a data sections attribute so find out which tiles have filter-{x} classes instead.
                             const newSections = $("li.tile.filter-" + button.attr('data-buttonid')).map(
-                                (index, tile) => {return $(tile).attr('data-section');}
+                                (index, tile) => {
+                                    return $(tile).attr('data-section');
+                                }
                             ).toArray();
                             newSections.forEach(s => {
                                 if (!sections.includes(s)) {

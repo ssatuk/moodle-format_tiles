@@ -16,12 +16,13 @@
 
 /**
  * Page called by teacher to reset all tiles in a course.
- * Because course formats cannot use the callback {mod}_reset_course_form_definition().
  *
  * @package format_tiles
  * @copyright  2023 David Watson {@link http://evolutioncode.uk}
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or late
  **/
+
+// Included because course formats cannot use the callback {mod}_reset_course_form_definition().
 
 require_once('../../../../config.php');
 

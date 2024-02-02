@@ -218,7 +218,7 @@ class restore_format_tiles_plugin extends restore_format_plugin {
 
     /**
      * Process the restored section.
-     * @param $data
+     * @param array $data
      * @throws moodle_exception
      */
     public function process_tiles_section($data) {

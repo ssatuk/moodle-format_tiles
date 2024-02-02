@@ -286,7 +286,9 @@ define(["jquery", "core/templates", "core/ajax", "format_tiles/browser_storage",
                     // User may be opening same section multiple times so avoid adding same script again.
                     const head = $('head');
                     const existingScripts = head.find('script').filter(
-                        (index, script) => {return $(script).html() === js;}
+                        (index, script) => {
+                            return $(script).html() === js;
+                        }
                     );
                     if (existingScripts.length === 0) {
                         Templates.runTemplateJS(js);

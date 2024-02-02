@@ -70,7 +70,7 @@ class observer {
 
     /**
      * When a course module is added, invalidate modalcmids cache for course.
-     * @param \core\event\course_module_deleted $event
+     * @param \core\event\course_module_created $event
      */
     public static function course_module_created(\core\event\course_module_created $event) {
         if ($event->other['modulename'] == 'resource') {
@@ -80,7 +80,7 @@ class observer {
 
     /**
      * When a course module is updated, invalidate modalcmids cache for course.
-     * @param \core\event\course_module_deleted $event
+     * @param \core\event\course_module_updated $event
      */
     public static function course_module_updated(\core\event\course_module_updated $event) {
         if ($event->other['modulename'] == 'resource') {
@@ -102,6 +102,13 @@ class observer {
         }
     }
 
+    /**
+     * Clear the cache of resource modal IDs for a given course.
+     * @param int $courseid
+     * @return void
+     * @throws \coding_exception
+     * @throws \dml_exception
+     */
     private static function clear_cache_resource_modals(int $courseid) {
         $modalresources = get_config('format_tiles', 'modalresources');
         $cache = \cache::make('format_tiles', 'modalcmids');

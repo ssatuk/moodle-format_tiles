@@ -527,8 +527,6 @@ class behat_format_tiles extends behat_base {
      * (To avoid having to have multiple Tiles plugin versions).
      *
      * @Given /^I set activity completion tracking form field to manual$/
-     * @param $field
-     * @param $value
      * @return void
      */
     public function i_set_completion_tracking_to_manual() {

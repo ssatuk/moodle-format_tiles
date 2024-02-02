@@ -119,6 +119,7 @@ class registration_manager {
     /**
      * Contact the registration server using CURL and get response.
      * @param object $data the form data
+     * @param string $url
      * @param int $timeout
      * @return mixed
      * @throws \coding_exception
