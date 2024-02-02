@@ -416,8 +416,7 @@ $string['cachedef_modalcmids'] = 'Course module IDs (by course) that need to be 
 $string['migratecoursedata'] = 'Migrate course data';
 $string['coursephotomigrationincomplete'] = 'Tile icons and photos have not yet been migrated following a system upgrade.  Missing items should appear within a few hours of the upgrade.';
 $string['migratedcourseid'] = 'Migrated course ID {$a}';
-$string['unmigratedcoursesintro'] = 'The following {$a} courses appear not to have had all their tile icons and photos migrated following a system upgrade.  Click the button to process a course now.'
-    . ' If you wait, the background "cron" process should process all of these, but if you wish to process a given course now, click the button';
+$string['unmigratedcoursesintro'] = 'The following {$a} courses appear not to have had all their tile icons and photos migrated following a system upgrade.  Click the button to process a course now.  If you wait, the background "cron" process should process all of these, but if you wish to process a given course now, click the button';
 $string['legacytiledata'] = 'Legacy tile data count';
 $string['newtiledata'] = 'New tile data count';
 $string['migratenow'] = 'Migrate now';
