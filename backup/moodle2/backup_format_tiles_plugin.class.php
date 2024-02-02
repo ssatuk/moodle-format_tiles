@@ -41,11 +41,13 @@ class backup_format_tiles_plugin extends backup_format_plugin {
      * @throws moodle_exception
      */
     public function define_course_plugin_structure() {
-        $this->fail_if_course_includes_excess_sections();
+        $this->pre_backup_steps();
     }
 
     /**
      * Returns the format information to attach to section element.
+     * @return backup_plugin_element
+     * @throws base_element_struct_exception
      */
     protected function define_section_plugin_structure() {
         $fileapiparams = \format_tiles\tile_photo::file_api_params();
@@ -54,16 +56,47 @@ class backup_format_tiles_plugin extends backup_format_plugin {
         $plugin = $this->get_plugin_element(null, $this->get_format_condition(), 'tiles');
 
         // Define each element separated.
-        $tile = new backup_nested_element('tile', array('id'), array('tilephoto'));
+        // Adds tag <plugin_format_tiles_section> within section.xml files of backup file with filename / icon name.
+        $photo = new backup_nested_element(
+            'plugin_format_tiles_section',
+            ['id'],
+            ['optiontype', 'optionvalue']
+        );
 
         // Define sources.
-        $tile->set_source_table('course_sections', array('id' => backup::VAR_SECTIONID));
+        $const1 = \format_tiles\format_option::OPTION_SECTION_PHOTO;
+        $const2 = \format_tiles\format_option::OPTION_SECTION_ICON;
+        $photo->set_source_sql(
+            "SELECT id, optiontype, optionvalue FROM {format_tiles_tile_options}
+                WHERE courseid = ?
+                AND (optiontype = $const1 OR optiontype = $const2)
+                AND elementid = ?",
+            [backup::VAR_COURSEID, backup::VAR_SECTIONID]
+        );
 
-        // Define file annotations.
-        $tile->annotate_files($fileapiparams['component'], $fileapiparams['filearea'], null);
+        // Define file annotations - first include tile photos.
+        $photo->annotate_files($fileapiparams['component'], $fileapiparams['filearea'], null);
 
-        $plugin->add_child($tile);
+        $plugin->add_child($photo);
         return $plugin;
+    }
+
+
+    private function pre_backup_steps() {
+        global $DB;
+        $courseid = $this->step->get_task()->get_courseid();
+        $format = $DB->get_field('course', 'format', ['id' => $courseid]);
+        if ($format !== 'tiles') {
+            return;
+        }
+
+        $this->pre_step_fail_if_course_includes_excess_sections($courseid);
+
+        // Starting tiles plugin version 4.3, the course_format_options table is not used for tile photos/icons.
+        // For backwards compatibility of course exports with prior plugin versions, we include such data in backups.
+        // So we temporarily set course format options to the course so that they will be included.
+        // There is an observer \format_tiles\observer\course_backup_created() which reverses this once backup is complete.
+        \format_tiles\format_option::set_legacy_format_options($courseid);
     }
 
     /**
@@ -73,13 +106,9 @@ class backup_format_tiles_plugin extends backup_format_plugin {
      * @throws moodle_exception
      * @throws dml_exception
      */
-    private function fail_if_course_includes_excess_sections() {
+    private function pre_step_fail_if_course_includes_excess_sections(int $courseid) {
         global $DB;
-        $courseid = $this->step->get_task()->get_courseid();
-        $format = $DB->get_field('course', 'format', ['id' => $courseid]);
-        if ($format !== 'tiles') {
-            return;
-        }
+
         $maxsectionsconfig = \format_tiles\course_section_manager::get_max_sections();
         $maxallowed = $maxsectionsconfig + 1;// We +1 as sec zero not counted.
 
@@ -90,7 +119,7 @@ class backup_format_tiles_plugin extends backup_format_plugin {
             $admintoolsbutton = \html_writer::link(
                 $admintoolsurl,
                 get_string('checkforproblemcourses', 'format_tiles'),
-                array('class' => 'btn btn-secondary ml-2')
+                ['class' => 'btn btn-secondary ml-2']
             );
         } else {
             $admintoolsurl = '';
@@ -98,17 +127,17 @@ class backup_format_tiles_plugin extends backup_format_plugin {
         }
 
         // Get the course sections from the database for the course we are backing up and check them.
-        $countsections = $DB->get_field('course_sections', 'COUNT(id)',  array('course' => $courseid));
+        $countsections = $DB->get_field('course_sections', 'COUNT(id)',  ['course' => $courseid]);
         if ($countsections && $countsections > $maxallowed * 5) {
             // Course has a very high number of sections, so fail early as probably en error and we avoid further work.
             $a = new stdClass();
             $a->numsections = $countsections;
-            $a->maxallowed = $maxsectionsconfig;
+            $a->maxallowed = $maxallowed;
             \core\notification::error(get_string('restoretoomanysections', 'format_tiles', $a) . $admintoolsbutton);
             throw new moodle_exception('backupfailed', 'format_tiles', $admintoolsurl);
         }
 
-        $sections = $DB->get_records('course_sections', array('course' => $courseid), 'id ASC, section ASC',
+        $sections = $DB->get_records('course_sections', ['course' => $courseid], 'id ASC, section ASC',
             'id, section, name', 0, $maxallowed * 5);
 
         $totalincluded = 0;
@@ -121,7 +150,7 @@ class backup_format_tiles_plugin extends backup_format_plugin {
                     // Allowing this section would mean we had some secs with sec numbers too high - disallow.
                     $a = new stdClass();
                     $a->sectionnum = $section->section;
-                    $a->maxallowed = $maxsectionsconfig;
+                    $a->maxallowed = $maxallowed;
                     \core\notification::error(get_string('restoreincorrectsections', 'format_tiles', $a) . $admintoolsbutton);
                     throw new moodle_exception('backupfailed', 'format_tiles', $admintoolsurl);
                 } else {

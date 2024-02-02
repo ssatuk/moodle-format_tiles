@@ -56,7 +56,7 @@ define(["jquery", "core/notification", "core/config", "core/str"], function ($, 
                                     s[4],
                                     function() {
                                         window.location.href = config.wwwroot
-                                            + '/course/format/tiles/register.php?key=' + data.key + "&sesskey=" + sesskey;
+                                            + '/course/format/tiles/editor/register.php?key=' + data.key + "&sesskey=" + sesskey;
                                     },
                                     function() {
                                         window.location.href = config.wwwroot + '/admin/settings.php?section=formatsettingtiles';

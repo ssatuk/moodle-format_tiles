@@ -52,6 +52,11 @@
         {{#pix}}tileicon/{{{tileicon}}}, format_tiles{{/pix}}
     {{/tileicon}}
     {{^tileicon}}
-        {{#pix}}tileicon/{{{defaulttileicon}}}, format_tiles{{/pix}}
+        {{#icon}}
+            <img class="icon" src="{{icon.url}}" alt="{{{icon.label}}}">
+        {{/icon}}
+        {{^icon}}
+            {{#pix}}tileicon/{{{defaulttileicon}}}, format_tiles{{/pix}}
+        {{/icon}}
     {{/tileicon}}
 </span>

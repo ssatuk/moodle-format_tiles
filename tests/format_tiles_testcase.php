@@ -38,7 +38,7 @@ class format_tiles_testcase extends advanced_testcase {
      * The format options to use when setting up a course in tiles format.
      * @var array
      */
-    private $tilescourseformatoptions = array(
+    private $tilescourseformatoptions = [
         'shortname' => 'GrowingCourse',
         'fullname' => 'Growing Course',
         'numsections' => 5,
@@ -49,8 +49,8 @@ class format_tiles_testcase extends advanced_testcase {
         'courseshowtileprogress' => 0,
         'displayfilterbar' => 1,
         'usesubtilesseczero' => 0,
-        'courseusebarforheadings' => 1
-    );
+        'courseusebarforheadings' => 1,
+    ];
 
     /**
      * Test updating the section format options e.g. changing the tile icon for a tile.
@@ -61,7 +61,7 @@ class format_tiles_testcase extends advanced_testcase {
 
         $course = $this->getDataGenerator()->create_course(
             $this->tilescourseformatoptions,
-            array('createsections' => true));
+            ['createsections' => true]);
 
         $sectionscreated = get_fast_modinfo($course)->get_section_info_all();
         $sections = [];
@@ -69,8 +69,8 @@ class format_tiles_testcase extends advanced_testcase {
             $sections[$sec->section] = $sec;
         }
         $format = course_get_format($course);
-        $format->update_section_format_options(array('id' => $sections[1]->id, 'tileicon' => 'smile-o'));
-        $format->update_section_format_options(array('id' => $sections[2]->id, 'tileicon' => 'asterisk'));
+        $format->update_section_format_options(['id' => $sections[1]->id, 'tileicon' => 'smile-o']);
+        $format->update_section_format_options(['id' => $sections[2]->id, 'tileicon' => 'asterisk']);
 
         // Get the sections again.
         $sectionscreated = get_fast_modinfo($course)->get_section_info_all();
@@ -92,19 +92,19 @@ class format_tiles_testcase extends advanced_testcase {
 
         $course = $this->getDataGenerator()->create_course(
             $this->tilescourseformatoptions,
-            array('createsections' => true));
+            ['createsections' => true]);
         set_config('followthemecolour', 0, 'format_tiles');
         set_config('allowsubtilesview', 0, 'format_tiles');
 
-        $pushedvalues = array(
+        $pushedvalues = [
             'id' => $course->id,
             'defaulttileicon' => 'book',
             'courseusesubtiles' => '0',
             'courseshowtileprogress' => '1',
             'displayfilterbar' => '0',
             'usesubtilesseczero' => '0',
-            'courseusebarforheadings' => '0'
-        );
+            'courseusebarforheadings' => '0',
+        ];
         // TODO work out why basecolour setting fails here - maybe to do with followthemecolour admin config option?
 
         $format = course_get_format($course);
@@ -112,7 +112,7 @@ class format_tiles_testcase extends advanced_testcase {
 
         $dbdata = $DB->get_records(
             'course_format_options',
-            array('format' => 'tiles', 'courseid' => $course->id, 'sectionid' => 0)
+            ['format' => 'tiles', 'courseid' => $course->id, 'sectionid' => 0]
         );
         $newvalues = [];
         foreach ($dbdata as $k => $v) {
@@ -126,15 +126,15 @@ class format_tiles_testcase extends advanced_testcase {
         }
 
         // Now repeat the above with different values, and check again.
-        $pushedvalues = array(
+        $pushedvalues = [
             'id' => $course->id,
             'defaulttileicon' => 'television',
             'courseusesubtiles' => '1',
             'courseshowtileprogress' => '0',
             'displayfilterbar' => '1',
             'usesubtilesseczero' => '1',
-            'courseusebarforheadings' => '1'
-        );
+            'courseusebarforheadings' => '1',
+        ];
         // TODO work out why basecolour setting fails here - maybe to do with followthemecolour admin config option?
 
         $format = course_get_format($course);
@@ -142,7 +142,7 @@ class format_tiles_testcase extends advanced_testcase {
 
         $dbdata = $DB->get_records(
             'course_format_options',
-            array('format' => 'tiles', 'courseid' => $course->id, 'sectionid' => 0)
+            ['format' => 'tiles', 'courseid' => $course->id, 'sectionid' => 0]
         );
         $newvalues = [];
         foreach ($dbdata as $k => $v) {
@@ -165,12 +165,13 @@ class format_tiles_testcase extends advanced_testcase {
     public function test_update_inplace_editable() {
         global $CFG, $DB, $PAGE;
         require_once($CFG->dirroot . '/lib/external/externallib.php');
+        require_once($CFG->dirroot . '/lib/external/classes/external_api.php');
 
         $this->resetAfterTest();
         $user = $this->getDataGenerator()->create_user();
         $this->setUser($user);
-        $course = $this->getDataGenerator()->create_course($this->tilescourseformatoptions, array('createsections' => true));
-        $section = $DB->get_record('course_sections', array('course' => $course->id, 'section' => 2));
+        $course = $this->getDataGenerator()->create_course($this->tilescourseformatoptions, ['createsections' => true]);
+        $section = $DB->get_record('course_sections', ['course' => $course->id, 'section' => 2]);
 
         // Call webservice without necessary permissions.
         try {
@@ -182,13 +183,13 @@ class format_tiles_testcase extends advanced_testcase {
         }
 
         // Change to teacher and make sure that section name can be updated using web service update_inplace_editable().
-        $teacherrole = $DB->get_record('role', array('shortname' => 'editingteacher'));
+        $teacherrole = $DB->get_record('role', ['shortname' => 'editingteacher']);
         $this->getDataGenerator()->enrol_user($user->id, $course->id, $teacherrole->id);
 
         $res = core_external::update_inplace_editable('format_tiles', 'sectionname', $section->id, 'New section name');
-        $res = external_api::clean_returnvalue(core_external::update_inplace_editable_returns(), $res);
+        $res = \core_external\external_api::clean_returnvalue(core_external::update_inplace_editable_returns(), $res);
         $this->assertEquals('New section name', $res['value']);
-        $this->assertEquals('New section name', $DB->get_field('course_sections', 'name', array('id' => $section->id)));
+        $this->assertEquals('New section name', $DB->get_field('course_sections', 'name', ['id' => $section->id]));
     }
 
     /**
@@ -200,23 +201,23 @@ class format_tiles_testcase extends advanced_testcase {
 
         $this->resetAfterTest();
         $user = $this->getDataGenerator()->create_user();
-        $course = $this->getDataGenerator()->create_course($this->tilescourseformatoptions, array('createsections' => true));
-        $teacherrole = $DB->get_record('role', array('shortname' => 'editingteacher'));
+        $course = $this->getDataGenerator()->create_course($this->tilescourseformatoptions, ['createsections' => true]);
+        $teacherrole = $DB->get_record('role', ['shortname' => 'editingteacher']);
         $this->getDataGenerator()->enrol_user($user->id, $course->id, $teacherrole->id);
         $this->setUser($user);
 
-        $section = $DB->get_record('course_sections', array('course' => $course->id, 'section' => 2));
+        $section = $DB->get_record('course_sections', ['course' => $course->id, 'section' => 2]);
 
         // Call callback format_tiles_inplace_editable() directly.
-        $tmpl = component_callback('format_tiles', 'inplace_editable', array('sectionname', $section->id, 'Rename me again'));
+        $tmpl = component_callback('format_tiles', 'inplace_editable', ['sectionname', $section->id, 'Rename me again']);
         $this->assertInstanceOf('core\output\inplace_editable', $tmpl);
         $res = $tmpl->export_for_template($PAGE->get_renderer('core'));
         $this->assertEquals('Rename me again', $res['value']);
-        $this->assertEquals('Rename me again', $DB->get_field('course_sections', 'name', array('id' => $section->id)));
+        $this->assertEquals('Rename me again', $DB->get_field('course_sections', 'name', ['id' => $section->id]));
 
         // Try updating using callback from mismatching course format.
         try {
-            $tmpl = component_callback('format_weeks', 'inplace_editable', array('sectionname', $section->id, 'New name'));
+            $tmpl = component_callback('format_weeks', 'inplace_editable', ['sectionname', $section->id, 'New name']);
             $this->fail('Exception expected');
         } catch (moodle_exception $e) {
             $this->assertTrue(

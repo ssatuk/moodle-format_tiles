@@ -111,7 +111,7 @@ define(["jquery", "core/notification", "core/str", "core/templates"],
                             var clicked = $(e.currentTarget);
                             circles.removeClass("selected");
                             clicked.addClass("selected");
-                            colourSelectMenu.val(clicked.attr("data-colour"));
+                            colourSelectMenu.val(clicked.data("colour"));
                             $("#colourselectnotify").fadeIn(200).fadeOut(1200);
                         });
 

@@ -33,7 +33,7 @@ namespace format_tiles;
 class admin_settingspage_tabs extends \admin_settingpage {
 
     /** @var array $tabs The tabs of this page */
-    protected $tabs = array();
+    protected $tabs = [];
 
     /**
      * Add a tab.
@@ -77,14 +77,14 @@ class admin_settingspage_tabs extends \admin_settingpage {
     public function output_html() {
         global $OUTPUT;
 
-        $context = array('tabs' => array());
+        $context = ['tabs' => []];
 
         foreach ($this->get_tabs() as $index => $tab) {
-            $data = array(
+            $data = [
                 'name' => str_replace('format_tiles/' , '', $tab->name),
                 'displayname' => $tab->visiblename,
-                'html' => $tab->output_html()
-            );
+                'html' => $tab->output_html(),
+            ];
             if ($index == 0 ) {
                 $data['active'] = 1;
             }

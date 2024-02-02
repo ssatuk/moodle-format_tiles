@@ -46,4 +46,54 @@ class cm extends core_cm {
     public function __construct(course_format $format, \section_info $section, \cm_info $mod, array $displayoptions = []) {
         parent::__construct($format, $section, $mod, $displayoptions);
     }
+
+    /**
+     * Add activity information to the data structure.
+     *
+     * @param \stdClass $data the current cm data reference
+     * @param bool[] $haspartials the result of loading partial data elements
+     * @param \renderer_base $output typically, the renderer that's calling this function
+     * @return bool if the cm has format data
+     */
+    protected function add_format_data(\stdClass &$data, array $haspartials, \renderer_base $output): bool {
+        $moodlerelease = \format_tiles\util::get_moodle_release();
+        $data->ismoodle42minus = $moodlerelease <= 4.2;
+        $data->ismoodle41minus = $moodlerelease <= 4.1;
+        $data->modcontextid = $this->mod->context->id;
+        return parent::add_format_data($data, $haspartials, $output);
+    }
+
+
+    /**
+     * Add course editor attributes to the data structure.
+     * We override this so we can use local control menu class.
+     *
+     * @param \stdClass $data the current cm data reference
+     * @param \renderer_base $output typically, the renderer that's calling this function
+     * @return bool if the cm has editor data
+     */
+    protected function add_editor_data(\stdClass &$data, \renderer_base $output): bool {
+
+        parent::add_editor_data($data, $output);
+
+        if (!$this->format->show_editor()) {
+            return false;
+        }
+        $returnsection = $this->format->get_section_number();
+        // Edit actions.
+        $sectioninfo = get_fast_modinfo($this->mod->course)->get_section_info($this->mod->sectionnum);
+        $controlmenu = new \format_tiles\output\courseformat\content\cm\controlmenu (
+            $this->format,
+            $sectioninfo,
+            $this->mod,
+            $this->displayoptions
+        );
+
+        $data->controlmenu = $controlmenu->export_for_template($output);
+        if (!$this->format->supports_components()) {
+            // Add the legacy YUI move link.
+            $data->moveicon = course_get_cm_move($this->mod, $returnsection);
+        }
+        return true;
+    }
 }

@@ -37,16 +37,13 @@ define(["jquery", "core/templates", "core/config", "core/ajax", "core/str", "cor
         };
 
         const Selector = {
-            launchModuleModal: '[data-action="launch-tiles-module-modal"]',
-            launchResourceModal: '[data-action="launch-tiles-resource-modal"]',
             pageContent: "#page-content",
             regionMain: "#region-main",
             resourceModule: '.activity.resource',
             completeonevent: ".completeonevent",
-            completeonview: ".completeonview",
             activity: "li.activity",
             section: "li.section.main",
-            togglecompletion: '[data-action="toggle-manual-completion"]',
+            toggleCompletionSubtile: '[data-action="tiles-toggle-manual-completion-subtile"]',
             tileId: "#tile-",
             progressIndicatorId: '#tileprogress-',
             tile: '.tile',
@@ -54,8 +51,6 @@ define(["jquery", "core/templates", "core/config", "core/ajax", "core/str", "cor
             availabilityinfo: '.availabilityinfo',
             sectionId: '#section-'
         };
-
-        var isBlurred = false;
 
         /**
          * When completion is changed it may be necessary to re-render a progress indicator.
@@ -139,10 +134,12 @@ define(["jquery", "core/templates", "core/config", "core/ajax", "core/str", "cor
          * Used to refresh section contents when completion is checked.
          * Can also be used by other components e.g. blocks that show completion.
          * @param {number} sectionNum the number of the section where completion changed.
-         * @param {number} cmid the course module where completion changed.
+         * @param {number} cmId the course module where completion changed.
          */
-        const triggerCompletionChangedEvent = function (sectionNum, cmid) {
-            $(document).trigger('format-tiles-completion-changed', {section: sectionNum, cmid: cmid});
+        const triggerCompletionChangedEvent = function (sectionNum, cmId) {
+            if (sectionNum > 0 || cmId > 0) {
+                $(document).trigger('format-tiles-completion-changed', {courseid: courseId, section: sectionNum, cmid: cmId});
+            }
         };
 
         /**
@@ -241,15 +238,34 @@ define(["jquery", "core/templates", "core/config", "core/ajax", "core/str", "cor
                         loadingString = s[0] + '  ...';
                     });
                     // Included like this so that later dynamically added boxes are covered.
-                    $("body").on("click", Selector.togglecompletion, function (e) {
+                    // We only need to handle this here for subtiles.
+                    // Regular course modules use data-action="toggle-manual-completion" instead which triggers core.
+                    $("body").on("click", Selector.toggleCompletionSubtile, function (e) {
                         // If this is a subtile, replace button with a spinner pending reload of activities over JS.
                         // Otherwise the core JS will replace with its own with different style.
                         // See core_course/manual_completion_toggle.
                         const currentTarget = $(e.currentTarget);
-                        if (currentTarget.closest('.section').hasClass('subtiles')) {
-                            currentTarget.replaceWith(
-                                '<div class="completionspinner spinner-grow spinner-grow-sm text-secondary mt-2 mr-2"'
-                                + ' role="status"><span class="sr-only">' + loadingString + '</span></div>'
+                        const section = currentTarget.closest('li.section');
+                        currentTarget.replaceWith(
+                            '<span class="completionspinner spinner-grow spinner-grow-sm text-secondary mt-2 mr-2"'
+                            + ' role="status"><span class="sr-only">' + loadingString + '</span></span>'
+                        );
+                        const cmId = parseInt(currentTarget.data('cmid'));
+                        ajax.call([{
+                            methodname: "core_completion_update_activity_completion_status_manually",
+                            args: {cmid: cmId, completed: currentTarget.data('complete') !== 1}
+                        }])[0].done((res) => {
+                            if (res.status === true) {
+                                triggerCompletionChangedEvent(parseInt(section.attr('data-section')), cmId);
+                            }
+                        });
+
+                        // If this is in a modal header, trigger refresh of the main window completion too.
+                        if (currentTarget.closest('.embed-module-buttons').length !== 0) {
+                            const cmId = currentTarget.data('cmid');
+                            const sectionNum = $('li#module-' + cmId).closest(Selector.section).attr(dataKeys.section);
+                            triggerCompletionChangedEvent(
+                                sectionNum ? parseInt(sectionNum) : 0, cmId ? parseInt(cmId) : 0
                             );
                         }
                     });
@@ -259,36 +275,16 @@ define(["jquery", "core/templates", "core/config", "core/ajax", "core/str", "cor
                         // Some themes e.g. RemUI do not have a #page-content div, so use #region-main.
                         pageContent = $("#region-main");
                     }
-                    pageContent
-                        .on("click", Selector.launchModuleModal + ", " + Selector.launchResourceModal, function (e) {
-                            var clickedActivity = $(e.currentTarget).closest(Selector.activity);
-                            if (clickedActivity.hasClass("completeonview")) {
-                                const sectionNum = clickedActivity.closest(Selector.section).attr(dataKeys.section);
-                                const cmid = clickedActivity.attr('data-cmid');
-                                triggerCompletionChangedEvent(
-                                    sectionNum ? parseInt(sectionNum) : 0, cmid ? parseInt(cmid) : 0
-                                );
-                            }
-                        });
-
-                    // When the user returns to the main tab/window, refresh completion data.
-                    // (Completion may have changed since the last focus, e.g. activity opened in new window).
-                    $(window).on('focus', function() {
-                        if (isBlurred) {
-                            // We are returning to current window.
-                            const openSection = $('li.section.state-visible').attr('data-section');
-                            isBlurred = false;
-                            triggerCompletionChangedEvent(openSection ? parseInt(openSection) : 0, 0);
-                        }
-                    });
-                    $(window).on('blur', function() {
-                        isBlurred = true;
-                    });
 
                     // When behat tests are running, for whatever reason core completion is not initialised, so we do it here.
                     coreManualCompletion.init();
                 });
             },
+            /**
+             *
+             * @param {number} sectionNum
+             * @param {number} cmid
+             */
             triggerCompletionChangedEvent: function(sectionNum, cmid) {
                 triggerCompletionChangedEvent(sectionNum, cmid);
             },

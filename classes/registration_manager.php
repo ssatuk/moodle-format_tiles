@@ -81,7 +81,7 @@ class registration_manager {
      */
     public static function is_registered() {
         $dbvalue = get_config('format_tiles', 'registered');
-        return is_numeric($dbvalue) && $dbvalue > 1514764800; // Newer than 1/1/2018.
+        return is_numeric($dbvalue) && $dbvalue > strtotime('1/1/2018');
     }
 
     /**
@@ -123,19 +123,18 @@ class registration_manager {
      * @return mixed
      * @throws \coding_exception
      */
-    public static function make_curl_request($data, $timeout) {
+    public static function make_curl_request($data, $url, $timeout) {
         $curl = new \curl();
         $curl->setopt(
-            array(
+            [
                 'CURLOPT_TIMEOUT' => $timeout,
                 'CURLOPT_CONNECTTIMEOUT' => $timeout,
-                'CURLOPT_URL' => self::registration_server_url(),
+                'CURLOPT_URL' => $url,
                 'CURLOPT_CUSTOMREQUEST' => "POST",
-                'CURLOPT_RETURNTRANSFER' => true
-            )
+                'CURLOPT_RETURNTRANSFER' => true,
+            ]
         );
-
-        $curloutput = json_decode($curl->post(self::registration_server_url(), json_encode($data)), true);
+        $curloutput = json_decode($curl->post($url, json_encode($data)), true);
         $curloutput['http_code'] = $curl->get_info()['http_code'];
         $curloutput['errno'] = $curl->get_errno();
         return $curloutput;
@@ -151,7 +150,7 @@ class registration_manager {
         if (self::is_registered()) {
             return true;
         }
-        $serverresponse = self::make_curl_request($data, 6);
+        $serverresponse = self::make_curl_request($data, self::registration_server_url(), 6);
         $result = self::parse_server_response(self::process_data($serverresponse));
         if ($result && $result['status'] && self::validate_key($result['key'])) {
             self::set_registered();

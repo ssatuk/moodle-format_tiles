@@ -24,7 +24,6 @@
 
 defined('MOODLE_INTERNAL') || die();
 global $PAGE, $USER, $SESSION, $CFG;
-require_once($CFG->dirroot . '/course/format/tiles/locallib.php');
 
 // Horrible backwards compatible parameter aliasing.
 if ($topic = optional_param('topic', 0, PARAM_INT)) {
@@ -60,7 +59,7 @@ $userstopjsnav = get_user_preferences('format_tiles_stopjsnav', 0);
 $usejsnav = !$userstopjsnav && get_config('format_tiles', 'usejavascriptnav') && !core_useragent::is_ie();
 
 // Inline CSS may be required if this course is using different tile colours to default - echo this first if so.
-$inlinecsstemplateable = new \format_tiles\output\inline_css_output($course, $ismobile, $usejsnav, $allowphototiles);
+$inlinecsstemplateable = new \format_tiles\output\inline_css_output($course, $ismobile, $usejsnav, $allowphototiles, $isediting);
 $inlinecssdata = $inlinecsstemplateable->export_for_template($renderer);
 echo $renderer->render_from_template('format_tiles/inline-css', $inlinecssdata);
 
@@ -96,9 +95,7 @@ if (!empty($displaysection)) {
     $jssectionnum = $SESSION->editing_last_edited_section;
 }
 
-$allowedmodmodals = format_tiles_allowed_modal_modules();
-
-$jsparams = array(
+$jsparams = [
     'courseId' => $course->id,
     'useJSNav' => $usejsnav, // See also lib.php page_set_course().
     'isMobile' => $ismobile,
@@ -111,13 +108,13 @@ $jsparams = array(
         && !optional_param("skipcheck", 0, PARAM_INT)
         && !isset($SESSION->format_tiles_skip_width_check)
         && $usejsnav,
-    'enablecompletion' => $course->enablecompletion
-);
+    'enablecompletion' => $course->enablecompletion,
+];
 
 if (!$isediting) {
     // Initalise the main JS module for non editing users.
     $PAGE->requires->js_call_amd(
-        'format_tiles/course', 'init', $jsparams
+        'format_tiles/course', 'init', array_merge($jsparams, ['courseContextId' => $context->id])
     );
 }
 if ($isediting) {
@@ -138,16 +135,9 @@ if ($isediting) {
         );
     }
 }
-// Now the modules which we want whether editing or not.
 
-// If we are allowing course modules to be displayed in modal windows when clicked.
-if (!empty($allowedmodmodals['resources']) || !empty($allowedmodmodals['modules'])) {
-    $PAGE->requires->js_call_amd(
-        'format_tiles/course_mod_modal', 'init', array($course->id, $isediting)
-    );
-}
 if ($course->enablecompletion) {
-    $PAGE->requires->js_call_amd('format_tiles/completion', 'init', array($course->id));
+    $PAGE->requires->js_call_amd('format_tiles/completion', 'init', [$course->id]);
 }
 
 /**

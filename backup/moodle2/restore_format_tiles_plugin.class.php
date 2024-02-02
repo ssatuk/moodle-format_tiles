@@ -23,25 +23,7 @@
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-/**
- * Tiles filter bar course setting - show no filters.
- */
-const FILTER_NONE = 0;
-
-/**
- * Tiles filter bar course setting - show tile number filter buttons only.
- */
-const FILTER_NUMBERS_ONLY = 1;
-
-/**
- * Tiles filter bar course setting - show outcome filter buttons only.
- */
-const FILTER_OUTCOMES_ONLY = 2;
-
-/**
- * Tiles filter bar course setting - show filter buttons for tile numbers and outcomes.
- */
-const FILTER_OUTCOMES_AND_NUMBERS = 3;
+use format_tiles\format_option;
 
 /**
  * Specialised restore for format_tiles
@@ -75,27 +57,29 @@ class restore_format_tiles_plugin extends restore_format_plugin {
      * Carries out some checks at start of course restore.
      *
      * @return restore_path_element[]
-     * @return restore_path_element[]
      * @throws dml_exception
      * @throws moodle_exception
      */
     public function define_course_plugin_structure() {
         global $DB;
-        // Since this method is executed before the restore we can do some pre-checks here.
-        $this->fail_if_course_includes_excess_sections();
+        if ($this->is_tiles_course()) {
+            // Since this method is executed before the restore we can do some pre-checks here.
+            $this->fail_if_course_includes_excess_sections();
 
-        // In case of merging backup into existing course find the current number of sections.
-        $target = $this->step->get_task()->get_target();
-        if (($target == backup::TARGET_CURRENT_ADDING || $target == backup::TARGET_EXISTING_ADDING) &&
-            $this->need_restore_numsections()) {
-            $maxsection = $DB->get_field_sql(
-                'SELECT max(section) FROM {course_sections} WHERE course = ?',
-                [$this->step->get_task()->get_courseid()]);
-            $this->originalnumsections = (int)$maxsection;
+            // In case of merging backup into existing course find the current number of sections.
+            $target = $this->step->get_task()->get_target();
+            if (($target == backup::TARGET_CURRENT_ADDING || $target == backup::TARGET_EXISTING_ADDING) &&
+                $this->need_restore_numsections()) {
+                $maxsection = $DB->get_field_sql(
+                    'SELECT max(section) FROM {course_sections} WHERE course = ?',
+                    [$this->step->get_task()->get_courseid()]);
+                $this->originalnumsections = (int)$maxsection;
+            }
+
+            // Dummy path element is needed in order for after_restore_course() to be called.
+            return [new restore_path_element('dummy_course', $this->get_pathfor('/dummycourse'))];
         }
-
-        // Dummy path element is needed in order for after_restore_course() to be called.
-        return [new restore_path_element('dummy_course', $this->get_pathfor('/dummycourse'))];
+        return [];
     }
 
     /**
@@ -106,13 +90,13 @@ class restore_format_tiles_plugin extends restore_format_plugin {
      */
     private function fail_if_course_includes_excess_sections() {
         $backupinfo = $this->step->get_task()->get_info();
-        if (!isset($backupinfo->original_course_format) || $backupinfo->original_course_format !== 'tiles') {
-            return;
-        }
         $maxallowed = \format_tiles\course_section_manager::get_max_sections();
 
         // Get the sections from the backup and check them one by one.
         $totalincluded = 0;
+        if (empty($backupinfo->sections)) {
+            return;
+        }
         foreach ($backupinfo->sections as $section) {
             // Is the section included or has the user excluded it (unchecked box)?  Ignore if excluded.
             $sectionid = $section->sectionid;
@@ -158,9 +142,8 @@ class restore_format_tiles_plugin extends restore_format_plugin {
             // We've already done this very recently (probably in the same restore process) so don't need to do it now.
             return true;
         }
-        $SESSION->$sessionvar = time();
 
-        $maxsection = $DB->get_field('course_sections', 'MAX(section)',  array('course' => $courseid));
+        $maxsection = $DB->get_field('course_sections', 'MAX(section)',  ['course' => $courseid]);
 
         if ($maxsection && $maxsection > $maxallowed + 1) {
 
@@ -171,7 +154,7 @@ class restore_format_tiles_plugin extends restore_format_plugin {
                 $admintoolsbutton = \html_writer::link(
                     $admintoolsurl,
                     get_string('checkforproblemcourses', 'format_tiles'),
-                    array('class' => 'btn btn-secondary ml-2')
+                    ['class' => 'btn btn-secondary ml-2']
                 );
             } else {
                 $admintoolsurl = '';
@@ -182,9 +165,15 @@ class restore_format_tiles_plugin extends restore_format_plugin {
             $a->maxallowed = $maxallowed;
             \core\notification::error(get_string('restoreincorrectsections', 'format_tiles', $a) . $admintoolsbutton);
             throw new moodle_exception('restorefailed', 'format_tiles', $admintoolsurl, $a);
-        } else {
-            return true;
         }
+
+        if (!defined('BEHAT_SITE_RUNNING')) {
+            // Don't set this if running behat tests, as it produces error which does not appear in regular use.
+            // "Script /moodle/backup/restore.php mutated the session after it was closed ...".
+            $SESSION->$sessionvar = time();
+        }
+
+        return true;
     }
 
     /**
@@ -195,13 +184,29 @@ class restore_format_tiles_plugin extends restore_format_plugin {
      * @throws moodle_exception
      */
     public function define_section_plugin_structure() {
+        if ($this->is_tiles_course()) {
+            // We put this here as otherwise we don't seem to have a way of making sure it is done on import as well as restore.
+            $this->check_destination_course_section_count();
+        }
+        $fileapiparams = \format_tiles\tile_photo::file_api_params();
+        $this->add_related_files(
+            $fileapiparams['component'],
+            $fileapiparams['filearea'],
+            null
+        );
 
-        // We have to put this here as otherwise we don't seem to have a way of making sure it is done on import as well as restore.
-        $this->check_destination_course_section_count();
+        // This defines 'process_tiles_section' below.
+        return [new restore_path_element('tiles_section', $this->get_pathfor('/'))];
+    }
 
-        $this->add_related_files('format_tiles', 'tilephoto', null);
-        // Dummy path element is needed in order for after_restore_section() to be called.
-        return [new restore_path_element('dummy_section', $this->get_pathfor('/dummysection'))];
+    /**
+     * Most of the public methods in this class are called on restore of all courses, not just Tiles format.
+     * In some cases we check that the format we are restoring is Tiles and only act if it is.
+     * @return bool
+     */
+    private function is_tiles_course(): bool {
+        $backupinfo = $this->step->get_task()->get_info();
+        return isset($backupinfo->original_course_format) && $backupinfo->original_course_format == 'tiles';
     }
 
     /**
@@ -212,42 +217,90 @@ class restore_format_tiles_plugin extends restore_format_plugin {
     }
 
     /**
-     * Dummy process method
+     * Process the restored section.
+     * @param $data
+     * @throws moodle_exception
      */
-    public function process_dummy_section() {
-
+    public function process_tiles_section($data) {
+        if ($this->is_tiles_course()) {
+            $this->set_format_opt($data);
+        }
     }
 
     /**
-     * Executed after course restore is complete
+     * Process an item for format_tiles_tile_options table.
+     * @param array $data
+     * @throws moodle_exception
+     */
+    private function set_format_opt($data) {
+        if (!isset($data['optiontype'])) {
+            // Avoid exception if missing data.
+            return false;
+        }
+        $elementid = $this->task->get_sectionid();
+
+        try {
+            $res = \format_tiles\format_option::set(
+                $this->task->get_courseid(),
+                $data['optiontype'],
+                $elementid,
+                $data['optionvalue']
+            );
+            if (!$res) {
+                debugging('Error could not set file/icon name ' . $data['optionvalue']);
+            }
+            return $res;
+        } catch (Exception $e) {
+            debugging($e->getMessage(), DEBUG_DEVELOPER);
+            throw new moodle_exception(
+                'invalidrecordid', 'format_tiles', '',
+                'Could not insert photo. Database table format_tiles_tile_options is not ready.'.
+                '  An administrator must visit the notifications section.');
+        }
+    }
+
+    /**
+     * Executed after section restore is complete
      *
-     * This method is only executed if course configuration was overridden
-     * @return bool|stored_file
      * @throws dml_exception
      * @throws file_exception
-     * @throws stored_file_creation_exception
+     * @throws stored_file_creation_exception|moodle_exception
      */
     public function after_restore_section() {
-
         global $DB;
-        $data = $this->connectionpoint->get_data();
-        if (isset($data['path']) && $data['path'] = '/section' && isset($data['tags']['id'])) {
-            $oldsectionid = $data['tags']['id'];
-            $oldsectionnum = $data['tags']['number'];
+        if ($this->is_tiles_course()) {
+            $data = $this->connectionpoint->get_data();
+            if (isset($data['path']) && $data['path'] = '/section' && isset($data['tags']['id'])) {
+                $oldsectionid = $data['tags']['id'];
+                $oldsectionnum = $data['tags']['number'];
 
-            $newcourseid = $this->step->get_task()->get_courseid();
-            $newsectionid = $DB->get_field('course_sections', 'id', array(
-                    'course' => $newcourseid,
-                    'section' => $oldsectionnum
-                )
-            );
-            if ($newsectionid) {
-                return self::update_file_record(
-                    $newcourseid, context_course::instance($newcourseid)->id, $oldsectionid, $newsectionid
+                $newcourseid = $this->step->get_task()->get_courseid();
+                $newsectionid = $DB->get_field('course_sections', 'id',
+                    ['course' => $newcourseid, 'section' => $oldsectionnum]
                 );
+                if ($newsectionid) {
+                    self::update_file_records_sections(
+                        $newcourseid, context_course::instance($newcourseid)->id, $oldsectionid, $newsectionid
+                    );
+                    \format_tiles\format_option::migrate_legacy_format_options(
+                        $this->step->get_task()->get_courseid(),
+                        $newsectionid
+                    );
+
+                    // Delete references to tile outcomes under section format options (now incorrect in restored course).
+                    // Users will have to set out up outcomes in new course for now if they want to.
+                    $DB->delete_records(
+                        'course_format_options',
+                        [
+                            'name' => 'tileoutcomeid',
+                            'format' => 'tiles',
+                            'courseid' => $this->step->get_task()->get_courseid(),
+                            'sectionid' => $newsectionid,
+                        ]
+                    );
+                }
             }
         }
-        return false;
     }
 
     /**
@@ -258,83 +311,82 @@ class restore_format_tiles_plugin extends restore_format_plugin {
      */
     public function after_restore_course() {
         global $DB;
-        // This function will be executed on every restore, whether or not the restored course uses this format.
-        // So before doing anything else, check if the restored course is using format_tiles or not.
-        $backupinfo = $this->step->get_task()->get_info();
-        if ($backupinfo->original_course_format !== 'tiles') {
-            // Backup is from another course format, so we bail out (the other format will take care of everything).
-            // Moving this here fixes issue #4.
-            return;
-        }
-        $currentfilterbarsetting = $DB->get_record(
-            'course_format_options',
-            array('name' => 'displayfilterbar', 'format' => 'tiles', 'courseid' => $this->step->get_task()->get_courseid())
-        );
-        if ($currentfilterbarsetting && $currentfilterbarsetting->value == FILTER_OUTCOMES_ONLY
-            || $currentfilterbarsetting->value == FILTER_OUTCOMES_AND_NUMBERS) {
-            // If the new course has the filter bar set to use outcomes then switch it.
-            // Tile outcomes will not work correctly in the new course as they include ids from the old course.
-            // This is a temporary solution until the tile outcomes code can be refactored not to use outcome ids.
-            $newrecord = new stdClass();
-            $newrecord->id = $currentfilterbarsetting->id;
-            if ($currentfilterbarsetting->value == FILTER_OUTCOMES_ONLY) {
-                $newrecord->value = FILTER_NONE;
-                $DB->update_record('course_format_options', $newrecord);
-            } else if ($currentfilterbarsetting->value == FILTER_OUTCOMES_AND_NUMBERS) {
-                $newrecord->value = FILTER_NUMBERS_ONLY;
-                $DB->update_record('course_format_options', $newrecord);
+        if ($this->is_tiles_course()) {
+            $currentfilterbarsetting = $DB->get_record(
+                'course_format_options',
+                ['name' => 'displayfilterbar', 'format' => 'tiles', 'courseid' => $this->step->get_task()->get_courseid()]
+            );
+
+            $isoutcomesfilter = $currentfilterbarsetting &&
+                in_array($currentfilterbarsetting->value,
+                    [format_option::FILTER_OUTCOMES_ONLY, format_option::FILTER_OUTCOMES_AND_NUMBERS]
+                );
+            if ($isoutcomesfilter) {
+                // If the new course has the filter bar set to use outcomes then switch it.
+                // Tile outcomes will not work correctly in the new course as they include ids from the old course.
+                // This is a temporary solution until the tile outcomes code can be refactored not to use outcome ids.
+                $newrecord = new stdClass();
+                $newrecord->id = $currentfilterbarsetting->id;
+                if ($currentfilterbarsetting->value == format_option::FILTER_OUTCOMES_ONLY) {
+                    $newrecord->value = format_option::FILTER_NONE;
+                    $DB->update_record('course_format_options', $newrecord);
+                } else {
+                    $newrecord->value = format_option::FILTER_NUMBERS_ONLY;
+                    $DB->update_record('course_format_options', $newrecord);
+                }
+
+                // Delete references to tile outcomes under section format options (now incorrect in restored course).
+                // Users will have to set out up outcomes in new course for now if they want to.
+                $DB->delete_records(
+                    'course_format_options',
+                    ['name' => 'tileoutcomeid', 'format' => 'tiles', 'courseid' => $this->step->get_task()->get_courseid()]
+                );
             }
 
-            // Delete references to tile outcomes under section format options (now incorrect in restored course).
-            // Users will have to set out up outcomes in new course for now if they want to.
-            $DB->delete_records(
+            // The name of course format option "defaulttileicon" for a course used to be "defaulttiletopleftdisplay".
+            // Before this was changed for clarity in summer 2018 release, so change it if present in the backup if present.
+            // Same for the topic level option "tiletopleftthistile" which becomes "tileicon".
+            $courseid = $this->step->get_task()->get_courseid();
+            $DB->set_field('course_format_options', 'name', 'defaulttileicon',
+                ['format' => 'tiles', 'name' => 'defaulttiletopleftdisplay', 'courseid' => $courseid]);
+            $DB->set_field('course_format_options', 'name', 'tileicon',
+                ['format' => 'tiles', 'name' => 'tiletopleftthistile', 'courseid' => $courseid]);
+
+            // Old versions of this plugin used to refer to "course default" for each icon if the user had not selected one.
+            // This no longer applies so delete them if present.
+            $DB->delete_records_select(
                 'course_format_options',
-                array('name' => 'tileoutcomeid', 'format' => 'tiles', 'courseid' => $this->step->get_task()->get_courseid())
+                "format  = 'tiles' AND name = 'tileicon' AND value = 'course default' AND courseid = :courseid",
+                ["courseid" => $courseid]
             );
-        }
 
-        // The name of course format option "defaulttileicon" for a course used to be "defaulttiletopleftdisplay".
-        // Before this was changed for clarity in summer 2018 release, so change it if present in the backup if present.
-        // Same for the topic level option "tiletopleftthistile" which becomes "tileicon".
-        $courseid = $this->step->get_task()->get_courseid();
-        $DB->set_field('course_format_options', 'name', 'defaulttileicon',
-            array('format' => 'tiles', 'name' => 'defaulttiletopleftdisplay', 'courseid' => $courseid));
-        $DB->set_field('course_format_options', 'name', 'tileicon',
-            array('format' => 'tiles', 'name' => 'tiletopleftthistile', 'courseid' => $courseid));
+            $data = $this->connectionpoint->get_data();
+            if (!isset($data['tags']['numsections']) || !$this->need_restore_numsections()) {
+                // Backup file does not even have 'numsections' or was made in Moodle 3.3+, we don't need to process 'numsections'.
+                return;
+            }
 
-        // Old versions of this plugin used to refer to "course default" for each icon if the user had not selected one.
-        // This no longer applies so delete them if present.
-        $DB->delete_records_select(
-            'course_format_options',
-            "format  = 'tiles' AND name = 'tileicon' AND value = 'course default' AND courseid = :courseid",
-            array("courseid" => $courseid)
-        );
-
-        $data = $this->connectionpoint->get_data();
-        if (!isset($data['tags']['numsections']) || !$this->need_restore_numsections()) {
-            // Backup file does not even have 'numsections' or was made in Moodle 3.3+, we don't need to process 'numsections'.
-            return;
-        }
-
-        $numsections = (int)$data['tags']['numsections'];
-        // Check each section from the backup file.
-        // If it was "orphaned" in the original course, mark it as hidden.
-        // This will leave all activities in it visible and available just as it was in the original course.
-        // Exception is when we restore with merging and the course already had a section with this section number.
-        // In this case we don't modify the visibility.
-        foreach ($backupinfo->sections as $key => $section) {
-            if ($this->step->get_task()->get_setting_value($key . '_included')) {
-                $sectionnum = (int)$section->title;
-                if ($sectionnum > $numsections && $sectionnum > $this->originalnumsections) {
-                    $DB->execute("UPDATE {course_sections} SET visible = 0 WHERE course = ? AND section = ?",
-                        [$this->step->get_task()->get_courseid(), $sectionnum]);
+            $numsections = (int)$data['tags']['numsections'];
+            // Check each section from the backup file.
+            // If it was "orphaned" in the original course, mark it as hidden.
+            // This will leave all activities in it visible and available just as it was in the original course.
+            // Exception is when we restore with merging and the course already had a section with this section number.
+            // In this case we don't modify the visibility.
+            $backupinfo = $this->step->get_task()->get_info();
+            foreach ($backupinfo->sections as $key => $section) {
+                if ($this->step->get_task()->get_setting_value($key . '_included')) {
+                    $sectionnum = (int)$section->title;
+                    if ($sectionnum > $numsections && $sectionnum > $this->originalnumsections) {
+                        $DB->execute("UPDATE {course_sections} SET visible = 0 WHERE course = ? AND section = ?",
+                            [$this->step->get_task()->get_courseid(), $sectionnum]);
+                    }
                 }
             }
-        }
 
-        // While we are here, delete any temp tile photo files (we don't expect any but just in case).
-        $fs = get_file_storage();
-        $fs->delete_area_files(context_course::instance($courseid)->id, 'format_tiles', 'temptilephoto');
+            // While we are here, delete any temp tile photo files (we don't expect any but just in case).
+            $fs = get_file_storage();
+            $fs->delete_area_files(context_course::instance($courseid)->id, 'format_tiles', 'temptilephoto');
+        }
     }
 
     /**
@@ -343,36 +395,40 @@ class restore_format_tiles_plugin extends restore_format_plugin {
      * This handles it and section ids from the new sections end up in {files} table.
      * @param int $newcourseid
      * @param int $contextid
-     * @param int $oldsectionid
-     * @param int $newsectionid
+     * @param int $olditemid the old itemid (is used to contain section id for section tiles)
+     * @param int $newitemid the new itemid (is used to contain section id for section tiles)
      * @return bool|stored_file
      * @throws dml_exception
      * @throws file_exception
      * @throws stored_file_creation_exception
      */
-    private static function update_file_record($newcourseid, $contextid, $oldsectionid, $newsectionid) {
+    private static function update_file_records_sections($newcourseid, $contextid, $olditemid, $newitemid) {
         global $DB;
-        $record = $DB->get_record_select(
+        $records = $DB->get_records_select(
             'files',
             "contextid = :coursecontextid AND component = 'format_tiles'
             AND filearea = 'tilephoto' AND filepath = '/tilephoto/'
-            AND itemid = :oldsectionid AND filesize > 0",
-            array ('coursecontextid' => $contextid, 'oldsectionid' => $oldsectionid)
+            AND itemid = :olditemid AND filesize > 0",
+            ['coursecontextid' => $contextid, 'olditemid' => $olditemid]
         );
-        if ($record) {
+        if (!empty($records)) {
             $fs = get_file_storage();
-            $record->itemid = $newsectionid;
-            $oldfile = $fs->get_file_by_id($record->id);
-            $newfile = false;
-            if ($oldfile) {
-                // We have a file in the table with the old section id.
-                // However if we are merging a backup into an existing course, the new section may already have a photo too.
-                // We have to delete it if it does, as well as delete the old sec id version.
-                \format_tiles\tile_photo::delete_file_from_ids($newcourseid, $newsectionid);
-                $newfile = $fs->create_file_from_storedfile($record, $oldfile);
-                $oldfile->delete();
+            foreach ($records as $record) {
+                $oldfile = $fs->get_file_by_id($record->id);
+                if ($oldfile) {
+                    // We have a file in the table with the old section id.
+                    // However if we are merging a backup into an existing course, the new section may already have a photo too.
+                    // We have to delete it if it does, before we give new photos the new section uid.
+                    \format_tiles\tile_photo::delete_files_from_ids($newcourseid, $newitemid);
+
+                    // Now we can create the new file with new section id.
+                    $record->itemid = $newitemid;
+                    $fs->create_file_from_storedfile($record, $oldfile);
+
+                    // And finally delete the old file.
+                    $oldfile->delete();
+                }
             }
-            return $newfile;
         }
         return false;
     }

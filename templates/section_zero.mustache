@@ -61,7 +61,7 @@
 }}
 {{#section_zero_show}}
     {{#section_zero}}
-        <li id="section-0" data-section="0" class="section main clearfix" role="region">
+        <div id="section-0" data-section="0" class="section main clearfix">
             <span class="hidden sectionname">{{title}}</span>
             {{#editing}}
                 <a title="{{#str}}editsummary, core{{/str}}" href="{{{config.wwwroot}}}/course/editsection.php?id={{secid}}&sr={{tileid}}">
@@ -70,7 +70,7 @@
             {{/editing}}
             <div class="content">
                 <div class="summary">{{{summary}}}</div>
-                <ul class="section img-text {{#usesubtilesseczero}}subtiles{{/usesubtilesseczero}}{{^usesubtilesseczero}}nosubtiles{{/usesubtilesseczero}}
+                <ul id="sec-zero-cm-list" class="pl-0 {{#usesubtilesseczero}}subtiles{{/usesubtilesseczero}}{{^usesubtilesseczero}}nosubtiles{{/usesubtilesseczero}}
                     {{#useSubtiles}}{{#usesubtilesseczero}}subtiles{{/usesubtilesseczero}}{{/useSubtiles}}">
                     {{#content}}
                         {{#course_modules}}
@@ -82,6 +82,6 @@
                     {{{section_zero_add_cm_control_html}}}
                 {{/editing}}
             </div>
-        </li>
+        </div>
     {{/section_zero}}
 {{/section_zero_show}}

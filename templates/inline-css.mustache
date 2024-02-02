@@ -49,7 +49,8 @@
 }}
 
 <style>
-    .format-tiles .course-content ul.tiles .tile,
+    .format-tiles .course-content ul.tiles .tile.tilestyle-1,
+    .format-tiles .course-content ul.tiles .tile.tilestyle-2,
     .format-tiles li.section:not(#section-0) .course-section-header {
         border-top-color: {{base_colour}};
         border-radius: 0;
@@ -61,16 +62,17 @@
     .format-tiles .tile-bg {
         background-color: {{tile_light_colour}};
     }
-    .format-tiles ul.tiles .tile-clickable:hover,
-    .format-tiles ul.tiles .tile_bar.clickable:hover,
-    .format-tiles ul.tiles .tile-clickable.current:hover{
+    .format-tiles ul.tiles .tile-clickable.tilestyle-1:hover,
+    .format-tiles ul.tiles .tile-clickable.tilestyle-1.current:hover,
+    .format-tiles ul.tiles .tile-clickable.tilestyle-2:hover,
+    .format-tiles ul.tiles .tile-clickable.tilestyle-2.current:hover {
         border-top-color: {{tile_hover_colour}};
-        transition: border-top-color 0s;
+        transition: border-top-color 0s, transform .2s ease-in-out;
     }
     .format-tiles ul.tiles .tile.selected {
         border-top-color: {{tile_hover_colour}};
     }
-    .format-tiles ul.tiles .current .sectiontitle::after{
+    .format-tiles ul.tiles .current .sectiontitle::after {
         background-color: red;
     }
     .format-tiles ul.tiles .headerabovetiles button.selected,
@@ -132,26 +134,27 @@
         }
     {{/shade_heading_bar}}
 
-    {{#allowphototiles}}
-        .format-tiles .course-content ul.tiles .tile.phototile .photo-tile-text h3 {
-            background-color: {{photo_tile_text_bg}};
-            line-height: {{phototiletextlineheight}}px;
-            padding: {{phototiletextpadding}}px 7px;
-        }
-        .format-tiles .phototile .progress-indic,
-        .format-tiles .subtile.hasphoto .activitytype,
-        .format-tiles.editing .subtile.hasphoto .editable-title {
-            background-color: {{photo_tile_text_bg}};
-        }
-        .format-tiles li.activity.subtile.hasphoto {
-            border-top-color: {{base_colour}};
-        }
-        .format-tiles .subtile.hasphoto .btn.completion-btn,
-        .format-tiles .subtile.hasphoto .subtilecontrols,
-        .format-tiles.editing .section .activity.subtile.hasphoto .action-menu,
+    {{#isstyle1or2}}
+        {{#allowphototiles}}
+            .format-tiles .course-content ul.tiles .tile.phototile .photo-tile-text h3 {
+                background-color: {{photo_tile_text_bg}};
+                line-height: {{phototiletextlineheight}}px;
+                padding: {{phototiletextpadding}}px 7px;
+            }
+            .format-tiles .phototile .progress-indic,
+            .format-tiles .subtile.hasphoto .activitytype,
+            .format-tiles.editing .subtile.hasphoto .editable-title {
+                background-color: {{photo_tile_text_bg}};
+            }
+            .format-tiles li.activity.subtile.hasphoto {
+                border-top-color: {{base_colour}};
+            }
+            .format-tiles .subtile.hasphoto .btn.completion-btn,
+            .format-tiles .subtile.hasphoto .subtilecontrols,
+            .format-tiles.editing .section .activity.subtile.hasphoto .action-menu,
 
-    {{/allowphototiles}}
-
+        {{/allowphototiles}}
+    {{/isstyle1or2}}
     {{^ismobile}}
         {{#hidetilesinitially}}
             {{!We will remove this opacity in JS}}

@@ -11,15 +11,15 @@ Feature: PDFs can be set to open in modal windows
       | teacher1 | Teacher   | 1        | teacher1@example.com |
     And the following "courses" exist:
       | fullname | shortname | format | coursedisplay | numsections | enablecompletion |
-      | Course 1 | C1        | tiles  | 0             | 5           | 1                |
+      | Course 1 | C1-pdf    | tiles  | 0             | 5           | 1                |
     And the following "activities" exist:
       | activity | name           | intro                 | course | idnumber | section | visible | completion | defaultfilename                             | uploaded |
-      | page     | Test page name | Test page description | C1     | page1    | 1       | 1       | 0          |                                             | 0        |
-      | resource | Test PDF       | File description      | C1     | pdf1     | 1       | 1       | 1          | course/format/tiles/tests/fixtures/test.pdf | 1        |
+      | page     | Test page name | Test page description | C1-pdf | page1    | 1       | 1       | 0          |                                             | 0        |
+      | resource | Test PDF       | File description      | C1-pdf | pdf1     | 1       | 1       | 1          | course/format/tiles/tests/fixtures/test.pdf | 1        |
     And the following "course enrolments" exist:
       | user     | course | role           |
-      | student1 | C1     | student        |
-      | teacher1 | C1     | editingteacher |
+      | student1 | C1-pdf | student        |
+      | teacher1 | C1-pdf | editingteacher |
     And the following config values are set as admin:
       | config                 | value    | plugin       |
       | enablecompletion       | 1        | core         |

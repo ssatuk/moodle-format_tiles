@@ -36,7 +36,7 @@ Feature: Show/hide course sections in format_tiles
     And I wait until the page is ready
     And I follow "Collapse all"
     And I wait until the page is ready
-    And I expand section "1" for edit
+    And I toggle expand or collapse section "1" for edit
     And I wait until the page is ready
     And I add a "Forum" to section "1" and I fill the form with:
       | Forum name   | Test hidden forum 11 name        |
@@ -54,7 +54,7 @@ Feature: Show/hide course sections in format_tiles
     And I wait until the page is ready
     And I follow "Collapse all"
     And I wait until the page is ready
-    And I expand section "2" for edit
+    And I toggle expand or collapse section "2" for edit
     And I wait until the page is ready
     And I wait "1" seconds
     And I add a "Forum" to section "2" and I fill the form with:
@@ -68,7 +68,7 @@ Feature: Show/hide course sections in format_tiles
     And I wait until the page is ready
     And I follow "Collapse all"
     And I wait until the page is ready
-    And I expand section "3" for edit
+    And I toggle expand or collapse section "3" for edit
     And I wait until the page is ready
     And I wait "1" seconds
     And I add a "Forum" to section "3" and I fill the form with:

@@ -127,7 +127,7 @@ class icon_set {
         'fa-user-o',
         'fa-users',
         'fa-volume-up',
-        'fa-wrench'
+        'fa-wrench',
     ];
 
     /**
@@ -185,16 +185,16 @@ class icon_set {
             return $availableicons;
         } else {
             // Put the default course icon in first place.
-            $defaulticon = $DB->get_field('course_format_options', 'value', array(
+            $defaulticon = $DB->get_field('course_format_options', 'value', [
                 'courseid' => $courseid,
                 'format' => 'tiles',
                 'sectionid' => 0,
-                'name' => 'defaulttileicon'
-            ));
+                'name' => 'defaulttileicon',
+            ]);
             if ($defaulticon) {
                 $removedicondescription = $availableicons[$defaulticon] . ' (' . get_string('default') . ')';
                 unset($availableicons[$defaulticon]);
-                $availableicons = array_merge(array($defaulticon => $removedicondescription), $availableicons);
+                $availableicons = array_merge([$defaulticon => $removedicondescription], $availableicons);
             }
             return $availableicons;
         }
@@ -254,6 +254,7 @@ class icon_set {
             'format_tiles:filter' => 'fa-filter',
             'format_tiles:eye-slash' => 'fa-eye-slash',
             'format_tiles:home' => 'fa-home',
+            'format_tiles:image' => 'fa-image',
             'format_tiles:lock' => 'fa-lock',
             'format_tiles:star-o' => 'fa-star-o',
             'format_tiles:pencil' => 'fa-pencil',
@@ -262,29 +263,9 @@ class icon_set {
             'format_tiles:toggle-off' => 'fa-toggle-off',
             'format_tiles:toggle-on' => 'fa-toggle-on',
             'format_tiles:completion-check' => 'fa-check',
-            'format_tiles:completion-fail' => 'fa-times'
-        ];
-
-         // These are used on sub-tiles (if used) e.g. to show PDF, Excel activities.
-        $subtileicons = [
-            'format_tiles:subtile/comments-o' => 'fa-comments-o',
-            'format_tiles:subtile/database' => 'fa-database',
-            'format_tiles:subtile/feedback' => 'fa-bullhorn',
-            'format_tiles:subtile/file-excel' => 'fa-table',
-            'format_tiles:subtile/file-pdf-o' => 'fa-file-pdf-o',
-            'format_tiles:subtile/file-powerpoint-o' => 'fa-file-powerpoint-o',
-            'format_tiles:subtile/file-text-o' => 'fa-file-text-o',
-            'format_tiles:subtile/file-word-o' => 'fa-file-word-o',
-            'format_tiles:subtile/file-zip-o' => 'fa-file-zip-o',
-            'format_tiles:subtile/film' => 'fa-film',
-            'format_tiles:subtile/folder-o' => 'fa-folder-o',
-            'format_tiles:subtile/globe' => 'fa-globe',
-            'format_tiles:subtile/puzzle-piece' => 'fa-puzzle-piece',
-            'format_tiles:subtile/question-circle' => 'fa-question-circle',
-            'format_tiles:subtile/star' => 'fa-star',
-            'format_tiles:subtile/star-o' => 'fa-star-o',
-            'format_tiles:subtile/survey' => 'fa-bar-chart',
-            'format_tiles:subtile/volume-up' => 'fa-volume-up'
+            'format_tiles:completion-fail' => 'fa-times',
+            'format_tiles:ellipsis-h' => 'fa-ellipsis-h',
+            'format_tiles:plus-circle' => 'fa-plus-circle',
         ];
 
         $tileicons = [];
@@ -292,6 +273,6 @@ class icon_set {
             $pixname = str_replace('fa-', '', $icon);
             $tileicons['format_tiles:tileicon/' . $pixname] = $icon;
         }
-        return array_merge($tileicons, $generalicons, $subtileicons);
+        return array_merge($tileicons, $generalicons);
     }
 }

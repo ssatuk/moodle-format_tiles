@@ -43,14 +43,15 @@ class section extends section_base {
      * @return \stdClass data context for a mustache template
      */
     public function export_for_template(\renderer_base $output): \stdClass {
-        global $DB;
         $data = parent::export_for_template($output);
 
         // TODO class to handle this.
         $data->hasphoto = 0;
         // If photo tile backgrounds are allowed by site admin, prepare the image for this section.
         if (get_config('format_tiles', 'allowphototiles')) {
-            $tilephoto = new tile_photo($this->section->course, $this->section->id);
+            $coursecontext = \context_course::instance($this->section->course);
+            // TODO is getting course context the most efficient way?
+            $tilephoto = new tile_photo($coursecontext, $this->section->id);
             $tilephotourl = $tilephoto->get_image_url();
             if ($tilephotourl) {
                 $data->hasphoto = 1;
@@ -58,16 +59,15 @@ class section extends section_base {
                 $data->hastilephoto = $tilephotourl ? 1 : 0;
                 $data->phototileurl = $tilephotourl;
                 $data->phototileediturl = new \moodle_url(
-                    '/course/format/tiles/editimage.php',
-                    array('courseid' => $this->section->course, 'sectionid' => $this->section->id)
+                    '/course/format/tiles/editor/editimage.php',
+                    ['courseid' => $this->section->course, 'sectionid' => $this->section->id]
                 );
             }
 
         }
-        // TODO OPTIMISE THIS.
         if (!$data->hasphoto) {
-            $data->tileicon = $DB->get_field(
-                'course_format_options', 'value', ['format' => 'tiles', 'sectionid' => $this->section->id, 'name' => 'tileicon']
+            $data->tileicon = \format_tiles\format_option::get(
+                $this->section->course, \format_tiles\format_option::OPTION_SECTION_ICON, $this->section->id
             );
             if (!$data->tileicon) {
                 $formatoptions = $this->format->get_format_options();
@@ -84,6 +84,10 @@ class section extends section_base {
         if ($data->num === 0) {
             $data->collapsemenu = true;
         }
+
+        $moodlerelease = \format_tiles\util::get_moodle_release();
+        $data->ismoodle42minus = $moodlerelease <= 4.2;
+        $data->ismoodle41minus = $moodlerelease <= 4.1;
         return $data;
     }
 }

@@ -58,7 +58,7 @@ Feature: Teacher can allocate icons to tiles
 
 #    // one title edit just to check we can after the above (this is also done elsewhere)
     When I click on "Edit tile name" "link" in the "li#section-1" "css_element"
-    And I set the field "New name for topic Tile 1" to "Setting up in business"
+    And I set the field "New name for section Tile 1" to "Setting up in business"
     And I press the enter key
     Then I should not see "Tile 1" in the "region-main" "region"
     And I should see "Setting up in business" in the "li#section-1" "css_element"
@@ -66,7 +66,7 @@ Feature: Teacher can allocate icons to tiles
     And I should not see "Tile 1" in the "region-main" "region"
 
     When I click on "Edit tile name" "link" in the "li#section-2" "css_element"
-    And I set the field "New name for topic Tile 2" to "Directors' Duties"
+    And I set the field "New name for section Tile 2" to "Directors' Duties"
     And I press the enter key
     Then I should not see "Tile 2" in the "region-main" "region"
     And I should see "Directors' Duties" in the "li#section-2" "css_element"

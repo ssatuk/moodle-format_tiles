@@ -76,10 +76,7 @@ class controlmenu extends controlmenu_base {
                     'icon' => 'i/marked',
                     'name' => $highlightoff,
                     'pixattr' => ['class' => ''],
-                    'attr' => [
-                        'class' => 'editing_highlight',
-                        'data-action' => 'removemarker'
-                    ],
+                    'attr' => ['class' => 'editing_highlight', 'data-action' => 'removemarker'],
                 ];
             } else {
                 $url->param('marker', $section->section);
@@ -89,15 +86,26 @@ class controlmenu extends controlmenu_base {
                     'icon' => 'i/marker',
                     'name' => $highlight,
                     'pixattr' => ['class' => ''],
-                    'attr' => [
-                        'class' => 'editing_highlight',
-                        'data-action' => 'setmarker'
-                    ],
+                    'attr' => ['class' => 'editing_highlight', 'data-action' => 'setmarker'],
                 ];
             }
         }
 
         $parentcontrols = parent::section_control_items();
+        $controls['setphoto'] = [
+            'url'   => new \moodle_url(
+                '/course/format/tiles/editor/editimage.php',
+                ['courseid' => $course->id, 'sectionid' => $section->id]
+            ),
+            'icon' => 'i/messagecontentimage',
+            'name' => get_string('setbackgroundphoto', 'format_tiles'),
+            'pixattr' => ['class' => ''],
+            'attr' => [
+                'class' => 'editing_update', 'data-tiles-action' => 'launch-tiles-icon-picker',
+                'data-section' => $section->section,
+                'data-true-sectionid' => $section->id,
+            ],
+        ];
 
         // If the edit key exists, we are going to insert our controls after it.
         if (array_key_exists("edit", $parentcontrols)) {

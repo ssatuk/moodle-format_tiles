@@ -65,7 +65,7 @@ class format_tiles_courselib_testcase extends advanced_testcase {
         $this->assertEquals($original, array_intersect_key((array) $created, $original));
 
         // Ensure default section is created.
-        $sectioncreated = $DB->record_exists('course_sections', array('course' => $created->id, 'section' => 0));
+        $sectioncreated = $DB->record_exists('course_sections', ['course' => $created->id, 'section' => 0]);
         $this->assertTrue($sectioncreated);
 
         // Ensure that the shortname isn't duplicated.
@@ -93,10 +93,10 @@ class format_tiles_courselib_testcase extends advanced_testcase {
     public function test_create_course_with_generator() {
         global $DB;
         $this->resetAfterTest(true);
-        $course = $this->getDataGenerator()->create_course(array('format' => 'tiles'));
+        $course = $this->getDataGenerator()->create_course(['format' => 'tiles']);
 
         // Ensure default section is created.
-        $sectioncreated = $DB->record_exists('course_sections', array('course' => $course->id, 'section' => 0));
+        $sectioncreated = $DB->record_exists('course_sections', ['course' => $course->id, 'section' => 0]);
         $this->assertTrue($sectioncreated);
     }
 
@@ -110,11 +110,11 @@ class format_tiles_courselib_testcase extends advanced_testcase {
 
         $numsections = 5;
         $course = $this->getDataGenerator()->create_course(
-            array('shortname' => 'GrowingCourse',
+            ['shortname' => 'GrowingCourse',
                 'fullname' => 'Growing Course',
                 'numsections' => $numsections,
-                'format' => 'tiles'),
-            array('createsections' => true));
+                'format' => 'tiles'],
+            ['createsections' => true]);
 
         // Ensure all 6 (0-5) sections were created and course content cache works properly
         $sectionscreated = array_keys(get_fast_modinfo($course)->get_section_info_all());
@@ -195,8 +195,8 @@ class format_tiles_courselib_testcase extends advanced_testcase {
         $this->resetAfterTest();
 
         // Create the course with sections.
-        $course = $this->getDataGenerator()->create_course(array('numsections' => 10, 'format' => 'tiles'), array('createsections' => true));
-        $sections = $DB->get_records('course_sections', array('course' => $course->id));
+        $course = $this->getDataGenerator()->create_course(['numsections' => 10, 'format' => 'tiles'], ['createsections' => true]);
+        $sections = $DB->get_records('course_sections', ['course' => $course->id]);
 
         // Get the last section's time modified value.
         $section = array_pop($sections);
@@ -204,10 +204,10 @@ class format_tiles_courselib_testcase extends advanced_testcase {
 
         // Update the section.
         $this->waitForSecond(); // Ensuring that the section update occurs at a different timestamp.
-        course_update_section($course, $section, array());
+        course_update_section($course, $section, []);
 
         // Check that the time has changed.
-        $section = $DB->get_record('course_sections', array('id' => $section->id));
+        $section = $DB->get_record('course_sections', ['id' => $section->id]);
         $newtimemodified = $section->timemodified;
         $this->assertGreaterThan($oldtimemodified, $newtimemodified);
     }
@@ -223,48 +223,48 @@ class format_tiles_courselib_testcase extends advanced_testcase {
 
         // Create course with 1 section.
         $course = $this->getDataGenerator()->create_course(
-            array('shortname' => 'GrowingCourse',
+            ['shortname' => 'GrowingCourse',
                 'fullname' => 'Growing Course',
                 'numsections' => 1,
-                'format' => 'tiles'),
-            array('createsections' => true));
+                'format' => 'tiles'],
+            ['createsections' => true]);
 
         // Trash modinfo.
         rebuild_course_cache($course->id, true);
 
         // Create some cms for testing.
-        $cmids = array();
+        $cmids = [];
         for ($i = 0; $i < 4; $i++) {
-            $cmids[$i] = $DB->insert_record('course_modules', array('course' => $course->id));
+            $cmids[$i] = $DB->insert_record('course_modules', ['course' => $course->id]);
         }
 
         // Add it to section that exists.
         course_add_cm_to_section($course, $cmids[0], 1);
 
         // Check it got added to sequence.
-        $sequence = $DB->get_field('course_sections', 'sequence', array('course' => $course->id, 'section' => 1));
+        $sequence = $DB->get_field('course_sections', 'sequence', ['course' => $course->id, 'section' => 1]);
         $this->assertEquals($cmids[0], $sequence);
 
         // Add a second, this time using courseid variant of parameters.
-        $coursecacherev = $DB->get_field('course', 'cacherev', array('id' => $course->id));
+        $coursecacherev = $DB->get_field('course', 'cacherev', ['id' => $course->id]);
         course_add_cm_to_section($course->id, $cmids[1], 1);
-        $sequence = $DB->get_field('course_sections', 'sequence', array('course' => $course->id, 'section' => 1));
+        $sequence = $DB->get_field('course_sections', 'sequence', ['course' => $course->id, 'section' => 1]);
         $this->assertEquals($cmids[0] . ',' . $cmids[1], $sequence);
 
         // Check that modinfo cache was reset but not rebuilt (important for performance if calling repeatedly).
-        $this->assertGreaterThan($coursecacherev, $DB->get_field('course', 'cacherev', array('id' => $course->id)));
+        $this->assertGreaterThan($coursecacherev, $DB->get_field('course', 'cacherev', ['id' => $course->id]));
         $this->assertEmpty(cache::make('core', 'coursemodinfo')->get($course->id));
 
         // Add one to section that doesn't exist (this might rebuild modinfo).
         course_add_cm_to_section($course, $cmids[2], 2);
-        $this->assertEquals(3, $DB->count_records('course_sections', array('course' => $course->id)));
-        $sequence = $DB->get_field('course_sections', 'sequence', array('course' => $course->id, 'section' => 2));
+        $this->assertEquals(3, $DB->count_records('course_sections', ['course' => $course->id]));
+        $sequence = $DB->get_field('course_sections', 'sequence', ['course' => $course->id, 'section' => 2]);
         $this->assertEquals($cmids[2], $sequence);
 
         // Add using the 'before' option.
         course_add_cm_to_section($course, $cmids[3], 2, $cmids[2]);
-        $this->assertEquals(3, $DB->count_records('course_sections', array('course' => $course->id)));
-        $sequence = $DB->get_field('course_sections', 'sequence', array('course' => $course->id, 'section' => 2));
+        $this->assertEquals(3, $DB->count_records('course_sections', ['course' => $course->id]));
+        $sequence = $DB->get_field('course_sections', 'sequence', ['course' => $course->id, 'section' => 2]);
         $this->assertEquals($cmids[3] . ',' . $cmids[2], $sequence);
     }
 
@@ -276,11 +276,11 @@ class format_tiles_courselib_testcase extends advanced_testcase {
         global $DB;
         $this->resetAfterTest(true);
 
-        $this->getDataGenerator()->create_course(array('numsections' => 5, 'format' => 'tiles'), array('createsections' => true));
-        $course = $this->getDataGenerator()->create_course(array('numsections' => 10), array('createsections' => true));
-        $oldsections = array();
-        $sections = array();
-        foreach ($DB->get_records('course_sections', array('course' => $course->id), 'id') as $section) {
+        $this->getDataGenerator()->create_course(['numsections' => 5, 'format' => 'tiles'], ['createsections' => true]);
+        $course = $this->getDataGenerator()->create_course(['numsections' => 10], ['createsections' => true]);
+        $oldsections = [];
+        $sections = [];
+        foreach ($DB->get_records('course_sections', ['course' => $course->id], 'id') as $section) {
             $oldsections[$section->section] = $section->id;
             $sections[$section->id] = $section->section;
         }
@@ -318,18 +318,18 @@ class format_tiles_courselib_testcase extends advanced_testcase {
         global $DB;
         $this->resetAfterTest(true);
 
-        $this->getDataGenerator()->create_course(array('numsections' => 5, 'format' => 'tiles'), array('createsections' => true));
-        $course = $this->getDataGenerator()->create_course(array('numsections' => 10), array('createsections' => true));
-        $oldsections = array();
-        foreach ($DB->get_records('course_sections', array('course' => $course->id)) as $section) {
+        $this->getDataGenerator()->create_course(['numsections' => 5, 'format' => 'tiles'], ['createsections' => true]);
+        $course = $this->getDataGenerator()->create_course(['numsections' => 10], ['createsections' => true]);
+        $oldsections = [];
+        foreach ($DB->get_records('course_sections', ['course' => $course->id]) as $section) {
             $oldsections[$section->section] = $section->id;
         }
         ksort($oldsections);
 
         // Test move section down..
         move_section_to($course, 2, 4);
-        $sections = array();
-        foreach ($DB->get_records('course_sections', array('course' => $course->id)) as $section) {
+        $sections = [];
+        foreach ($DB->get_records('course_sections', ['course' => $course->id]) as $section) {
             $sections[$section->section] = $section->id;
         }
         ksort($sections);
@@ -351,18 +351,18 @@ class format_tiles_courselib_testcase extends advanced_testcase {
         global $DB;
         $this->resetAfterTest(true);
 
-        $this->getDataGenerator()->create_course(array('numsections' => 5, 'format' => 'tiles'), array('createsections' => true));
-        $course = $this->getDataGenerator()->create_course(array('numsections' => 10), array('createsections' => true));
-        $oldsections = array();
-        foreach ($DB->get_records('course_sections', array('course' => $course->id)) as $section) {
+        $this->getDataGenerator()->create_course(['numsections' => 5, 'format' => 'tiles'], ['createsections' => true]);
+        $course = $this->getDataGenerator()->create_course(['numsections' => 10], ['createsections' => true]);
+        $oldsections = [];
+        foreach ($DB->get_records('course_sections', ['course' => $course->id]) as $section) {
             $oldsections[$section->section] = $section->id;
         }
         ksort($oldsections);
 
         // Test move section up..
         move_section_to($course, 6, 4);
-        $sections = array();
-        foreach ($DB->get_records('course_sections', array('course' => $course->id)) as $section) {
+        $sections = [];
+        foreach ($DB->get_records('course_sections', ['course' => $course->id]) as $section) {
             $sections[$section->section] = $section->id;
         }
         ksort($sections);
@@ -384,41 +384,41 @@ class format_tiles_courselib_testcase extends advanced_testcase {
         global $DB;
         $this->resetAfterTest(true);
 
-        $this->getDataGenerator()->create_course(array('numsections' => 5, 'format' => 'tiles'), array('createsections' => true));
-        $course = $this->getDataGenerator()->create_course(array('numsections' => 10, 'format' => 'tiles'), array('createsections' => true));
+        $this->getDataGenerator()->create_course(['numsections' => 5, 'format' => 'tiles'], ['createsections' => true]);
+        $course = $this->getDataGenerator()->create_course(['numsections' => 10, 'format' => 'tiles'], ['createsections' => true]);
 
         // Set course marker to the section we are going to move..
         course_set_marker($course->id, 2);
         // Verify that the course marker is set correctly.
-        $course = $DB->get_record('course', array('id' => $course->id));
+        $course = $DB->get_record('course', ['id' => $course->id]);
         $this->assertEquals(2, $course->marker);
 
         // Test move the marked section down..
         move_section_to($course, 2, 4);
 
         // Verify that the course marker has been moved along with the section..
-        $course = $DB->get_record('course', array('id' => $course->id));
+        $course = $DB->get_record('course', ['id' => $course->id]);
         $this->assertEquals(4, $course->marker);
 
         // Test move the marked section up..
         move_section_to($course, 4, 3);
 
         // Verify that the course marker has been moved along with the section..
-        $course = $DB->get_record('course', array('id' => $course->id));
+        $course = $DB->get_record('course', ['id' => $course->id]);
         $this->assertEquals(3, $course->marker);
 
         // Test moving a non-marked section above the marked section..
         move_section_to($course, 4, 2);
 
         // Verify that the course marker has been moved down to accomodate..
-        $course = $DB->get_record('course', array('id' => $course->id));
+        $course = $DB->get_record('course', ['id' => $course->id]);
         $this->assertEquals(4, $course->marker);
 
         // Test moving a non-marked section below the marked section..
         move_section_to($course, 3, 6);
 
         // Verify that the course marker has been up to accomodate..
-        $course = $DB->get_record('course', array('id' => $course->id));
+        $course = $DB->get_record('course', ['id' => $course->id]);
         $this->assertEquals(3, $course->marker);
     }
 
@@ -434,11 +434,11 @@ class format_tiles_courselib_testcase extends advanced_testcase {
         $generator = $this->getDataGenerator();
 
         $coursetiles = $generator->create_course(
-            array('numsections' => 5, 'format' => 'tiles'),
-            array('createsections' => true));
+            ['numsections' => 5, 'format' => 'tiles'],
+            ['createsections' => true]);
 
-        $assign1 = $generator->create_module('assign', array('course' => $coursetiles, 'section' => 1));
-        $assign2 = $generator->create_module('assign', array('course' => $coursetiles, 'section' => 2));
+        $assign1 = $generator->create_module('assign', ['course' => $coursetiles, 'section' => 1]);
+        $assign2 = $generator->create_module('assign', ['course' => $coursetiles, 'section' => 2]);
 
         // Enrol student and teacher.
         $roleids = $DB->get_records_menu('role', null, '', 'shortname, id');
@@ -479,15 +479,15 @@ class format_tiles_courselib_testcase extends advanced_testcase {
 
         $generator = $this->getDataGenerator();
 
-        $course = $generator->create_course(array('numsections' => 6, 'format' => 'tiles'),
-            array('createsections' => true));
-        $assign0 = $generator->create_module('assign', array('course' => $course, 'section' => 0));
-        $assign1 = $generator->create_module('assign', array('course' => $course, 'section' => 1));
-        $assign21 = $generator->create_module('assign', array('course' => $course, 'section' => 2));
-        $assign22 = $generator->create_module('assign', array('course' => $course, 'section' => 2));
-        $assign3 = $generator->create_module('assign', array('course' => $course, 'section' => 3));
-        $assign5 = $generator->create_module('assign', array('course' => $course, 'section' => 5));
-        $assign6 = $generator->create_module('assign', array('course' => $course, 'section' => 6));
+        $course = $generator->create_course(['numsections' => 6, 'format' => 'tiles'],
+            ['createsections' => true]);
+        $assign0 = $generator->create_module('assign', ['course' => $course, 'section' => 0]);
+        $assign1 = $generator->create_module('assign', ['course' => $course, 'section' => 1]);
+        $assign21 = $generator->create_module('assign', ['course' => $course, 'section' => 2]);
+        $assign22 = $generator->create_module('assign', ['course' => $course, 'section' => 2]);
+        $assign3 = $generator->create_module('assign', ['course' => $course, 'section' => 3]);
+        $assign5 = $generator->create_module('assign', ['course' => $course, 'section' => 5]);
+        $assign6 = $generator->create_module('assign', ['course' => $course, 'section' => 6]);
 
         $this->setAdminUser();
 
@@ -497,11 +497,11 @@ class format_tiles_courselib_testcase extends advanced_testcase {
 
         // Attempt to delete 0-section.
         $this->assertFalse(course_delete_section($course, 0, true));
-        $this->assertTrue($DB->record_exists('course_modules', array('id' => $assign0->cmid)));
+        $this->assertTrue($DB->record_exists('course_modules', ['id' => $assign0->cmid]));
 
         // Delete last section.
         $this->assertTrue(course_delete_section($course, 6, true));
-        $this->assertFalse($DB->record_exists('course_modules', array('id' => $assign6->cmid)));
+        $this->assertFalse($DB->record_exists('course_modules', ['id' => $assign6->cmid]));
         $this->assertEquals(5, course_get_format($course)->get_last_section_number());
 
         // Delete empty section.
@@ -511,13 +511,13 @@ class format_tiles_courselib_testcase extends advanced_testcase {
         // Delete section in the middle (2).
         $this->assertFalse(course_delete_section($course, 2, false));
         $this->assertTrue(course_delete_section($course, 2, true));
-        $this->assertFalse($DB->record_exists('course_modules', array('id' => $assign21->cmid)));
-        $this->assertFalse($DB->record_exists('course_modules', array('id' => $assign22->cmid)));
+        $this->assertFalse($DB->record_exists('course_modules', ['id' => $assign21->cmid]));
+        $this->assertFalse($DB->record_exists('course_modules', ['id' => $assign22->cmid]));
         $this->assertEquals(3, course_get_format($course)->get_last_section_number());
-        $this->assertEquals(array(0 => array($assign0->cmid),
-            1 => array($assign1->cmid),
-            2 => array($assign3->cmid),
-            3 => array($assign5->cmid)), get_fast_modinfo($course)->sections);
+        $this->assertEquals([0 => [$assign0->cmid],
+            1 => [$assign1->cmid],
+            2 => [$assign3->cmid],
+            3 => [$assign5->cmid]], get_fast_modinfo($course)->sections);
 
         // Remove marked section.
         course_set_marker($course->id, 1);
@@ -536,8 +536,8 @@ class format_tiles_courselib_testcase extends advanced_testcase {
 
         $this->resetAfterTest(true);
         // Setup fixture
-        $course = $this->getDataGenerator()->create_course(array('numsections' => 5, 'format' => 'tiles'), array('createsections' => true));
-        $forum = $this->getDataGenerator()->create_module('forum', array('course' => $course->id));
+        $course = $this->getDataGenerator()->create_course(['numsections' => 5, 'format' => 'tiles'], ['createsections' => true]);
+        $forum = $this->getDataGenerator()->create_module('forum', ['course' => $course->id]);
 
         $cms = get_fast_modinfo($course)->get_cms();
         $cm = reset($cms);
@@ -557,12 +557,12 @@ class format_tiles_courselib_testcase extends advanced_testcase {
         $this->assertFalse(empty($modinfo->sections[3]));
 
         // Check that the old section's sequence no longer contains this ID
-        $oldsection = $DB->get_record('course_sections', array('id' => $oldsectionid));
+        $oldsection = $DB->get_record('course_sections', ['id' => $oldsectionid]);
         $oldsequences = explode(',', $newsection->sequence);
         $this->assertFalse(in_array($cm->id, $oldsequences));
 
         // Check that the new section's sequence now contains this ID
-        $newsection = $DB->get_record('course_sections', array('id' => $newsection->id));
+        $newsection = $DB->get_record('course_sections', ['id' => $newsection->id]);
         $newsequences = explode(',', $newsection->sequence);
         $this->assertTrue(in_array($cm->id, $newsequences));
 
@@ -583,12 +583,12 @@ class format_tiles_courselib_testcase extends advanced_testcase {
         $this->assertFalse(empty($modinfo->sections[2]));
 
         // Check that the old section's sequence no longer contains this ID
-        $oldsection = $DB->get_record('course_sections', array('id' => $oldsectionid));
+        $oldsection = $DB->get_record('course_sections', ['id' => $oldsectionid]);
         $oldsequences = explode(',', $newsection->sequence);
         $this->assertFalse(in_array($cm->id, $oldsequences));
 
         // Check that the new section's sequence now contains this ID
-        $newsection = $DB->get_record('course_sections', array('id' => $newsection->id));
+        $newsection = $DB->get_record('course_sections', ['id' => $newsection->id]);
         $newsequences = explode(',', $newsection->sequence);
         $this->assertTrue(in_array($cm->id, $newsequences));
     }
@@ -600,12 +600,15 @@ class format_tiles_courselib_testcase extends advanced_testcase {
         $this->setAdminUser();
         $this->resetAfterTest(true);
 
-        $course = $this->getDataGenerator()->create_course(array('numsections' => 1, 'format' => 'tiles'), array('createsections' => true));
+        $course = $this->getDataGenerator()->create_course(['numsections' => 1, 'format' => 'tiles'], ['createsections' => true]);
         $sectionnumber = 1;
-        $forum = $this->getDataGenerator()->create_module('forum', array('course' => $course->id),
-            array('section' => $sectionnumber));
-        $assign = $this->getDataGenerator()->create_module('assign', array('duedate' => time(),
-            'course' => $course->id), array('section' => $sectionnumber));
+        $forum = $this->getDataGenerator()->create_module('forum', ['course' => $course->id],
+            ['section' => $sectionnumber]);
+        $assign = $this->getDataGenerator()->create_module(
+            'assign',
+            ['duedate' => time(), 'course' => $course->id],
+            ['section' => $sectionnumber]
+        );
         $sink = $this->redirectEvents();
         set_section_visible($course->id, $sectionnumber, 0);
         $events = $sink->get_events();
@@ -631,13 +634,13 @@ class format_tiles_courselib_testcase extends advanced_testcase {
         $this->resetAfterTest();
 
         // Create a course.
-        $course = $this->getDataGenerator()->create_course(array('format' => 'tiles'));
+        $course = $this->getDataGenerator()->create_course(['format' => 'tiles']);
 
         // Create a category we are going to move this course to.
         $category = $this->getDataGenerator()->create_category();
 
         // Create a hidden category we are going to move this course to.
-        $categoryhidden = $this->getDataGenerator()->create_category(array('visible' => 0));
+        $categoryhidden = $this->getDataGenerator()->create_category(['visible' => 0]);
 
         // Update course and catch course_updated event.
         $sink = $this->redirectEvents();
@@ -646,29 +649,25 @@ class format_tiles_courselib_testcase extends advanced_testcase {
         $sink->close();
 
         // Get updated course information from the DB.
-        $updatedcourse = $DB->get_record('course', array('id' => $course->id), '*', MUST_EXIST);
+        $updatedcourse = $DB->get_record('course', ['id' => $course->id], '*', MUST_EXIST);
         // Validate event.
         $event = array_shift($events);
         $this->assertInstanceOf('\core\event\course_updated', $event);
         $this->assertEquals('course', $event->objecttable);
         $this->assertEquals($updatedcourse->id, $event->objectid);
         $this->assertEquals(context_course::instance($course->id), $event->get_context());
-        $url = new moodle_url('/course/edit.php', array('id' => $event->objectid));
+        $url = new moodle_url('/course/edit.php', ['id' => $event->objectid]);
         $this->assertEquals($url, $event->get_url());
         $this->assertEquals($updatedcourse, $event->get_record_snapshot('course', $event->objectid));
-        $this->assertEquals('course_updated', $event->get_legacy_eventname());
-        $this->assertEventLegacyData($updatedcourse, $event);
-        $expectedlog = array($updatedcourse->id, 'course', 'update', 'edit.php?id=' . $course->id, $course->id);
-        $this->assertEventLegacyLogData($expectedlog, $event);
 
         // Move course and catch course_updated event.
         $sink = $this->redirectEvents();
-        move_courses(array($course->id), $category->id);
+        move_courses([$course->id], $category->id);
         $events = $sink->get_events();
         $sink->close();
 
         // Return the moved course information from the DB.
-        $movedcourse = $DB->get_record('course', array('id' => $course->id), '*', MUST_EXIST);
+        $movedcourse = $DB->get_record('course', ['id' => $course->id], '*', MUST_EXIST);
         // Validate event.
         $event = array_shift($events);
         $this->assertInstanceOf('\core\event\course_updated', $event);
@@ -676,19 +675,15 @@ class format_tiles_courselib_testcase extends advanced_testcase {
         $this->assertEquals($movedcourse->id, $event->objectid);
         $this->assertEquals(context_course::instance($course->id), $event->get_context());
         $this->assertEquals($movedcourse, $event->get_record_snapshot('course', $movedcourse->id));
-        $this->assertEquals('course_updated', $event->get_legacy_eventname());
-        $this->assertEventLegacyData($movedcourse, $event);
-        $expectedlog = array($movedcourse->id, 'course', 'move', 'edit.php?id=' . $movedcourse->id, $movedcourse->id);
-        $this->assertEventLegacyLogData($expectedlog, $event);
 
         // Move course to hidden category and catch course_updated event.
         $sink = $this->redirectEvents();
-        move_courses(array($course->id), $categoryhidden->id);
+        move_courses([$course->id], $categoryhidden->id);
         $events = $sink->get_events();
         $sink->close();
 
         // Return the moved course information from the DB.
-        $movedcoursehidden = $DB->get_record('course', array('id' => $course->id), '*', MUST_EXIST);
+        $movedcoursehidden = $DB->get_record('course', ['id' => $course->id], '*', MUST_EXIST);
         // Validate event.
         $event = array_shift($events);
         $this->assertInstanceOf('\core\event\course_updated', $event);
@@ -696,11 +691,6 @@ class format_tiles_courselib_testcase extends advanced_testcase {
         $this->assertEquals($movedcoursehidden->id, $event->objectid);
         $this->assertEquals(context_course::instance($course->id), $event->get_context());
         $this->assertEquals($movedcoursehidden, $event->get_record_snapshot('course', $movedcoursehidden->id));
-        $this->assertEquals('course_updated', $event->get_legacy_eventname());
-        $this->assertEventLegacyData($movedcoursehidden, $event);
-        $expectedlog = array($movedcoursehidden->id, 'course', 'move', 'edit.php?id=' . $movedcoursehidden->id, $movedcoursehidden->id);
-        $this->assertEventLegacyLogData($expectedlog, $event);
-        $this->assertEventContextNotUsed($event);
     }
 
     /**
@@ -712,11 +702,11 @@ class format_tiles_courselib_testcase extends advanced_testcase {
         $this->resetAfterTest();
 
         // Create the course.
-        $course = $this->getDataGenerator()->create_course(array('format' => 'tiles'));
+        $course = $this->getDataGenerator()->create_course(['format' => 'tiles']);
 
         // Get the course from the DB. The data generator adds some extra properties, such as
         // numsections, to the course object which will fail the assertions later on.
-        $course = $DB->get_record('course', array('id' => $course->id), '*', MUST_EXIST);
+        $course = $DB->get_record('course', ['id' => $course->id], '*', MUST_EXIST);
 
         // Save the course context before we delete the course.
         $coursecontext = context_course::instance($course->id);
@@ -737,11 +727,6 @@ class format_tiles_courselib_testcase extends advanced_testcase {
         $this->assertEquals($course->id, $event->objectid);
         $this->assertEquals($coursecontext->id, $event->contextid);
         $this->assertEquals($course, $event->get_record_snapshot('course', $course->id));
-        $this->assertEquals('course_content_removed', $event->get_legacy_eventname());
-        // The legacy data also passed the context and options in the course object.
-        $course->context = $coursecontext;
-        $course->options = array();
-        $this->assertEventLegacyData($course, $event);
         $this->assertEventContextNotUsed($event);
     }
 
@@ -764,7 +749,7 @@ class format_tiles_courselib_testcase extends advanced_testcase {
         $userid = 2;
 
         // Create a course.
-        $course = $this->getDataGenerator()->create_course(array('format' => 'tiles'));
+        $course = $this->getDataGenerator()->create_course(['format' => 'tiles']);
 
         // Create backup file and save it to the backup location.
         $bc = new backup_controller(backup::TYPE_1COURSE, $course->id, backup::FORMAT_MOODLE,
@@ -783,7 +768,7 @@ class format_tiles_courselib_testcase extends advanced_testcase {
         $this->assertEquals($bc->get_courseid(), $event->objectid);
         $this->assertEquals(context_course::instance($bc->get_courseid())->id, $event->contextid);
 
-        $url = new moodle_url('/course/view.php', array('id' => $event->objectid));
+        $url = new moodle_url('/course/view.php', ['id' => $event->objectid]);
         $this->assertEquals($url, $event->get_url());
         $this->assertEventContextNotUsed($event);
 
@@ -810,7 +795,7 @@ class format_tiles_courselib_testcase extends advanced_testcase {
         $userid = 2;
 
         // Create a course.
-        $course = $this->getDataGenerator()->create_course(array('format' => 'tiles'));
+        $course = $this->getDataGenerator()->create_course(['format' => 'tiles']);
 
         // Create backup file and save it to the backup location.
         $bc = new backup_controller(backup::TYPE_1COURSE, $course->id, backup::FORMAT_MOODLE,
@@ -842,19 +827,8 @@ class format_tiles_courselib_testcase extends advanced_testcase {
         $this->assertEquals('course', $event->objecttable);
         $this->assertEquals($rc->get_courseid(), $event->objectid);
         $this->assertEquals(context_course::instance($rc->get_courseid())->id, $event->contextid);
-        $this->assertEquals('course_restored', $event->get_legacy_eventname());
-        $legacydata = (object) array(
-            'courseid' => $rc->get_courseid(),
-            'userid' => $rc->get_userid(),
-            'type' => $rc->get_type(),
-            'target' => $rc->get_target(),
-            'mode' => $rc->get_mode(),
-            'operation' => $rc->get_operation(),
-            'samesite' => $rc->is_samesite()
-        );
-        $url = new moodle_url('/course/view.php', array('id' => $event->objectid));
+        $url = new moodle_url('/course/view.php', ['id' => $event->objectid]);
         $this->assertEquals($url, $event->get_url());
-        $this->assertEventLegacyData($legacydata, $event);
         $this->assertEventContextNotUsed($event);
 
         // Destroy the resource controller since we are done using it.
@@ -870,8 +844,8 @@ class format_tiles_courselib_testcase extends advanced_testcase {
         $this->resetAfterTest();
 
         // Create the course with sections.
-        $course = $this->getDataGenerator()->create_course(array('numsections' => 10, 'format' => 'tiles'), array('createsections' => true));
-        $sections = $DB->get_records('course_sections', array('course' => $course->id));
+        $course = $this->getDataGenerator()->create_course(['numsections' => 10, 'format' => 'tiles'], ['createsections' => true]);
+        $sections = $DB->get_records('course_sections', ['course' => $course->id]);
 
         $coursecontext = context_course::instance($course->id);
 
@@ -882,14 +856,14 @@ class format_tiles_courselib_testcase extends advanced_testcase {
 
         // Trigger an event for course section update.
         $event = \core\event\course_section_updated::create(
-            array(
+            [
                 'objectid' => $section->id,
                 'courseid' => $course->id,
                 'context' => context_course::instance($course->id),
-                'other' => array(
+                'other' => [
                     'sectionnum' => $section->section
-                )
-            )
+                ]
+            ]
         );
         $event->add_record_snapshot('course_sections', $section);
         // Trigger and catch event.
@@ -908,14 +882,9 @@ class format_tiles_courselib_testcase extends advanced_testcase {
         $this->assertEquals($section->section, $event->other['sectionnum']);
         $expecteddesc = "The user with id '{$event->userid}' updated section number '{$event->other['sectionnum']}' for the course with id '{$event->courseid}'";
         $this->assertEquals($expecteddesc, $event->get_description());
-        $url = new moodle_url('/course/editsection.php', array('id' => $event->objectid));
+        $url = new moodle_url('/course/editsection.php', ['id' => $event->objectid]);
         $this->assertEquals($url, $event->get_url());
         $this->assertEquals($section, $event->get_record_snapshot('course_sections', $event->objectid));
-        $id = $section->id;
-        $sectionnum = $section->section;
-        $expectedlegacydata = array($course->id, "course", "editsection", 'editsection.php?id=' . $id, $sectionnum);
-        $this->assertEventLegacyLogData($expectedlegacydata, $event);
-        $this->assertEventContextNotUsed($event);
     }
 
     /**
@@ -927,8 +896,8 @@ class format_tiles_courselib_testcase extends advanced_testcase {
         $sink = $this->redirectEvents();
 
         // Create the course with sections.
-        $course = $this->getDataGenerator()->create_course(array('numsections' => 10, 'format' => 'tiles'), array('createsections' => true));
-        $sections = $DB->get_records('course_sections', array('course' => $course->id), 'section');
+        $course = $this->getDataGenerator()->create_course(['numsections' => 10, 'format' => 'tiles'], ['createsections' => true]);
+        $sections = $DB->get_records('course_sections', ['course' => $course->id], 'section');
         $coursecontext = context_course::instance($course->id);
         $section = array_pop($sections);
         course_delete_section($course, $section);
@@ -948,12 +917,6 @@ class format_tiles_courselib_testcase extends advanced_testcase {
         $this->assertEquals($expecteddesc, $event->get_description());
         $this->assertEquals($section, $event->get_record_snapshot('course_sections', $event->objectid));
         $this->assertNull($event->get_url());
-
-        // Test legacy data.
-        $sectionnum = $section->section;
-        $expectedlegacydata = array($course->id, "course", "delete section", 'view.php?id=' . $course->id, $sectionnum);
-        $this->assertEventLegacyLogData($expectedlegacydata, $event);
-        $this->assertEventContextNotUsed($event);
     }
 
     /**
@@ -964,20 +927,20 @@ class format_tiles_courselib_testcase extends advanced_testcase {
         global $DB;
 
         $this->resetAfterTest(true);
-        $course = $this->getDataGenerator()->create_course(array('numsections' => 1, 'format' => 'tiles'),
-            array('createsections' => true));
+        $course = $this->getDataGenerator()->create_course(['numsections' => 1, 'format' => 'tiles'],
+            ['createsections' => true]);
 
-        $forum = $this->getDataGenerator()->create_module('forum', array('course' => $course->id),
-            array('section' => 0));
-        $page = $this->getDataGenerator()->create_module('page', array('course' => $course->id),
-            array('section' => 0));
-        $quiz = $this->getDataGenerator()->create_module('quiz', array('course' => $course->id),
-            array('section' => 0));
-        $correctseq = join(',', array($forum->cmid, $page->cmid, $quiz->cmid));
+        $forum = $this->getDataGenerator()->create_module('forum', ['course' => $course->id],
+            ['section' => 0]);
+        $page = $this->getDataGenerator()->create_module('page', ['course' => $course->id],
+            ['section' => 0]);
+        $quiz = $this->getDataGenerator()->create_module('quiz', ['course' => $course->id],
+            ['section' => 0]);
+        $correctseq = join(',', [$forum->cmid, $page->cmid, $quiz->cmid]);
 
-        $section0 = $DB->get_record('course_sections', array('course' => $course->id, 'section' => 0));
-        $section1 = $DB->get_record('course_sections', array('course' => $course->id, 'section' => 1));
-        $cms = $DB->get_records('course_modules', array('course' => $course->id), 'id', 'id,section');
+        $section0 = $DB->get_record('course_sections', ['course' => $course->id, 'section' => 0]);
+        $section1 = $DB->get_record('course_sections', ['course' => $course->id, 'section' => 1]);
+        $cms = $DB->get_records('course_modules', ['course' => $course->id], 'id', 'id,section');
         $this->assertEquals($correctseq, $section0->sequence);
         $this->assertEmpty($section1->sequence);
         $this->assertEquals($section0->id, $cms[$forum->cmid]->section);
@@ -988,16 +951,16 @@ class format_tiles_courselib_testcase extends advanced_testcase {
         // Now let's make manual change in DB and let course_integrity_check() fix it:
 
         // 1. Module appears twice in one section.
-        $DB->update_record('course_sections', array('id' => $section0->id, 'sequence' => $section0->sequence. ','. $page->cmid));
+        $DB->update_record('course_sections', ['id' => $section0->id, 'sequence' => $section0->sequence. ','. $page->cmid]);
         $this->assertEquals(
-            array('Failed integrity check for course ['. $course->id.
+            ['Failed integrity check for course ['. $course->id.
                 ']. Sequence for course section ['. $section0->id. '] is "'.
                 $section0->sequence. ','. $page->cmid. '", must be "'.
-                $section0->sequence. '"'),
+                $section0->sequence. '"'],
             course_integrity_check($course->id));
-        $section0 = $DB->get_record('course_sections', array('course' => $course->id, 'section' => 0));
-        $section1 = $DB->get_record('course_sections', array('course' => $course->id, 'section' => 1));
-        $cms = $DB->get_records('course_modules', array('course' => $course->id), 'id', 'id,section');
+        $section0 = $DB->get_record('course_sections', ['course' => $course->id, 'section' => 0]);
+        $section1 = $DB->get_record('course_sections', ['course' => $course->id, 'section' => 1]);
+        $cms = $DB->get_records('course_modules', ['course' => $course->id], 'id', 'id,section');
         $this->assertEquals($correctseq, $section0->sequence);
         $this->assertEmpty($section1->sequence);
         $this->assertEquals($section0->id, $cms[$forum->cmid]->section);
@@ -1005,18 +968,18 @@ class format_tiles_courselib_testcase extends advanced_testcase {
         $this->assertEquals($section0->id, $cms[$quiz->cmid]->section);
 
         // 2. Module appears in two sections (last section wins).
-        $DB->update_record('course_sections', array('id' => $section1->id, 'sequence' => ''. $page->cmid));
+        $DB->update_record('course_sections', ['id' => $section1->id, 'sequence' => ''. $page->cmid]);
         // First message about double mentioning in sequence, second message about wrong section field for $page.
-        $this->assertEquals(array(
+        $this->assertEquals([
             'Failed integrity check for course ['. $course->id. ']. Course module ['. $page->cmid.
             '] must be removed from sequence of section ['. $section0->id.
             '] because it is also present in sequence of section ['. $section1->id. ']',
             'Failed integrity check for course ['. $course->id. ']. Course module ['. $page->cmid.
-            '] points to section ['. $section0->id. '] instead of ['. $section1->id. ']'),
+            '] points to section ['. $section0->id. '] instead of ['. $section1->id. ']'],
             course_integrity_check($course->id));
-        $section0 = $DB->get_record('course_sections', array('course' => $course->id, 'section' => 0));
-        $section1 = $DB->get_record('course_sections', array('course' => $course->id, 'section' => 1));
-        $cms = $DB->get_records('course_modules', array('course' => $course->id), 'id', 'id,section');
+        $section0 = $DB->get_record('course_sections', ['course' => $course->id, 'section' => 0]);
+        $section1 = $DB->get_record('course_sections', ['course' => $course->id, 'section' => 1]);
+        $cms = $DB->get_records('course_modules', ['course' => $course->id], 'id', 'id,section');
         $this->assertEquals($forum->cmid. ','. $quiz->cmid, $section0->sequence);
         $this->assertEquals(''. $page->cmid, $section1->sequence);
         $this->assertEquals($section0->id, $cms[$forum->cmid]->section);
@@ -1024,11 +987,11 @@ class format_tiles_courselib_testcase extends advanced_testcase {
         $this->assertEquals($section0->id, $cms[$quiz->cmid]->section);
 
         // 3. Module id is not present in course_section.sequence (integrity check with $fullcheck = false).
-        $DB->update_record('course_sections', array('id' => $section1->id, 'sequence' => ''));
+        $DB->update_record('course_sections', ['id' => $section1->id, 'sequence' => '']);
         $this->assertEmpty(course_integrity_check($course->id)); // Not an error!
-        $section0 = $DB->get_record('course_sections', array('course' => $course->id, 'section' => 0));
-        $section1 = $DB->get_record('course_sections', array('course' => $course->id, 'section' => 1));
-        $cms = $DB->get_records('course_modules', array('course' => $course->id), 'id', 'id,section');
+        $section0 = $DB->get_record('course_sections', ['course' => $course->id, 'section' => 0]);
+        $section1 = $DB->get_record('course_sections', ['course' => $course->id, 'section' => 1]);
+        $cms = $DB->get_records('course_modules', ['course' => $course->id], 'id', 'id,section');
         $this->assertEquals($forum->cmid. ','. $quiz->cmid, $section0->sequence);
         $this->assertEmpty($section1->sequence);
         $this->assertEquals($section0->id, $cms[$forum->cmid]->section);
@@ -1036,12 +999,12 @@ class format_tiles_courselib_testcase extends advanced_testcase {
         $this->assertEquals($section0->id, $cms[$quiz->cmid]->section);
 
         // 4. Module id is not present in course_section.sequence (integrity check with $fullcheck = true).
-        $this->assertEquals(array('Failed integrity check for course ['. $course->id. ']. Course module ['.
-            $page->cmid. '] is missing from sequence of section ['. $section1->id. ']'),
+        $this->assertEquals(['Failed integrity check for course ['. $course->id. ']. Course module ['.
+            $page->cmid. '] is missing from sequence of section ['. $section1->id. ']'],
             course_integrity_check($course->id, null, null, true)); // Error!
-        $section0 = $DB->get_record('course_sections', array('course' => $course->id, 'section' => 0));
-        $section1 = $DB->get_record('course_sections', array('course' => $course->id, 'section' => 1));
-        $cms = $DB->get_records('course_modules', array('course' => $course->id), 'id', 'id,section');
+        $section0 = $DB->get_record('course_sections', ['course' => $course->id, 'section' => 0]);
+        $section1 = $DB->get_record('course_sections', ['course' => $course->id, 'section' => 1]);
+        $cms = $DB->get_records('course_modules', ['course' => $course->id], 'id', 'id,section');
         $this->assertEquals($forum->cmid. ','. $quiz->cmid, $section0->sequence);
         $this->assertEquals(''. $page->cmid, $section1->sequence);  // Yay, module added to section.
         $this->assertEquals($section0->id, $cms[$forum->cmid]->section);
@@ -1049,30 +1012,30 @@ class format_tiles_courselib_testcase extends advanced_testcase {
         $this->assertEquals($section0->id, $cms[$quiz->cmid]->section);
 
         // 5. Module id is not present in course_section.sequence and it's section is invalid (integrity check with $fullcheck = true).
-        $DB->update_record('course_modules', array('id' => $page->cmid, 'section' => 8765));
-        $DB->update_record('course_sections', array('id' => $section1->id, 'sequence' => ''));
-        $this->assertEquals(array(
+        $DB->update_record('course_modules', ['id' => $page->cmid, 'section' => 8765]);
+        $DB->update_record('course_sections', ['id' => $section1->id, 'sequence' => '']);
+        $this->assertEquals([
             'Failed integrity check for course ['. $course->id. ']. Course module ['. $page->cmid.
             '] is missing from sequence of section ['. $section0->id. ']',
             'Failed integrity check for course ['. $course->id. ']. Course module ['. $page->cmid.
-            '] points to section [8765] instead of ['. $section0->id. ']'),
+            '] points to section [8765] instead of ['. $section0->id. ']'],
             course_integrity_check($course->id, null, null, true));
-        $section0 = $DB->get_record('course_sections', array('course' => $course->id, 'section' => 0));
-        $section1 = $DB->get_record('course_sections', array('course' => $course->id, 'section' => 1));
-        $cms = $DB->get_records('course_modules', array('course' => $course->id), 'id', 'id,section');
+        $section0 = $DB->get_record('course_sections', ['course' => $course->id, 'section' => 0]);
+        $section1 = $DB->get_record('course_sections', ['course' => $course->id, 'section' => 1]);
+        $cms = $DB->get_records('course_modules', ['course' => $course->id], 'id', 'id,section');
         $this->assertEquals($forum->cmid. ','. $quiz->cmid. ','. $page->cmid, $section0->sequence); // Module added to section.
         $this->assertEquals($section0->id, $cms[$forum->cmid]->section);
         $this->assertEquals($section0->id, $cms[$page->cmid]->section); // Section changed to section0.
         $this->assertEquals($section0->id, $cms[$quiz->cmid]->section);
 
         // 6. Module is deleted from course_modules but not deleted in sequence (integrity check with $fullcheck = true).
-        $DB->delete_records('course_modules', array('id' => $page->cmid));
-        $this->assertEquals(array('Failed integrity check for course ['. $course->id. ']. Course module ['.
-            $page->cmid. '] does not exist but is present in the sequence of section ['. $section0->id. ']'),
+        $DB->delete_records('course_modules', ['id' => $page->cmid]);
+        $this->assertEquals(['Failed integrity check for course ['. $course->id. ']. Course module ['.
+            $page->cmid. '] does not exist but is present in the sequence of section ['. $section0->id. ']'],
             course_integrity_check($course->id, null, null, true));
-        $section0 = $DB->get_record('course_sections', array('course' => $course->id, 'section' => 0));
-        $section1 = $DB->get_record('course_sections', array('course' => $course->id, 'section' => 1));
-        $cms = $DB->get_records('course_modules', array('course' => $course->id), 'id', 'id,section');
+        $section0 = $DB->get_record('course_sections', ['course' => $course->id, 'section' => 0]);
+        $section1 = $DB->get_record('course_sections', ['course' => $course->id, 'section' => 1]);
+        $cms = $DB->get_records('course_modules', ['course' => $course->id], 'id', 'id,section');
         $this->assertEquals($forum->cmid. ','. $quiz->cmid, $section0->sequence);
         $this->assertEmpty($section1->sequence);
         $this->assertEquals($section0->id, $cms[$forum->cmid]->section);
@@ -1091,7 +1054,7 @@ class format_tiles_courselib_testcase extends advanced_testcase {
 
         // Create an assign module.
         $sink = $this->redirectEvents();
-        $course = $this->getDataGenerator()->create_course(array('format' => 'tiles'));
+        $course = $this->getDataGenerator()->create_course(['format' => 'tiles']);
         $module = $this->getDataGenerator()->create_module('assign', ['course' => $course]);
         $events = $sink->get_events();
         $eventscount = 0;
@@ -1104,24 +1067,8 @@ class format_tiles_courselib_testcase extends advanced_testcase {
                 $this->assertEquals($module->cmid, $event->objectid);
                 $this->assertEquals($USER->id, $event->userid);
                 $this->assertEquals('course_modules', $event->objecttable);
-                $url = new moodle_url('/mod/assign/view.php', array('id' => $module->cmid));
+                $url = new moodle_url('/mod/assign/view.php', ['id' => $module->cmid]);
                 $this->assertEquals($url, $event->get_url());
-
-                // Test legacy data.
-                $this->assertSame('mod_created', $event->get_legacy_eventname());
-                $eventdata = new stdClass();
-                $eventdata->modulename = 'assign';
-                $eventdata->name       = $module->name;
-                $eventdata->cmid       = $module->cmid;
-                $eventdata->courseid   = $module->course;
-                $eventdata->userid     = $USER->id;
-                $this->assertEventLegacyData($eventdata, $event);
-
-                $arr = array(
-                    array($module->course, "course", "add mod", "../mod/assign/view.php?id=$module->cmid", "assign $module->id"),
-                    array($module->course, "assign", "add", "view.php?id=$module->cmid", $module->id, $module->cmid)
-                );
-                $this->assertEventLegacyLogData($arr, $event);
                 $this->assertEventContextNotUsed($event);
             }
         }
@@ -1145,7 +1092,7 @@ class format_tiles_courselib_testcase extends advanced_testcase {
                 $this->assertEquals($newcm->id, $event->objectid);
                 $this->assertEquals($USER->id, $event->userid);
                 $this->assertEquals($course->id, $event->courseid);
-                $url = new moodle_url('/mod/assign/view.php', array('id' => $newcm->id));
+                $url = new moodle_url('/mod/assign/view.php', ['id' => $newcm->id]);
                 $this->assertEquals($url, $event->get_url());
             }
         }
@@ -1162,10 +1109,10 @@ class format_tiles_courselib_testcase extends advanced_testcase {
         $this->setAdminUser();
 
         // Create course and modules.
-        $course = $this->getDataGenerator()->create_course(array('numsections' => 5, 'format' => 'tiles'));
+        $course = $this->getDataGenerator()->create_course(['numsections' => 5, 'format' => 'tiles']);
 
         // Generate an assignment.
-        $assign = $this->getDataGenerator()->create_module('assign', array('course' => $course->id));
+        $assign = $this->getDataGenerator()->create_module('assign', ['course' => $course->id]);
 
         // Get the module context.
         $modcontext = context_module::instance($assign->cmid);
@@ -1190,12 +1137,6 @@ class format_tiles_courselib_testcase extends advanced_testcase {
         $this->assertEquals($cm->instance, $event2->other['instanceid']);
         $this->assertEquals($cm->name, $event2->other['name']);
         $this->assertEventContextNotUsed($event2);
-        $this->assertSame('mod_updated', $event2->get_legacy_eventname());
-        $arr = array(
-            array($cm->course, "course", "update mod", "../mod/assign/view.php?id=$cm->id", "assign $cm->instance"),
-            array($cm->course, "assign", "update", "view.php?id=$cm->id", $cm->instance, $cm->id)
-        );
-        $this->assertEventLegacyLogData($arr, $event);
     }
 
     /**
@@ -1208,18 +1149,18 @@ class format_tiles_courselib_testcase extends advanced_testcase {
 
         $generator = $this->getDataGenerator();
         $category = $generator->create_category();
-        $course = $generator->create_course(array('category' => $category->id));
+        $course = $generator->create_course(['category' => $category->id]);
 
         $this->assertEquals('1', $course->visible);
         $this->assertEquals('1', $course->visibleold);
 
         $this->assertTrue(course_change_visibility($course->id, false));
-        $course = $DB->get_record('course', array('id' => $course->id));
+        $course = $DB->get_record('course', ['id' => $course->id]);
         $this->assertEquals('0', $course->visible);
         $this->assertEquals('0', $course->visibleold);
 
         $this->assertTrue(course_change_visibility($course->id, true));
-        $course = $DB->get_record('course', array('id' => $course->id));
+        $course = $DB->get_record('course', ['id' => $course->id]);
         $this->assertEquals('1', $course->visible);
         $this->assertEquals('1', $course->visibleold);
     }
@@ -1234,14 +1175,14 @@ class format_tiles_courselib_testcase extends advanced_testcase {
 
         $generator = $this->getDataGenerator();
         $category = $generator->create_category();
-        $course3 = $generator->create_course(array('category' => $category->id));
-        $course2 = $generator->create_course(array('category' => $category->id));
-        $course1 = $generator->create_course(array('category' => $category->id));
+        $course3 = $generator->create_course(['category' => $category->id]);
+        $course2 = $generator->create_course(['category' => $category->id]);
+        $course1 = $generator->create_course(['category' => $category->id]);
 
         $courses = $category->get_courses();
         $this->assertIsArray($courses);
-        $this->assertEquals(array($course1->id, $course2->id, $course3->id), array_keys($courses));
-        $dbcourses = $DB->get_records('course', array('category' => $category->id), 'sortorder', 'id');
+        $this->assertEquals([$course1->id, $course2->id, $course3->id], array_keys($courses));
+        $dbcourses = $DB->get_records('course', ['category' => $category->id], 'sortorder', 'id');
         $this->assertEquals(array_keys($dbcourses), array_keys($courses));
 
         // Test moving down.
@@ -1249,8 +1190,8 @@ class format_tiles_courselib_testcase extends advanced_testcase {
         $this->assertTrue(course_change_sortorder_by_one($course1, false));
         $courses = $category->get_courses();
         $this->assertIsArray($courses);
-        $this->assertEquals(array($course2->id, $course1->id, $course3->id), array_keys($courses));
-        $dbcourses = $DB->get_records('course', array('category' => $category->id), 'sortorder', 'id');
+        $this->assertEquals([$course2->id, $course1->id, $course3->id], array_keys($courses));
+        $dbcourses = $DB->get_records('course', ['category' => $category->id], 'sortorder', 'id');
         $this->assertEquals(array_keys($dbcourses), array_keys($courses));
 
         // Test moving up.
@@ -1258,8 +1199,8 @@ class format_tiles_courselib_testcase extends advanced_testcase {
         $this->assertTrue(course_change_sortorder_by_one($course1, true));
         $courses = $category->get_courses();
         $this->assertIsArray($courses);
-        $this->assertEquals(array($course1->id, $course2->id, $course3->id), array_keys($courses));
-        $dbcourses = $DB->get_records('course', array('category' => $category->id), 'sortorder', 'id');
+        $this->assertEquals([$course1->id, $course2->id, $course3->id], array_keys($courses));
+        $dbcourses = $DB->get_records('course', ['category' => $category->id], 'sortorder', 'id');
         $this->assertEquals(array_keys($dbcourses), array_keys($courses));
 
         // Test moving the top course up one.
@@ -1268,8 +1209,8 @@ class format_tiles_courselib_testcase extends advanced_testcase {
         // Check nothing changed.
         $courses = $category->get_courses();
         $this->assertIsArray($courses);
-        $this->assertEquals(array($course1->id, $course2->id, $course3->id), array_keys($courses));
-        $dbcourses = $DB->get_records('course', array('category' => $category->id), 'sortorder', 'id');
+        $this->assertEquals([$course1->id, $course2->id, $course3->id], array_keys($courses));
+        $dbcourses = $DB->get_records('course', ['category' => $category->id], 'sortorder', 'id');
         $this->assertEquals(array_keys($dbcourses), array_keys($courses));
 
         // Test moving the bottom course up down.
@@ -1278,8 +1219,8 @@ class format_tiles_courselib_testcase extends advanced_testcase {
         // Check nothing changed.
         $courses = $category->get_courses();
         $this->assertIsArray($courses);
-        $this->assertEquals(array($course1->id, $course2->id, $course3->id), array_keys($courses));
-        $dbcourses = $DB->get_records('course', array('category' => $category->id), 'sortorder', 'id');
+        $this->assertEquals([$course1->id, $course2->id, $course3->id], array_keys($courses));
+        $dbcourses = $DB->get_records('course', ['category' => $category->id], 'sortorder', 'id');
         $this->assertEquals(array_keys($dbcourses), array_keys($courses));
     }
 
@@ -1289,8 +1230,8 @@ class format_tiles_courselib_testcase extends advanced_testcase {
     public function test_duplicate_module() {
         $this->setAdminUser();
         $this->resetAfterTest();
-        $course = self::getDataGenerator()->create_course(array('format' => 'tiles'));
-        $res = self::getDataGenerator()->create_module('resource', array('course' => $course));
+        $course = self::getDataGenerator()->create_course(['format' => 'tiles']);
+        $res = self::getDataGenerator()->create_module('resource', ['course' => $course]);
         $cm = get_coursemodule_from_id('resource', $res->cmid, 0, false, MUST_EXIST);
 
         $newcm = duplicate_module($course, $cm);
@@ -1323,15 +1264,15 @@ class format_tiles_courselib_testcase extends advanced_testcase {
         set_config('enableavailability', 1);
 
         // Test add.
-        $emptyavailability = json_encode(\core_availability\tree::get_root_json(array()));
-        $course = self::getDataGenerator()->create_course(array('format' => 'tiles'));
-        $label = self::getDataGenerator()->create_module('label', array(
-            'course' => $course, 'availability' => $emptyavailability));
+        $emptyavailability = json_encode(\core_availability\tree::get_root_json([]));
+        $course = self::getDataGenerator()->create_course(['format' => 'tiles']);
+        $label = self::getDataGenerator()->create_module('label', [
+            'course' => $course, 'availability' => $emptyavailability]);
         $this->assertNull($DB->get_field('course_modules', 'availability',
-            array('id' => $label->cmid)));
+            ['id' => $label->cmid]));
 
         // Test update.
-        $formdata = $DB->get_record('course_modules', array('id' => $label->cmid));
+        $formdata = $DB->get_record('course_modules', ['id' => $label->cmid]);
         unset($formdata->availability);
         $formdata->availabilityconditionsjson = $emptyavailability;
         $formdata->modulename = 'label';
@@ -1339,13 +1280,13 @@ class format_tiles_courselib_testcase extends advanced_testcase {
         $draftid = 0;
         file_prepare_draft_area($draftid, context_module::instance($label->cmid)->id,
             'mod_label', 'intro', 0);
-        $formdata->introeditor = array(
+        $formdata->introeditor = [
             'itemid' => $draftid,
             'text' => '<p>Yo</p>',
-            'format' => FORMAT_HTML);
+            'format' => FORMAT_HTML];
         update_module($formdata);
         $this->assertNull($DB->get_field('course_modules', 'availability',
-            array('id' => $label->cmid)));
+            ['id' => $label->cmid]));
     }
 
     /**
@@ -1358,8 +1299,8 @@ class format_tiles_courselib_testcase extends advanced_testcase {
         $this->setUser($this->getDataGenerator()->create_user());
 
         $this->resetAfterTest(true);
-        $course = $this->getDataGenerator()->create_course(array('format' => 'tiles'));
-        $forum = self::getDataGenerator()->create_module('forum', array('course' => $course->id, 'name' => 'forum name'));
+        $course = $this->getDataGenerator()->create_course(['format' => 'tiles']);
+        $forum = self::getDataGenerator()->create_module('forum', ['course' => $course->id, 'name' => 'forum name']);
 
         // Call service for core_course component without necessary permissions.
         try {
@@ -1373,9 +1314,9 @@ class format_tiles_courselib_testcase extends advanced_testcase {
         // Change to admin user and make sure that cm name can be updated using web service update_inplace_editable().
         $this->setAdminUser();
         $res = core_external::update_inplace_editable('core_course', 'activityname', $forum->cmid, 'New forum name');
-        $res = external_api::clean_returnvalue(core_external::update_inplace_editable_returns(), $res);
+        $res = \core_external\external_api::clean_returnvalue(core_external::update_inplace_editable_returns(), $res);
         $this->assertEquals('New forum name', $res['value']);
-        $this->assertEquals('New forum name', $DB->get_field('forum', 'name', array('id' => $forum->id)));
+        $this->assertEquals('New forum name', $DB->get_field('forum', 'name', ['id' => $forum->id]));
     }
 
     /**
@@ -1384,7 +1325,7 @@ class format_tiles_courselib_testcase extends advanced_testcase {
     public function test_course_get_user_navigation_options_for_managers() {
         global $CFG;
         $this->resetAfterTest();
-        $course = $this->getDataGenerator()->create_course(array('format' => 'tiles'));
+        $course = $this->getDataGenerator()->create_course(['format' => 'tiles']);
         $context = context_course::instance($course->id);
         $this->setAdminUser();
 
@@ -1401,7 +1342,7 @@ class format_tiles_courselib_testcase extends advanced_testcase {
     public function test_course_get_user_administration_options_for_managers() {
         global $CFG;
         $this->resetAfterTest();
-        $course = $this->getDataGenerator()->create_course(array('format' => 'tiles'));
+        $course = $this->getDataGenerator()->create_course(['format' => 'tiles']);
         $context = context_course::instance($course->id);
         $this->setAdminUser();
 
@@ -1427,11 +1368,11 @@ class format_tiles_courselib_testcase extends advanced_testcase {
     public function test_course_get_user_administration_options_for_students() {
         global $DB, $CFG;
         $this->resetAfterTest();
-        $course = $this->getDataGenerator()->create_course(array('format' => 'tiles'));
+        $course = $this->getDataGenerator()->create_course(['format' => 'tiles']);
         $context = context_course::instance($course->id);
 
         $user = $this->getDataGenerator()->create_user();
-        $roleid = $DB->get_field('role', 'id', array('shortname' => 'student'));
+        $roleid = $DB->get_field('role', 'id', ['shortname' => 'student']);
         $this->getDataGenerator()->enrol_user($user->id, $course->id, $roleid);
 
         $this->setUser($user);
@@ -1509,14 +1450,14 @@ class format_tiles_courselib_testcase extends advanced_testcase {
 
         $this->setTimezone('UTC');
 
-        $record = array('startdate' => $startdate, 'enddate' => $enddate, 'enablecompletion' => 1);
+        $record = ['startdate' => $startdate, 'enddate' => $enddate, 'enablecompletion' => 1];
         $originalcourse = $this->getDataGenerator()->create_course($record);
-        $coursecriteria = new completion_criteria_date(array('course' => $originalcourse->id, 'timeend' => $startdate + DAYSECS));
+        $coursecriteria = new completion_criteria_date(['course' => $originalcourse->id, 'timeend' => $startdate + DAYSECS]);
         $coursecriteria->insert();
 
         $activitycompletiondate = $startdate + DAYSECS;
-        $data = $this->getDataGenerator()->create_module('data', array('course' => $originalcourse->id),
-            array('completion' => 1, 'completionexpected' => $activitycompletiondate));
+        $data = $this->getDataGenerator()->create_module('data', ['course' => $originalcourse->id],
+            ['completion' => 1, 'completionexpected' => $activitycompletiondate]);
 
         $resetdata = new stdClass();
         $resetdata->id = $originalcourse->id;
@@ -1526,16 +1467,16 @@ class format_tiles_courselib_testcase extends advanced_testcase {
         $resetdata->reset_end_date_old = $record['enddate'];
         reset_course_userdata($resetdata);
 
-        $course = $DB->get_record('course', array('id' => $originalcourse->id));
+        $course = $DB->get_record('course', ['id' => $originalcourse->id]);
 
         $this->assertEquals($resultingstartdate, $course->startdate);
         $this->assertEquals($resultingenddate, $course->enddate);
 
-        $coursecompletioncriteria = completion_criteria_date::fetch(array('course' => $originalcourse->id));
+        $coursecompletioncriteria = completion_criteria_date::fetch(['course' => $originalcourse->id]);
         $this->assertEquals($resultingstartdate + DAYSECS, $coursecompletioncriteria->timeend);
 
         $this->assertEquals($resultingstartdate + DAYSECS, $DB->get_field('course_modules', 'completionexpected',
-            array('id' => $data->cmid)));
+            ['id' => $data->cmid]));
     }
 
     /**
@@ -1615,9 +1556,9 @@ class format_tiles_courselib_testcase extends advanced_testcase {
         $generator = $this->getDataGenerator();
 
         // Create test course and user, enrol one in the other.
-        $course = $generator->create_course(array('format' => 'tiles'));
+        $course = $generator->create_course(['format' => 'tiles']);
         $user = $generator->create_user();
-        $roleid = $DB->get_field('role', 'id', array('shortname' => 'student'), MUST_EXIST);
+        $roleid = $DB->get_field('role', 'id', ['shortname' => 'student'], MUST_EXIST);
         $generator->enrol_user($user->id, $course->id, $roleid);
 
         // Test case with reset_roles_overrides enabled.
@@ -1638,9 +1579,9 @@ class format_tiles_courselib_testcase extends advanced_testcase {
         $this->assertTrue(has_capability('mod/forum:viewdiscussion', $coursecontext, $user));
 
         // Test case with selective role unenrolments.
-        $roles = array();
-        $roles['student'] = $DB->get_field('role', 'id', array('shortname' => 'student'), MUST_EXIST);
-        $roles['teacher'] = $DB->get_field('role', 'id', array('shortname' => 'teacher'), MUST_EXIST);
+        $roles = [];
+        $roles['student'] = $DB->get_field('role', 'id', ['shortname' => 'student'], MUST_EXIST);
+        $roles['teacher'] = $DB->get_field('role', 'id', ['shortname' => 'teacher'], MUST_EXIST);
 
         // We enrol a user with student and teacher roles.
         $generator->enrol_user($user->id, $course->id, $roles['student']);
@@ -1649,7 +1590,7 @@ class format_tiles_courselib_testcase extends advanced_testcase {
         // When we reset only student role, we expect to keep teacher role.
         $resetdata = new stdClass();
         $resetdata->id = $course->id;
-        $resetdata->unenrol_users = array($roles['student']);
+        $resetdata->unenrol_users = [$roles['student']];
         reset_course_userdata($resetdata);
 
         $usersroles = enrol_get_course_users_roles($course->id);
@@ -1664,7 +1605,7 @@ class format_tiles_courselib_testcase extends advanced_testcase {
         // When we reset student and teacher roles, we expect no roles left.
         $resetdata = new stdClass();
         $resetdata->id = $course->id;
-        $resetdata->unenrol_users = array($roles['student'], $roles['teacher']);
+        $resetdata->unenrol_users = [$roles['student'], $roles['teacher']];
         reset_course_userdata($resetdata);
 
         $usersroles = enrol_get_course_users_roles($course->id);
@@ -1687,26 +1628,26 @@ class format_tiles_courselib_testcase extends advanced_testcase {
         $this->resetAfterTest(true);
 
         $CFG->enablecompletion = true;
-        $course = $this->getDataGenerator()->create_course(array('enablecompletion' => 1));
-        $glossary = $this->getDataGenerator()->create_module('glossary', array(
+        $course = $this->getDataGenerator()->create_course(['enablecompletion' => 1]);
+        $glossary = $this->getDataGenerator()->create_module('glossary', [
             'course' => $course->id,
             'completion' => COMPLETION_TRACKING_AUTOMATIC,
             'completionview' => 1,
             'allowcomments' => 1,
             'assessed' => RATING_AGGREGATE_AVERAGE,
             'scale' => 100
-        ));
+        ]);
         $glossarygenerator = $this->getDataGenerator()->get_plugin_generator('mod_glossary');
         $context = context_module::instance($glossary->cmid);
         $modinfo = get_fast_modinfo($course);
         $cm = $modinfo->get_cm($glossary->cmid);
         $user = $this->getDataGenerator()->create_user();
-        $studentrole = $DB->get_record('role', array('shortname' => 'student'));
+        $studentrole = $DB->get_record('role', ['shortname' => 'student']);
         $this->getDataGenerator()->enrol_user($user->id, $course->id, $studentrole->id);
         $from = time();
 
         $teacher = $this->getDataGenerator()->create_user();
-        $teacherrole = $DB->get_record('role', array('shortname' => 'teacher'));
+        $teacherrole = $DB->get_record('role', ['shortname' => 'teacher']);
         $this->getDataGenerator()->enrol_user($teacher->id, $course->id, $teacherrole->id);
 
         assign_capability('mod/glossary:viewanyrating', CAP_ALLOW, $studentrole->id, $context->id, true);

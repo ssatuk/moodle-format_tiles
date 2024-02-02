@@ -189,7 +189,7 @@ define(["jquery", "format_tiles/browser_storage_set_up"], function ($, storageSe
                     // When section content is clicked, update the last visited section.
                     $(Selector.PAGE).on("click", Selector.SECTION_CONTENT, function(e) {
                         var currTar = $(e.currentTarget);
-                        var sectionClicked = currTar.closest(Selector.SECTION_MAIN).attr("data-section");
+                        var sectionClicked = currTar.closest(Selector.SECTION_MAIN).data("section");
                         setLastSection(sectionClicked);
                     });
                 }

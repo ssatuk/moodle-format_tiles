@@ -51,7 +51,7 @@ define(["jquery", "core/ajax"], function ($, ajax) {
      * If we have a single tile on the last row it looks odd.
      * We might want to shrink the tile window down a little to even it out.
      * So we work out how many per row would be optimal, and shrink the window accordingly.
-     * @see format_tiles_width_template_data() in locallib.php for more information.
+     * @see \format_tiles\util::width_template_data() for more information.
      * @return {Promise}
      */
     var resizeTilesDivWidth = function() {
@@ -205,7 +205,7 @@ define(["jquery", "core/ajax"], function ($, ajax) {
                 return [];
             }
             allTiles.each(function (index, tile) {
-                currentSectionId = $(tile).attr("data-section");
+                currentSectionId = $(tile).data("section");
                 var maxVerticalPositionDifference = 100;
                 if (currentSectionId) {
                     if (index === 0) {
@@ -230,7 +230,7 @@ define(["jquery", "core/ajax"], function ($, ajax) {
 
             // Now allocate rows of maxTilesPerRow each until we run out of tiles.
             allTiles.each(function (index, tile) {
-                currentSectionId = $(tile).attr("data-section");
+                currentSectionId = $(tile).data("section");
                 if (rows.length === 0 || rows[rows.length - 1].sections.length >= maxTilesPerRow) {
                     if (rows.length >= 1) {
                         // Update the display after tag on previous row.

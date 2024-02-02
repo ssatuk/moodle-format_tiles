@@ -27,18 +27,17 @@
  */
 
 define(["jquery", "core/templates", "core/ajax", "format_tiles/browser_storage",
-        "core/notification", "core/str", "format_tiles/tile_fitter"],
-    function ($, Templates, ajax, browserStorage, Notification, str, tileFitter) {
+        "core/notification", "core/str", "format_tiles/tile_fitter", 'core/fragment'],
+    function ($, Templates, ajax, browserStorage, Notification, str, tileFitter, Fragment) {
         "use strict";
 
         var isMobile;
         var loadingIconHtml;
         var stringStore = [];
-        var scrollFuncLock = false;
-        var sectionIsOpen = false;
         var HEADER_BAR_HEIGHT = 60; // This varies by theme and version so will be reset once pages loads below.
         var reopenLastVisitedSection = false;
         var courseId;
+        var courseContextId;
         var resizeLocked = false;
         var enableCompletion;
 
@@ -59,6 +58,7 @@ define(["jquery", "core/templates", "core/ajax", "format_tiles/browser_storage",
             TILES: "ul.tiles",
             ACTIVITY: ".activity",
             ACTIVITY_NAME: ".activityname",
+            ABOVE_TILES: "#abovetiles",
             INSTANCE_NAME: ".instancename",
             SPACER: ".spacer",
             SECTION_MOVEABLE: ".moveablesection",
@@ -67,7 +67,7 @@ define(["jquery", "core/templates", "core/ajax", "format_tiles/browser_storage",
             SECTION_MAIN: ".section.main",
             SECTION_BUTTONS: ".sectionbuttons",
             CLOSE_SEC_BTN: ".closesectionbtn",
-            HIDE_SEC0_BTN: "#buttonhidesec0",
+            HIDE_SEC0_BTN: ".buttonhidesec0",
             SECTION_ZERO: "#section-0",
             MOODLE_VIDEO: ".mediaplugin.mediaplugin_videojs",
             LAUNCH_STANDARD: '[data-action="launch-tiles-standard"]',
@@ -81,7 +81,8 @@ define(["jquery", "core/templates", "core/ajax", "format_tiles/browser_storage",
             CLOSED: "closed",
             LAUNCH_CM_MODAL: "launch-tiles-cm-modal",
             STATE_VISIBLE: 'state-visible', // This is a Snap theme class. Was added to make this format cooperate better with it.
-            HAS_OPEN_TILE: 'format-tiles-tile-open'
+            HAS_OPEN_TILE: 'format-tiles-tile-open',
+            ON_TILE_CONTROL: 'on-tile-control' // Tiles may have controls on them which do not open the section when clicked.
         };
 
         var Event = {
@@ -117,7 +118,7 @@ define(["jquery", "core/templates", "core/ajax", "format_tiles/browser_storage",
                 iframe = $(iframe);
                 // Remove the src from the iframe but keep it in case the section is re-opened.
                 if (iframe.attr('src')) {
-                    iframe.attr('data-src', iframe.attr("src"));
+                    iframe.data('src', iframe.attr("src"));
                     iframe.attr('src', "");
                 }
             });
@@ -137,7 +138,7 @@ define(["jquery", "core/templates", "core/ajax", "format_tiles/browser_storage",
             $(Selector.MOVEABLE_SECTION).each(function (index, sec) {
                 sec = $(sec);
                 if (sec.is(":visible")) {
-                    stopVideoPlaying(sec.attr("data-section"));
+                    stopVideoPlaying(sec.data("section"));
                     sec.slideUp().removeClass(ClassNames.STATE_VISIBLE); // Excludes section 0.
                 }
             });
@@ -150,7 +151,6 @@ define(["jquery", "core/templates", "core/ajax", "format_tiles/browser_storage",
             $(Selector.TILE_LOADING_ICON).fadeOut(300, function () {
                 $(Selector.TILE_LOADING_ICON).html("");
             });
-            sectionIsOpen = false;
             openTile = 0;
             $(Selector.BODY).removeClass(ClassNames.HAS_OPEN_TILE);
             overlay.fadeOut(300);
@@ -187,13 +187,12 @@ define(["jquery", "core/templates", "core/ajax", "format_tiles/browser_storage",
         /**
          * Set the HTML for a course section to the correct div in the page
          * @param {Object} contentArea the jquery object for the content area
-         * @param {String} content the HTML
+         * @param {String} html the HTML
          * @param {String} js Any additional JS for the new HTML.
-         * @returns {boolean} success
          */
-        var setCourseContentHTML = function (contentArea, content, js) {
-            if (content) {
-                contentArea.html(content);
+        var setCourseContentHTML = function (contentArea, html, js) {
+            if (html) {
+                contentArea.html(html);
                 $(Selector.TILE_LOADING_ICON).fadeOut(300, function () {
                     $(Selector.TILE_LOADING_ICON).html("");
                 });
@@ -210,7 +209,7 @@ define(["jquery", "core/templates", "core/ajax", "format_tiles/browser_storage",
                             // Close open tile, and return focus to closed tile, for screen reader user.
                             browserStorage.setLastVisitedSection(0);
                             cancelTileSelections(0);
-                            $(Selector.TILEID + contentArea.attr('data-section')).focus();
+                            $(Selector.TILEID + contentArea.data('section')).focus();
                         }
                     });
                     activities.on(Event.KEYDOWN, function (e) {
@@ -219,7 +218,7 @@ define(["jquery", "core/templates", "core/ajax", "format_tiles/browser_storage",
                             if (toClick.hasClass(ClassNames.LAUNCH_CM_MODAL)) {
                                 toClick.click();
                             } else if (toClick.attr("href") !== undefined) {
-                                window.location = toClick.attr("href");
+                                window.location.href = toClick.attr("href");
                             }
                         }
                     });
@@ -229,7 +228,7 @@ define(["jquery", "core/templates", "core/ajax", "format_tiles/browser_storage",
                                     && $(e.relatedTarget).closest(Selector.SECTION_MAIN).attr("id") !== contentArea.attr("id")) {
                                 // RelatedTarget is the item we tabbed to.
                                 // If we reached here, the item we are on is not a member of the section we were in.
-                                // (I.e. we are trying to tab out of the bottom of section) so move tab back to first item instead.
+                                // (I.e. we are trying to tab out of bottom of section) so move tab to section title instead.
                                 setTimeout(function () {
                                     // Allow very short delay so we dont skip forward on the basis of our last key press.
                                     contentArea.find(Selector.SECTION_TITLE).focus();
@@ -267,17 +266,6 @@ define(["jquery", "core/templates", "core/ajax", "format_tiles/browser_storage",
                         }
                     }, 500);
                 }
-                // As we have just loaded new content, ensure that we initialise videoJS media player if required.
-                if (contentArea.find(Selector.MOODLE_VIDEO).length !== 0) {
-                    require(["media_videojs/loader"], function(videoJS) {
-                        videoJS.setUp();
-                    });
-                }
-
-                // Some modules e.g. mod_unilabel need JS initialising when added to the page.
-                if (js && js.length) {
-                    contentArea.append(js);
-                }
 
                 setTimeout(() => {
                     // If subtile title is long, it overlaps background image.
@@ -292,11 +280,36 @@ define(["jquery", "core/templates", "core/ajax", "format_tiles/browser_storage",
                         }
                     });
                 }, 100);
-
-                applyMathJax(contentArea);
-                return true;
             }
-            return false;
+            setTimeout(() => {
+                if (js) {
+                    // User may be opening same section multiple times so avoid adding same script again.
+                    const head = $('head');
+                    const existingScripts = head.find('script').filter(
+                        (index, script) => {return $(script).html() === js;}
+                    );
+                    if (existingScripts.length === 0) {
+                        Templates.runTemplateJS(js);
+                    }
+                }
+
+                setTimeout(() => {
+                    applyMathJax(contentArea);
+                    // As we have just loaded new content, ensure that we initialise videoJS media player if required.
+                    if (contentArea.find(Selector.MOODLE_VIDEO).length !== 0) {
+                        require(["media_videojs/loader"], function (videoJS) {
+                            videoJS.setUp();
+                        });
+                    }
+                }, 100);
+
+            }, 100);
+
+            $(document).trigger('format-tiles-section-content-changed', {
+                courseId: parseInt(courseId),
+                section: contentArea.data('section'),
+                sectionid: contentArea.data('sectionid')
+            });
         };
 
         /**
@@ -313,7 +326,7 @@ define(["jquery", "core/templates", "core/ajax", "format_tiles/browser_storage",
                         });
                     }
                 } catch (err) {
-                    require(["core/log"], function(log) {
+                    require(["core/log"], function (log) {
                         log.debug(err);
                     });
                 }
@@ -323,14 +336,14 @@ define(["jquery", "core/templates", "core/ajax", "format_tiles/browser_storage",
         /**
          * Expand a content containing section (e.g. on tile click)
          * @param {object} contentArea
-         * @param {number} tileId to expand
+         * @param {number} sectionNumber to expand
          */
-        var expandSection = function (contentArea, tileId) {
-            const tile = $("#tile-" + tileId);
+        var expandSection = function (contentArea, sectionNumber) {
+            const tile = $("#tile-" + sectionNumber);
             var expandAndScroll = function () {
                 // Scroll to the top of content bearing section
                 // we have to wait until possible reOrg and slide down totally before calling this, else co-ords are wrong.
-                var scrollTo = (tile.offset().top) - $(Selector.TILES).offset().top + HEADER_BAR_HEIGHT;
+                var scrollTo = (tile.offset().top) - $('#section-zero-container').offset().top + HEADER_BAR_HEIGHT;
                 if (scrollTo === $(window).scrollTop) {
                     // Scroll by at least one pixel otherwise z-index on selected tile is not changed.
                     // Until mouse moves.
@@ -350,11 +363,10 @@ define(["jquery", "core/templates", "core/ajax", "format_tiles/browser_storage",
                         page.stop();
                     });
                 });
-                sectionIsOpen = true;
-                openTile = tileId;
+                openTile = sectionNumber;
 
-                // For users with screen readers, move focus to the first item within the tile.
-                contentArea.find(Selector.ACTIVITY).first().focus();
+                // For users with screen readers, move focus to the section title within the tile.
+                contentArea.find(Selector.SECTION_TITLE).focus();
 
                 // If we have any iframes in the section which were previous emptied out, re-populate.
                 // This will happen if we have previously closed a section with videos in, and they were muted.
@@ -363,8 +375,8 @@ define(["jquery", "core/templates", "core/ajax", "format_tiles/browser_storage",
                     iframes.each(function (index, iframe) {
                         iframe = $(iframe);
                         // If iframe has no src, add it from data-src.
-                        if (iframe.attr('src') === '' && iframe.attr('data-src') !== undefined) {
-                            iframe.attr('src', iframe.attr("data-src"));
+                        if (iframe.attr('src') === '' && iframe.data('src') !== undefined) {
+                            iframe.attr('src', iframe.data("src"));
                         }
                     });
 
@@ -373,46 +385,12 @@ define(["jquery", "core/templates", "core/ajax", "format_tiles/browser_storage",
                         // So maybe need to update tile completion info. E.g. applies with H5P filter.
                         setTimeout(() => {
                             $(document).trigger('format-tiles-completion-changed', {
-                                section: tileId
+                                courseid: courseId,
+                                section: sectionNumber
                             });
                         }, 1000);
                     }
                 }
-            };
-
-            /**
-             * Make sure that the section close and edit buttons always appear at the top of the section on scroll
-             */
-            var holdSectionButtonPosition = function () {
-                var buttons = contentArea.find(Selector.SECTION_BUTTONS);
-                $(window).on(Event.SCROLL, function () {
-                    if (!scrollFuncLock && sectionIsOpen) {
-                        scrollFuncLock = true;
-                        buttons.fadeOut(300);
-                        setTimeout(function () {
-                            var windowTop = $(window).scrollTop();
-                            var desiredNewPositionInSection = (windowTop - contentArea.offset().top + 50);
-                            if (desiredNewPositionInSection > 0
-                                    && desiredNewPositionInSection < contentArea.outerHeight() - 100) {
-                                desiredNewPositionInSection = (windowTop - contentArea.offset().top + 50);
-                                buttons.css("top", desiredNewPositionInSection);
-                            } else if (desiredNewPositionInSection < 0) {
-                                buttons.css("top", 0);
-                            }
-                            if (windowTop > contentArea.offset().top + contentArea.outerHeight() - 50) {
-                                // We have scrolled down and content bottom has gone out of the top of window.
-                                buttons.css("top", 0);
-                            } else if (contentArea.offset().top > windowTop + $(window).outerHeight()) {
-                                // We have scrolled up and  content bottom has gone out of the bottom of window.
-                                buttons.css("top", 0);
-                            }
-                            buttons.fadeIn(300, function () {
-                                // Release lock on this function.
-                                scrollFuncLock = false;
-                            });
-                        }, 500);
-                    }
-                });
             };
 
             contentArea.addClass(ClassNames.STATE_VISIBLE);
@@ -422,9 +400,8 @@ define(["jquery", "core/templates", "core/ajax", "format_tiles/browser_storage",
             contentArea.slideDown(350, function () {
                 // Wait until we have finished sliding down before we work out where the top is for scroll.
                 expandAndScroll();
-                holdSectionButtonPosition();
             });
-            openTile = tileId;
+            openTile = sectionNumber;
         };
 
         /**
@@ -441,7 +418,7 @@ define(["jquery", "core/templates", "core/ajax", "format_tiles/browser_storage",
             var openedSection = $(".moveablesection:visible");
             var openedSectionNum = 0;
             if (openedSection.length > 0) {
-                openedSectionNum = openedSection.attr("data-section");
+                openedSectionNum = openedSection.data("section");
                 cancelTileSelections(0);
             }
             var reOrgFunc = function(delayBefore) {
@@ -504,19 +481,20 @@ define(["jquery", "core/templates", "core/ajax", "format_tiles/browser_storage",
 
         /**
          * For a given section, get the content from the server, add it to the store and maybe UI and maybe show it
-         * @param {number} courseId the id for the affected course
-         * @param {number} sectionNum the section number we are wanting to populate
+         * @param {number} courseContextId the id for the affected course context
+         * @param {number} sectionId the section ID we are wanting to populate
          * @return {Promise} promise to resolve when the ajax call returns.
          */
-        var getSectionContentFromServer = function (courseId, sectionNum) {
-            return ajax.call([{
-                methodname: "format_tiles_get_single_section_page_html",
-                args: {
-                    courseid: courseId,
-                    sectionid: sectionNum,
-                    setjsusedsession: true
-                }
-            }])[0];
+        var getSectionContentFromServer = function (courseContextId, sectionId) {
+            if (!courseContextId || !sectionId) {
+                require(["core/log"], function(log) {
+                    log.debug(`No course context ID '${courseContextId.toString()}' or section ID '${sectionId.toString()}'`);
+                });
+            }
+            // This gets the fragment from format_tiles_output_fragment_get_cm_list().
+            return Fragment.loadFragment(
+                'format_tiles', 'get_cm_list', courseContextId, {sectionid: sectionId}
+            );
         };
 
         /**
@@ -530,64 +508,74 @@ define(["jquery", "core/templates", "core/ajax", "format_tiles/browser_storage",
                 if (browserStorage.getSecZeroCollapseStatus() === true) {
                     sectionZero.slideUp(0);
                     buttonHideSecZero.addClass(ClassNames.CLOSED).removeClass(ClassNames.OPEN); // Button image.
+                    $(Selector.ABOVE_TILES).addClass('sec-zero-closed');
                 } else {
                     sectionZero.slideDown(300);
                     buttonHideSecZero.addClass(ClassNames.OPEN).removeClass(ClassNames.CLOSED); // Button image.
+                    $(Selector.ABOVE_TILES).removeClass('sec-zero-closed');
                 }
             } else {
                 // Storage not available so we dont know if sec zero was previously collapsed - expand it.
                 buttonHideSecZero.addClass(ClassNames.OPEN).removeClass(ClassNames.CLOSED);
                 sectionZero.slideDown(300);
+                $(Selector.ABOVE_TILES).removeClass('sec-zero-closed');
             }
         };
 
         /**
          * To be called when a tile is clicked. Get content from server or storage and display or store it.
-         * @param {number} courseId courseId the id of this course.
-         * @param {object} thisTile jquery the tile object clicked.
-         * @param {number} dataSection the id number of the tile.
+         * @param {number} courseContextId course context id of this course.
+         * @param {number} sectionId section Id for the clicked section.
+         * @param {number} sectionNumber the section number of the tile.
          */
-        var populateAndExpandSection = function(courseId, thisTile, dataSection) {
+        var populateAndExpandSection = function(courseContextId, sectionId, sectionNumber) {
             $(Selector.TILE).removeClass(ClassNames.SELECTED);
-            openTile = dataSection;
+            openTile = sectionNumber;
             // Then close all open secs.
             // Timed to finish in 200 so that it completes well before the opening next.
             $(Selector.MOVEABLE_SECTION).each(function (index, sec) {
                 sec = $(sec);
                 if (sec.is(":visible")) {
-                    stopVideoPlaying(sec.attr("data-section"));
+                    stopVideoPlaying(sec.data("section"));
                     sec.slideUp(200).removeClass(ClassNames.STATE_VISIBLE); // Excludes section 0.
                 }
             });
             // Log the fact we viewed the section.
             ajax.call([{
                 methodname: "format_tiles_log_tile_click", args: {
-                    courseid: courseId,
-                    sectionid: dataSection
+                    coursecontextid: courseContextId,
+                    sectionnumber: sectionNumber,
+                    sectionid: sectionId
                 }
             }])[0].fail(Notification.exception);
             // Get the content - use locally stored content first if available.
-            var relatedContentArea = $(Selector.SECTION_ID + dataSection);
+            var relatedContentArea = $(Selector.SECTION_ID + sectionNumber);
             if (relatedContentArea.find(Selector.ACTIVITY).length > 0) {
                 // There is already some content on the screen so display immediately.
-                expandSection(relatedContentArea, dataSection);
+                expandSection(relatedContentArea, sectionNumber);
 
                 // Still contact the server in case content has changed (e.g. restrictions now satisfied).
-                getSectionContentFromServer(courseId, dataSection).done(function (response) {
-                    setCourseContentHTML(relatedContentArea, $(response.html).html(), response.js);
+                getSectionContentFromServer(courseContextId, sectionId).done(function (html, js) {
+                    setCourseContentHTML(relatedContentArea, html, js);
                 });
             } else {
                 relatedContentArea.html(loadingIconHtml);
                 // Get from server.
-                getSectionContentFromServer(courseId, dataSection).done(function (response) {
-                    setCourseContentHTML(relatedContentArea, $(response.html).html(), response.js);
-                    expandSection(relatedContentArea, dataSection);
+                getSectionContentFromServer(courseContextId, sectionId).done(function (html, js) {
+                    setCourseContentHTML(relatedContentArea, html, js);
+                    expandSection(relatedContentArea, sectionNumber);
                 }).fail(function (failResult) {
-                    failedLoadSectionNotify(dataSection, failResult, relatedContentArea);
-                    cancelTileSelections(dataSection);
+                    failedLoadSectionNotify(sectionNumber, failResult, relatedContentArea);
+                    cancelTileSelections(sectionNumber);
                 });
             }
-            browserStorage.setLastVisitedSection(dataSection);
+            browserStorage.setLastVisitedSection(sectionNumber);
+        };
+
+        const removeUrlParam = function (pattern) {
+            if ((window.location.href).match(pattern)) {
+                history.pushState(null, null, (window.location.href).replace(pattern, ''));
+            }
         };
 
         return {
@@ -601,9 +589,11 @@ define(["jquery", "core/templates", "core/ajax", "format_tiles/browser_storage",
                 reopenLastSectionInit, // Set by site admin see settings.php.
                 userId,
                 fitTilesToWidth,
-                enableCompletionInit
+                enableCompletionInit,
+                courseContextIdInit
             ) {
                 courseId = courseIdInit;
+                courseContextId = courseContextIdInit;
                 isMobile = isMobileInit;
                 // Some args are strings or ints but we prefer bool.  Change to bool now as they are passed on elsewhere.
                 reopenLastVisitedSection = reopenLastSectionInit === "1";
@@ -654,20 +644,25 @@ define(["jquery", "core/templates", "core/ajax", "format_tiles/browser_storage",
                             if (!useJavascriptNav) {
                                 return;
                             }
+                            const target = $(e.target);
+                            if (target.hasClass(ClassNames.ON_TILE_CONTROL)) {
+                                // The user has clicked a control on the tile so we don't expand it.
+                                return;
+                            }
                             e.preventDefault();
                             // If other tiles have loading icons, fade them out (on the tile not the content sec).
                             $(Selector.TILE_LOADING_ICON).fadeOut(300, function () {
                                 $(Selector.TILE_LOADING_ICON).html();
                             });
                             var thisTile = $(e.currentTarget).closest(Selector.TILE);
-                            var dataSection = parseInt(thisTile.attr("data-section"));
+                            var dataSection = parseInt(thisTile.data("section"));
                             if (thisTile.hasClass(ClassNames.SELECTED)) {
                                 // This tile is already expanded so collapse it.
                                 cancelTileSelections(dataSection);
                                 browserStorage.setLastVisitedSection(0);
                                 overlay.fadeOut(300);
                             } else {
-                                populateAndExpandSection(courseId, thisTile, dataSection);
+                                populateAndExpandSection(courseContextId, thisTile.data('true-sectionid'), dataSection);
                             }
                         });
 
@@ -722,33 +717,45 @@ define(["jquery", "core/templates", "core/ajax", "format_tiles/browser_storage",
 
                         // When user clicks to close a section using cross at top right in section.
                         pageContent.on(Event.CLICK, Selector.CLOSE_SEC_BTN, function (e) {
-                            cancelTileSelections($(e.currentTarget).attr("data-section"));
+                            cancelTileSelections($(e.currentTarget).data("section"));
                         });
 
                         setSectionZeroFromUserPref();
                         // Most filter button related JS is in filter_buttons.js module which is required below.
 
+                        // Remove section and cmid URL params is present as we are using JS nav.
+                        removeUrlParam(/(&|\\?)cmid=\d+/gi);
+                        removeUrlParam(/(&|\\?)section=\d+/gi);
                     }
 
                     // If this event is triggered, user has updated a completion check box.
                     // We need to retrieve section content from server in case availability of items has changed.
                     // Will also be triggered on focus change e.g. user has returned to this tab from a new window.
                     $(document).on('format-tiles-completion-changed', function(e, data) {
-                        const allSectionNums = $(Selector.TILE).not(Selector.SPACER).map((i, t) => {
-                            return parseInt($(t).attr('data-section'));
+                        if (data.courseid && parseInt(courseId) !== parseInt(data.courseid)) {
+                            return;
+                        }
+                        const allSectionNums = $(Selector.TILE).not(Selector.SPACER).map((i, tile) => {
+                            return parseInt($(tile).data('section'));
                         }).toArray();
                         // Need to include sec zero as may have completion tracked items.
                         allSectionNums.push(0);
-                        const isSingleSectionPage = $('ul#single_section_tiles').length > 0;
-                        const requests = ajax.call([
-                            {
-                                methodname: "format_tiles_get_single_section_page_html",
-                                args: {
-                                    courseid: courseId,
-                                    sectionid: data.section,
-                                    setjsusedsession: !isSingleSectionPage
-                                }
-                            },
+                        const contentArea = $(Selector.SECTION_ID + data.section);
+                        const sectionId = contentArea.data('sectionid');
+                        // This gets the fragment from format_tiles_output_fragment_get_cm_list().
+                        Fragment.loadFragment(
+                            'format_tiles', 'get_cm_list', courseContextId, {sectionid: sectionId}
+                        )
+                        .done((html, js) => {
+                            setCourseContentHTML(contentArea, html, js);
+                        })
+                        .catch(err => {
+                            require(["core/log"], function(log) {
+                                log.debug(err);
+                            });
+                        });
+
+                        ajax.call([
                             {
                                 methodname: "format_tiles_get_section_information",
                                 args: {
@@ -756,30 +763,20 @@ define(["jquery", "core/templates", "core/ajax", "format_tiles/browser_storage",
                                     sectionnums: allSectionNums
                                 }
                             }
-                        ]);
-                        requests[0]
-                            .done((response) => {
-                                setCourseContentHTML($(Selector.SECTION_ID + data.section), $(response.html).html(), response.js);
-                            })
-                            .catch(err => {
-                                require(["core/log"], function(log) {
-                                    log.debug(err);
-                                });
+                        ])[0]
+                        .done((response) => {
+                            require(["format_tiles/completion"], function (completion) {
+                                completion.updateSectionsInfo(
+                                    response.sections, response.overall.complete, response.overall.outof
+                                );
                             });
-                        requests[1]
-                            .done((response) => {
-                                require(["format_tiles/completion"], function (completion) {
-                                    completion.updateSectionsInfo(
-                                        response.sections, response.overall.complete, response.overall.outof
-                                    );
-                                });
 
-                            })
-                            .catch(err => {
-                                require(["core/log"], function(log) {
-                                    log.debug(err);
-                                });
+                        })
+                        .catch(err => {
+                            require(["core/log"], function(log) {
+                                log.debug(err);
                             });
+                        });
                     });
 
                     if (enableCompletion) {
@@ -787,8 +784,8 @@ define(["jquery", "core/templates", "core/ajax", "format_tiles/browser_storage",
                         // We wait half a second to enable the completion change to be registered first.
                         pageContent.on(Event.CLICK, Selector.MANUAL_COMPLETION, function(e) {
                             const currentTarget = $(e.currentTarget);
-                            const sectionNum = currentTarget.closest(Selector.SECTION_MAIN).attr("data-section");
-                            const cmid = currentTarget.attr("data-cmid");
+                            const sectionNum = currentTarget.closest(Selector.SECTION_MAIN).data("section");
+                            const cmid = currentTarget.data("cmid");
                             require(["format_tiles/completion"], function (completion) {
                                 setTimeout(() => {
                                     completion.triggerCompletionChangedEvent(
@@ -807,11 +804,13 @@ define(["jquery", "core/templates", "core/ajax", "format_tiles/browser_storage",
                         if (sectionZero.css(CSS.DISPLAY) === "none") {
                             // Sec zero is collapsed so expand it on user click.
                             sectionZero.slideDown(250);
+                            $(Selector.ABOVE_TILES).removeClass('sec-zero-closed');
                             $(e.currentTarget).addClass(ClassNames.OPEN).removeClass(ClassNames.CLOSED);
                             browserStorage.setSecZeroCollapseStatus("collapsed");
                         } else {
                             // Sec zero is expanded so collapse it on user click.
                             sectionZero.slideUp(250);
+                            $(Selector.ABOVE_TILES).addClass('sec-zero-closed');
                             $(e.currentTarget).addClass(ClassNames.CLOSED).removeClass(ClassNames.OPEN);
                             browserStorage.setSecZeroCollapseStatus("expanded");
                         }
@@ -876,7 +875,7 @@ define(["jquery", "core/templates", "core/ajax", "format_tiles/browser_storage",
                     if (isMobile) {
                         pageContent.on(Event.CLICK, Selector.ACTIVITY + ".video a", function(e) {
                             var target = $(e.currentTarget);
-                            var url = target.closest(Selector.ACTIVITY).attr("data-url-secondary");
+                            var url = target.closest(Selector.ACTIVITY).data("url-secondary");
                             if (url !== undefined) {
                                 e.preventDefault();
                                 e.stopPropagation();
@@ -884,10 +883,10 @@ define(["jquery", "core/templates", "core/ajax", "format_tiles/browser_storage",
                                 ajax.call([{
                                     methodname: "format_tiles_log_mod_view", args: {
                                         courseid: courseId,
-                                        cmid: cm.attr("data-cmid")
+                                        cmid: cm.data("cmid")
                                     }
                                 }])[0].done(function () {
-                                    window.location = url;
+                                    window.location.href = url;
                                 });
                             }
                         });
@@ -909,6 +908,9 @@ define(["jquery", "core/templates", "core/ajax", "format_tiles/browser_storage",
                         // $("ul.tiles .tile").first().focus();
                     }
                 });
+            },
+            populateAndExpandSection(courseContextId, sectionId, sectionNumber) {
+                populateAndExpandSection(courseContextId, sectionId, sectionNumber);
             }
         };
     }

@@ -38,7 +38,10 @@ class observer {
     public static function course_deleted(\core\event\course_deleted $event) {
         global $DB;
         $courseid = $event->objectid;
-        $DB->delete_records("user_preferences", array("name" => 'format_tiles_stopjsnav_' . $courseid));
+        $DB->delete_records("user_preferences", ["name" => 'format_tiles_stopjsnav_' . $courseid]);
+        \format_tiles\tile_photo::delete_files_from_ids($courseid);
+        \format_tiles\format_option::unset_all_course($courseid);
+        self::clear_cache_resource_modals($courseid);
     }
 
     /**
@@ -46,6 +49,64 @@ class observer {
      * @param \core\event\course_section_deleted $event
      */
     public static function course_section_deleted(\core\event\course_section_deleted $event) {
-        \format_tiles\tile_photo::delete_file_from_ids($event->courseid, $event->objectid);
+        \format_tiles\tile_photo::delete_files_from_ids($event->courseid, $event->objectid);
+        \format_tiles\format_option::unset_multiple_types(
+            $event->courseid,
+            $event->objectid,
+            [\format_tiles\format_option::OPTION_SECTION_PHOTO, \format_tiles\format_option::OPTION_SECTION_ICON]
+        );
+    }
+
+    /**
+     * When a course module is deleted, delete its photo if it has one.
+     * @param \core\event\course_module_deleted $event
+     */
+    public static function course_module_deleted(\core\event\course_module_deleted $event) {
+        if ($event->other['modulename'] == 'resource') {
+            self::clear_cache_resource_modals($event->courseid);
+        }
+
+    }
+
+    /**
+     * When a course module is added, invalidate modalcmids cache for course.
+     * @param \core\event\course_module_deleted $event
+     */
+    public static function course_module_created(\core\event\course_module_created $event) {
+        if ($event->other['modulename'] == 'resource') {
+            self::clear_cache_resource_modals($event->courseid);
+        }
+    }
+
+    /**
+     * When a course module is updated, invalidate modalcmids cache for course.
+     * @param \core\event\course_module_deleted $event
+     */
+    public static function course_module_updated(\core\event\course_module_updated $event) {
+        if ($event->other['modulename'] == 'resource') {
+            self::clear_cache_resource_modals($event->courseid);
+        }
+    }
+
+    /**
+     * When a course backup is created, the process creates temporary legacy course format options.
+     * @param \core\event\course_backup_created $event
+     */
+    public static function course_backup_created(\core\event\course_backup_created $event) {
+        global $DB;
+        if ($event->other['type'] == 'course') {
+            $istilescourse = $DB->record_exists('course', ['id' => $event->objectid, 'format' => 'tiles']);
+            if ($istilescourse) {
+                \format_tiles\format_option::delete_legacy_format_options($event->objectid);
+            }
+        }
+    }
+
+    private static function clear_cache_resource_modals(int $courseid) {
+        $modalresources = get_config('format_tiles', 'modalresources');
+        $cache = \cache::make('format_tiles', 'modalcmids');
+        foreach (explode(',', $modalresources) as $modalresource) {
+            $cache->delete($courseid . '_' . $modalresource);
+        }
     }
 }

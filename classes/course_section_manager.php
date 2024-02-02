@@ -41,7 +41,7 @@ class course_section_manager {
         // We do not want to attempt a re-order if so, as may take too long.  (User must delete excess sections first).
         $maxsections = self::get_max_sections();
 
-        $count = $DB->count_records('course_sections', array('course' => $courseid));
+        $count = $DB->count_records('course_sections', ['course' => $courseid]);
         if ($count > $maxsections + 1) {
             debugging('Too many sections to re-order', DEBUG_DEVELOPER);
             return false;
@@ -52,7 +52,7 @@ class course_section_manager {
 
         $sections = $DB->get_records_sql(
             "SELECT section, id FROM {course_sections} WHERE course = :courseid ORDER BY section",
-            array('courseid' => $courseid)
+            ['courseid' => $courseid]
         );
 
         // Find if any section has a gap before it, and renumber course if one is found.
@@ -69,8 +69,8 @@ class course_section_manager {
                     move_section_to($course, $lastsection->section, $destination);
 
                     // Then move it back to the end.
-                    $maxsectionnum = $DB->get_field('course_sections', 'MAX(section)',  array('course' => $courseid));
-                    $sectionnumtomoveback = $DB->get_field('course_sections', 'section',  array('id' => $lastsection->id));
+                    $maxsectionnum = $DB->get_field('course_sections', 'MAX(section)',  ['course' => $courseid]);
+                    $sectionnumtomoveback = $DB->get_field('course_sections', 'section',  ['id' => $lastsection->id]);
                     move_section_to($course, $sectionnumtomoveback, $maxsectionnum);
                     return true;
                 } else {
@@ -99,7 +99,7 @@ class course_section_manager {
             JOIN {course} c on c.id = cs.course
             GROUP BY c.id
             HAVING MAX(section) > :maxsections ",
-            array('maxsections' => $maxsections)
+            ['maxsections' => $maxsections]
         );
     }
 
@@ -110,8 +110,8 @@ class course_section_manager {
      */
     public static function get_list_problem_courses_url() {
         return new \moodle_url(
-            '/course/format/tiles/admintools.php',
-            array('action' => 'listproblemcourses', 'sesskey' => sesskey())
+            '/course/format/tiles/editor/admintools.php',
+            ['action' => 'listproblemcourses', 'sesskey' => sesskey()]
         );
     }
 
@@ -160,11 +160,11 @@ class course_section_manager {
                     $message . ' '
                     . \html_writer::link(
                         new \moodle_url(
-                            '/course/format/tiles/admintools.php',
-                            array('action' => 'canceldeleteemptysections', 'courseid' => $courseid, 'sesskey' => sesskey())
+                            '/course/format/tiles/editor/admintools.php',
+                            ['action' => 'canceldeleteemptysections', 'courseid' => $courseid, 'sesskey' => sesskey()]
                         ),
                         get_string('canceltask', 'format_tiles'),
-                        array('class' => 'btn btn-secondary ml-2')
+                        ['class' => 'btn btn-secondary ml-2']
                     )
                 );
             } else {
@@ -174,11 +174,11 @@ class course_section_manager {
             if ($isadmin) {
                 return \html_writer::link(
                     new \moodle_url(
-                        '/course/format/tiles/admintools.php',
-                        array('action' => 'deleteemptysections', 'courseid' => $courseid, 'sesskey' => sesskey())
+                        '/course/format/tiles/editor/admintools.php',
+                        ['action' => 'deleteemptysections', 'courseid' => $courseid, 'sesskey' => sesskey()]
                     ),
                     get_string('deleteemptytiles', 'format_tiles'),
-                    array('class' => 'btn btn-secondary ml-2')
+                    ['class' => 'btn btn-secondary ml-2']
                 );
             } else {
                 // Only admin can use this feature.
@@ -203,7 +203,7 @@ class course_section_manager {
                             AND name is NULL AND (sequence IS NULL OR sequence = '')
                             AND availability IS NULL
                             ORDER BY section DESC",
-            array('courseid' => $courseid, 'startatsection' => $startatsection)
+            ['courseid' => $courseid, 'startatsection' => $startatsection]
         );
     }
 
@@ -228,20 +228,17 @@ class course_section_manager {
             return false;
         }
 
-        $result = $DB->delete_records('course_sections', array('id' => $section->id));
+        $result = $DB->delete_records('course_sections', ['id' => $section->id]);
 
         if ($result) {
-            $DB->delete_records('course_format_options', array('sectionid' => $section->id));
+            $DB->delete_records('course_format_options', ['sectionid' => $section->id]);
             $event = \core\event\course_section_deleted::create(
-                array(
+                [
                     'objectid' => $section->id,
                     'courseid' => $coursecontext->instanceid,
                     'context' => $coursecontext,
-                    'other' => array(
-                        'sectionnum' => $section->section,
-                        'sectionname' => '',
-                    )
-                )
+                    'other' => ['sectionnum' => $section->section, 'sectionname' => ''],
+                ]
             );
             $event->add_record_snapshot('course_sections', $section);
             $event->trigger();

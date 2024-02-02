@@ -59,22 +59,26 @@ class inline_css_output implements \renderable, \templatable {
      */
     private $usejsnav;
 
+    private $isediting;
+
     /**
      * course_output constructor
      * @param \stdClass $course the course DB object.
      * @param bool $ismobile if the user is on mobile.
      * @param bool $usejsnav are we using JS navigation.
      * @param bool $allowphototiles are we allowing photo tiles.
+     * @param bool $isediting.
      */
-    public function __construct($course, $ismobile, $usejsnav, $allowphototiles) {
+    public function __construct($course, bool $ismobile, bool $usejsnav, bool $allowphototiles, bool $isediting) {
         $this->course = $course;
         $this->ismobile = $ismobile;
         $this->usejsnav = $usejsnav;
         $this->allowphototiles = $allowphototiles;
+        $this->isediting = $isediting;
     }
     /**
      * Export the data for the mustache template.
-     * @see format_tiles_width_template_data()
+     * @see \format_tiles\util::width_template_data()
      * @param \renderer_base $output
      * @return array
      * @throws \dml_exception
@@ -86,30 +90,52 @@ class inline_css_output implements \renderable, \templatable {
         // Would involve injecting our dynamic values into theme CSS.
         // Our styles.css gets in via outputlib.php get_css_files()).
         // See also styles.php theme_styles_generate_and_store().
-        $basecolour = $this->get_tile_base_colour($this->course);
-        $outputdata = array(
-            'base_colour' => $this->rgbacolour($basecolour),
-            'tile_light_colour' => $this->rgbacolour($basecolour, 0.05),
-            'tile_hover_colour' => get_config('format_tiles', 'hovercolour'),
-            'custom_css' => get_config('format_tiles', 'customcss'),
-            'button_hover_colour' => $this->rgbacolour($basecolour, 0.1),
-        );
-        if ($this->allowphototiles) {
-            $outputdata['allowphototiles'] = 1;
-            $outputdata['photo_tile_text_bg'] = $this->rgbacolour(
-                $basecolour,
-                1.0 - (float)get_config('format_tiles', 'phototiletitletransarency')
-            );
 
-            // The best values here vary by theme and browser, so mostly come from admin setting.
-            // If the site admin sets background opacity to solid then it doesn't matter if the lines overlap.
-            $outputdata['phototilefontsize'] = 20;
-            $outputdata['phototiletextpadding'] = number_format(
-                (float)get_config('format_tiles', 'phototitletitlepadding') / 10, 1
-            );
-            $outputdata['phototiletextlineheight'] = number_format(
-                (float)get_config('format_tiles', 'phototitletitlelineheight') / 10, 1
-            );
+        // Later added styles may not use so many inline styles.
+        $styleswithcustomcolours = [
+            \format_tiles\output\course_output::TILE_STYLE_STANDARD, \format_tiles\output\course_output::TILE_STYLE_BOTTOM_TITLE,
+        ];
+        $basecolour = $this->get_tile_base_colour($this->course);
+        $tilestyle = get_config('format_tiles', 'tilestyle') ?? \format_tiles\output\course_output::TILE_STYLE_STANDARD;
+
+        if ($this->isediting || in_array($tilestyle, $styleswithcustomcolours)) {
+            $outputdata = [
+                "isstyle-$tilestyle" => true,
+                'isstyle1or2' => $tilestyle == 1 || $tilestyle == 2,
+                'base_colour' => $this->rgbacolour($basecolour),
+                'tile_light_colour' => $this->rgbacolour($basecolour, 0.05),
+                'tile_hover_colour' => get_config('format_tiles', 'hovercolour'),
+                'custom_css' => get_config('format_tiles', 'customcss'),
+                'button_hover_colour' => $this->rgbacolour($basecolour, 0.1),
+            ];
+            if ($this->allowphototiles) {
+                $outputdata['allowphototiles'] = 1;
+                $outputdata['photo_tile_text_bg'] = $this->rgbacolour(
+                    $basecolour,
+                    1.0 - (float)get_config('format_tiles', 'phototiletitletransarency')
+                );
+
+                // The best values here vary by theme and browser, so mostly come from admin setting.
+                // If the site admin sets background opacity to solid then it doesn't matter if the lines overlap.
+                $outputdata['phototilefontsize'] = 20;
+                $outputdata['phototiletextpadding'] = number_format(
+                    (float)get_config('format_tiles', 'phototitletitlepadding') / 10, 1
+                );
+                $outputdata['phototiletextlineheight'] = number_format(
+                    (float)get_config('format_tiles', 'phototitletitlelineheight') / 10, 1
+                );
+            }
+        } else {
+            $outputdata = [
+                "isstyle-$tilestyle" => true,
+                'base_colour' => $this->rgbacolour($basecolour),
+                'base_transparent7_colour' => $this->rgbacolour($basecolour, 0.7),
+                'base_transparent05_colour' => $this->rgbacolour($basecolour, 0.05),
+                'tile_light_colour' => $this->rgbacolour($basecolour, 0.05),
+                'button_hover_colour' => $this->rgbacolour($basecolour, 0.1),
+                'custom_css' => get_config('format_tiles', 'customcss'),
+                'tile_hover_colour' => get_config('format_tiles', 'hovercolour'),
+            ];
         }
 
         if ($this->course->courseusebarforheadings != 0 && $this->course->courseusebarforheadings != 'standard') {
@@ -121,7 +147,7 @@ class inline_css_output implements \renderable, \templatable {
 
         if ($this->usejsnav && !$this->ismobile) {
             // See the PHP doc for the template_data function below for what this is doing.
-            $widthdata = format_tiles_width_template_data($this->course->id);
+            $widthdata = \format_tiles\util::width_template_data($this->course->id);
             foreach ($widthdata as $k => $v) {
                 $outputdata[$k] = $v;
             }

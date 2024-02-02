@@ -27,7 +27,7 @@ namespace format_tiles\form;
 defined('MOODLE_INTERNAL') || die();
 use moodleform;
 global $CFG;
-require_once("{$CFG->libdir}/formslib.php");
+require_once("$CFG->libdir/formslib.php");
 
 /**
  * Class upload_image_form
@@ -59,11 +59,10 @@ class upload_image_form extends moodleform {
         $existingphotourl = isset($instance['existingurl']) ? $instance['existingurl'] : '';
         if ($existingphotourl) {
             $mform->addElement('header', 'headertag', get_string('existingimage', 'format_tiles'));
-            $formheading = '';
-            $formheading .= \html_writer::div(
+            $formheading = \html_writer::div(
                 \html_writer::img(
                     $existingphotourl,
-                    get_string('existingimage', 'format_tiles'), array('class' => 'existingtilephoto')
+                    get_string('existingimage', 'format_tiles'), ['class' => 'existingtilephoto']
                 )
             );
             if ($instance['aspectratiomessage']) {
@@ -71,10 +70,16 @@ class upload_image_form extends moodleform {
             }
             $formheading .= \html_writer::div(
                 \html_writer::link(
-                    new \moodle_url('/course/format/tiles/editimage.php',
-                        array('delete' => 1, 'courseid' => $instance['courseid'], 'sectionid' => $instance['sectionid'])),
+                    new \moodle_url('/course/format/tiles/editor/editimage.php',
+                        [
+                            'delete' => 1,
+                            'courseid' => $instance['courseid'],
+                            'sectionid' => $instance['sectionid'],
+                            'cmid' => $instance['cmid'],
+                        ]
+                    ),
                     get_string('deleteimage', 'format_tiles'),
-                    array('class' => 'btn btn-secondary')
+                    ['class' => 'btn btn-secondary']
                 ),
                 'mt-2 mb-2'
             );
@@ -100,6 +105,8 @@ class upload_image_form extends moodleform {
         $mform->setType('courseid', PARAM_INT);
         $mform->addElement('hidden', 'contextid', $instance['contextid']);
         $mform->setType('contextid', PARAM_INT);
+        $mform->addElement('hidden', 'cmid', $instance['cmid']);
+        $mform->setType('cmid', PARAM_INT);
         $mform->addElement('hidden', 'sectionid', $instance['sectionid']);
         $mform->setType('sectionid', PARAM_INT);
         $mform->addElement('hidden', 'action', 'uploadfile');

@@ -52,7 +52,7 @@ Feature: Sections can be edited and deleted in tiles format
   @javascript
   Scenario: Inline edit section name in tiles format
     When I click on "Edit tile name" "link" in the "li#section-1" "css_element"
-    And I set the field "New name for topic Tile 1" to "Setting up in business"
+    And I set the field "New name for section Tile 1" to "Setting up in business"
     And I press the enter key
     Then I should not see "Tile 1" in the "region-main" "region"
     And I should see "Setting up in business" in the "li#section-1" "css_element"

@@ -42,8 +42,8 @@ class image_processor {
      * This takes the temp file and adds an adjusted version to the tile_photo object.
      * @param \stored_file $tempfile
      * @param string $newfilename
-     * @param \context_course $coursecontext
-     * @param int $sectionid
+     * @param \context $context
+     * @param int $itemid
      * @param int $width
      * @param int $height
      * @return \stored_file|bool
@@ -51,11 +51,10 @@ class image_processor {
      * @throws \required_capability_exception
      * @throws \stored_file_creation_exception
      */
-    public static function adjust_and_copy_file($tempfile, $newfilename, $coursecontext, $sectionid, $width, $height) {
-        require_capability('moodle/course:update', $coursecontext);
-
+    public static function adjust_and_copy_file($tempfile, $newfilename, $context, $itemid, $width, $height) {
+        require_capability('moodle/course:update', $context);
         $newfilename = str_replace(' ', '_', $newfilename);
-        $storedfilerecord = self::stored_file_record($coursecontext->id, $sectionid, $newfilename);
+        $storedfilerecord = self::stored_file_record($context->id, $itemid, $newfilename);
         $fs = get_file_storage();
         try {
             // Ensure the right quality setting...
@@ -116,7 +115,7 @@ class image_processor {
      * @return string|bool false if a problem occurs or the image data.
      */
     private static function process_image($filepath, $requestedwidth, $requestedheight, $mime) {
-        $imagecontainerbgcolour = array('r' => 255, 'g' => 255, 'b' => 255);
+        $imagecontainerbgcolour = ['r' => 255, 'g' => 255, 'b' => 255];
         if (empty($filepath) || empty($requestedwidth) || empty($requestedheight)) {
             return false;
         }
@@ -150,7 +149,7 @@ class image_processor {
                     127
                 ));
                 imagesavealpha($tempimage, true);
-            } else if (in_array($imageparams['function'], array('imagejpeg', 'imagewebp', 'imagegif'))) {
+            } else if (in_array($imageparams['function'], ['imagejpeg', 'imagewebp', 'imagegif'])) {
                 imagealphablending($tempimage, false);
                 imagefill(
                     $tempimage,
@@ -223,23 +222,23 @@ class image_processor {
     /**
      * When we are storing a new image as a file for this object, the data we should use for the Moodle File API.
      * @param int $contextid the context id (course context) for the file.
-     * @param int $sectionid the section id for the file.
+     * @param int $itemid the item id for the file.
      * @param string $filename the filename we are storing as
      * @return array the data to use with the API.
      */
-    private static function stored_file_record($contextid, $sectionid, $filename) {
+    private static function stored_file_record($contextid, $itemid, $filename) {
         global $USER;
         $created = time();
         return array_merge(
             tile_photo::file_api_params(),
-            array(
+            [
                 'contextid' => $contextid,
-                'itemid' => $sectionid,
+                'itemid' => $itemid, // If it's a cm, item will be 0.
                 'filename' => $filename,
                 'timecreated' => $created,
                 'timemodified' => $created,
-                'userid' => $USER->id
-            )
+                'userid' => $USER->id,
+            ]
         );
     }
 
@@ -255,38 +254,22 @@ class image_processor {
         switch ($mime) {
             case 'image/png':
                 if (function_exists('imagepng')) {
-                    return array(
-                        'function' => 'imagepng',
-                        'filters' => PNG_NO_FILTER,
-                        'quality' => 1
-                    );
+                    return ['function' => 'imagepng', 'filters' => PNG_NO_FILTER, 'quality' => 1];
                 }
                 break;
             case 'image/jpeg':
                 if (function_exists('imagejpeg')) {
-                    return array(
-                        'function' => 'imagejpeg',
-                        'filters' => null,
-                        'quality' => 90
-                    );
+                    return ['function' => 'imagejpeg', 'filters' => null, 'quality' => 90];
                 }
                 break;
             case 'image/webp':
                 if (function_exists('imagewebp')) {
-                    return array(
-                        'function' => 'imagewebp',
-                        'filters' => null,
-                        'quality' => 90
-                    );
+                    return ['function' => 'imagewebp', 'filters' => null, 'quality' => 90];
                 }
                 break;
             case 'image/gif':
                 if (function_exists('imagegif')) {
-                    return array(
-                        'function' => 'imagegif',
-                        'filters' => null,
-                        'quality' => null
-                    );
+                    return ['function' => 'imagegif', 'filters' => null, 'quality' => null];
                 }
                 break;
             default:

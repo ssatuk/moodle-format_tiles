@@ -45,14 +45,14 @@ if ($ADMIN->fulltree) {
     $default = 0;
     $page->add(new admin_setting_configcheckbox($name, $title, '', $default));
 
-    $brandcolourdefaults = array(
+    $brandcolourdefaults = [
         '#1670CC' => get_string('colourblue', 'format_tiles'),
         '#00A9CE' => get_string('colourlightblue', 'format_tiles'),
         '#7A9A01' => get_string('colourgreen', 'format_tiles'),
         '#009681' => get_string('colourdarkgreen', 'format_tiles'),
         '#D13C3C' => get_string('colourred', 'format_tiles'),
         '#772583' => get_string('colourpurple', 'format_tiles'),
-    );
+    ];
     $colournumber = 1;
     foreach ($brandcolourdefaults as $hex => $displayname) {
         $title = get_string('brandcolour', 'format_tiles') . ' ' . $colournumber;
@@ -134,19 +134,19 @@ if ($ADMIN->fulltree) {
         "https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/X-Frame-Options",
         "https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/X-Frame-Options"
     );
-    $allowedresourcetypes = array(
+    $allowedresourcetypes = [
         'pdf' => get_string('displaytitle_mod_pdf', 'format_tiles') . " (pdf)",
         'url' => get_string('url') . ' (' . $displayembed . ')',
-        'html' => get_string('displaytitle_mod_html', 'format_tiles') . " (HTML " . get_string('file') . ")"
-    );
+        'html' => get_string('displaytitle_mod_html', 'format_tiles') . " (HTML " . get_string('file') . ")",
+    ];
     $name = 'format_tiles/modalresources';
     $title = get_string('modalresources', 'format_tiles');
-    $description = get_string('modalresources_desc', 'format_tiles', array('displayembed' => $displayembed, 'link' => $link));
+    $description = get_string('modalresources_desc', 'format_tiles', ['displayembed' => $displayembed, 'link' => $link]);
     $setting = new admin_setting_configmulticheckbox(
         $name,
         $title,
         $description,
-        array('pdf' => 1, 'url' => 1, 'html' => 1),
+        ['pdf' => 1, 'url' => 1, 'html' => 1],
         $allowedresourcetypes
     );
     $page->add($setting);
@@ -161,11 +161,19 @@ if ($ADMIN->fulltree) {
     $default = 1;
     $page->add(new admin_setting_configcheckbox($name, $title, $description, $default));
 
-    $name = 'format_tiles/phototilesaltstyle';
-    $title = get_string('phototilesaltstyle', 'format_tiles');
-    $description = get_string('phototilesaltstyle_desc', 'format_tiles');
-    $default = 0;
-    $page->add(new admin_setting_configcheckbox($name, $title, $description, $default));
+    $choices = [];
+    $stylestr = get_string('style', 'format_tiles');
+    for ($i = 1; $i <= 2; $i++) {
+        $choices[(string)$i] = $stylestr . ' ' . $i;
+    }
+
+    $setting = new admin_setting_configselect(
+        'format_tiles/tilestyle',
+        get_string('tilestyle', 'format_tiles'),
+        get_string('tilestyle_desc', 'format_tiles'),
+        "1",
+        $choices);
+    $page->add($setting);
 
     $name = 'format_tiles/showprogresssphototiles';
     $title = get_string('courseshowtileprogress', 'format_tiles');
@@ -321,6 +329,16 @@ if ($ADMIN->fulltree) {
     $title = get_string('assumedatastoreconsent', 'format_tiles');
     $description = get_string('assumedatastoreconsent_desc', 'format_tiles');
     $default = 1;
+    $page->add(new admin_setting_configcheckbox($name, $title, $description, $default));
+
+    $page->add(new admin_setting_heading(
+        'experimentalfeatures', get_string('experimentalfeatures', 'format_tiles'), ''
+    ));
+
+    $name = 'format_tiles/usecourseindex';
+    $title = get_string('usecourseindex', 'format_tiles');
+    $description = get_string('usecourseindex_desc', 'format_tiles');
+    $default = 0;
     $page->add(new admin_setting_configcheckbox($name, $title, $description, $default));
 
     $settingscategory->add($page);

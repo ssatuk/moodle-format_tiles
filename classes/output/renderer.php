@@ -45,7 +45,7 @@ class renderer extends section_renderer {
 
         $data = $contentoutput->export_for_template($this);
 
-        echo $this->render_from_template('format_tiles/local/content/content', $data);
+        echo $this->render_from_template('format_tiles/local/content', $data);
     }
 
     /**
@@ -68,5 +68,30 @@ class renderer extends section_renderer {
      */
     public function section_title_without_link($section, $course) {
         return $this->render(course_get_format($course)->inplace_editable_render_section_name($section, false));
+    }
+
+    /**
+     * Get the updated rendered version of a section.
+     *
+     * This method will only be used when the course editor requires to get an updated cm item HTML
+     * to perform partial page refresh. It will be used for supporting the course editor webservices.
+     *
+     * By default, the template used for update a section is the same as when it renders initially,
+     * but format plugins are free to override this method to provide extra effects or so.
+     *
+     * In tiles, we override so that when teacher hides/shows tile with AJAX, re-rendered sec includes photo/icon.
+     * @see \format_tiles\output\section_renderer::render_section()
+     * @see \format_tiles\output\courseformat\content\section\controlmenu::export_for_template()
+     * @param \core_courseformat\base $format the course format
+     * @param \section_info $section the section info
+     * @return string the rendered element
+     */
+    public function course_section_updated(\core_courseformat\base $format, \section_info $section): string {
+        $sectionclass = $format->get_output_classname('content\\section');
+        $output = new $sectionclass($format, $section);
+        $renderer = new \format_tiles\output\section_renderer($this->page, $this->target);
+
+        // This ends up calling \format_tiles\output\section_renderer::render_section().
+        return $renderer->render($output);
     }
 }

@@ -32,6 +32,12 @@ namespace format_tiles;
 class tile_photo {
 
     /**
+     * Which type of tile option we have, e.g. format_option::OPTION_SECTION_PHOTO.
+     * @var int
+     */
+    private $tilesoptiontype;
+
+    /**
      * Course id for this course.
      * @var int
      */
@@ -44,16 +50,10 @@ class tile_photo {
     private $sectionid;
 
     /**
-     * Context we are concerned with (will be course context).
-     * @var \context_course
+     * Context we are concerned with (will be course or module context).
+     * @var \context
      */
     private $context;
-
-    /**
-     * The course format option reflecting this tile_photo object (from course_format_options table).
-     * @var mixed
-     */
-    private $courseformatoption;
 
     /**
      * The filename relating to this tile_photo object.
@@ -70,105 +70,53 @@ class tile_photo {
     /**
      * Creates a new instance of class
      *
-     * @param int $courseid
+     * @param \context $context
      * @param int $sectionid
-     * @throws \dml_exception
+     * @throws \coding_exception
      */
-    public function __construct($courseid, $sectionid) {
-        global $DB;
-        $this->courseid = $courseid;
-        $this->sectionid = $sectionid;
-        $this->context = \context_course::instance($courseid);
-        $this->courseformatoption = $this->get_course_format_option();
-        if (isset($this->courseformatoption->value)) {
-            $this->filename = $this->courseformatoption->value;
+    public function __construct(\context $context, int $sectionid) {
+        $this->context = $context;
+        if ($this->context->contextlevel === CONTEXT_COURSE) {
+            $this->courseid = $this->context->instanceid;
+            $this->sectionid = $sectionid;
+            $this->tilesoptiontype = format_option::OPTION_SECTION_PHOTO;
         } else {
-            // As no course format option is set, we should not have any files set either.  Make sure.
-            self::delete_file_from_ids($courseid, $sectionid);
+            debugging('Invalid photo context level: ' . $this->context->contextlevel . ' section ID ' . $sectionid);
         }
-        // Ensure that this section really exists in this course.
-        $DB->get_record('course_sections', array('course' => $this->courseid, 'id' => $this->sectionid), "id", MUST_EXIST);
+        // Init filename.
+        $this->get_filename();
     }
 
-    /**
-     * Get the data from the course_format_options table for this tile_photo object.
-     * @return mixed
-     * @throws \dml_exception
-     */
-    private function get_course_format_option() {
-        global $DB;
-        return $DB->get_record('course_format_options', array(
-                'courseid' => $this->courseid,
-                'format' => 'tiles',
-                'sectionid' => $this->sectionid,
-                'name' => 'tilephoto'
-            )
-        );
-    }
-
-    /**
-     * Get the data from the course_format_options table for this tile_photo object.
-     * @param int $sectionid the section id that the format option relates to.
-     * @param int $courseid the course id that the format option relates to.
-     * @return mixed
-     * @throws \dml_exception
-     */
-    public static function get_course_format_option_value($sectionid, $courseid) {
-        global $DB;
-        $field = $DB->get_field('course_format_options', 'value', array(
-                'courseid' => $courseid,
-                'format' => 'tiles',
-                'sectionid' => $sectionid,
-                'name' => 'tilephoto'
-            )
-        );
-        return($field);
-    }
-
-    /**
-     * Set the data in the course_format_options table for this tile_photo object.
-     * @throws \dml_exception
-     * @throws \required_capability_exception
-     */
-    public function set_course_format_option() {
-        global $DB;
-        require_capability('moodle/course:update', \context_course::instance($this->courseid));
-
-        $record = $this->get_course_format_option();
-        if (!$record) {
-            $record = new \stdClass();
-            $record->courseid = $this->courseid;
-            $record->format = 'tiles';
-            $record->sectionid = $this->sectionid;
-            $record->name = 'tilephoto';
-            $record->value = $this->filename;
-            $record->id = $DB->insert_record('course_format_options', $record, true);
-        } else {
-            $record->value = $this->filename;
-            $DB->update_record('course_format_options', $record);
+    public function get_filename() {
+        if (!isset($this->filename) || !$this->filename) {
+            $this->filename = $this->courseid
+                ? format_option::get($this->courseid, $this->tilesoptiontype, $this->get_element_id()) : null;
         }
-        $this->courseformatoption = $record;
+        // We do not throw an error here if no filename is found as this just means that the item does not have a photo.
+        return $this->filename;
     }
 
-
-
+    public function set_filename($filename) {
+        $this->filename = $filename;
+        format_option::set($this->courseid, $this->tilesoptiontype, $this->get_element_id(), $this->filename);
+    }
 
     /**
      * Get the image url associated with this tile_photo object.
-     * @return bool|string
+     * @return null|string
      */
-    public function get_image_url () {
-        $config = self::file_api_params();
-        if (!$this->filename) {
-            return false;
+    public function get_image_url (): ?string {
+        if (!$this->get_filename()) {
+            return null;
         } else {
+            $config = self::file_api_params();
             return \moodle_url::make_pluginfile_url(
                 $this->context->id,
                 $config['component'],
                 $config['filearea'],
-                $this->sectionid,
+                $this->get_element_id(),
                 $config['filepath'],
-                $this->filename,
+                $this->get_filename(),
                 false
             )->out();
         }
@@ -177,21 +125,25 @@ class tile_photo {
     /**
      * Given a course context id, section id and a filename, get the related photo file.
      * @param int $contextid the context id.
-     * @param int $sectionid the section id.
+     * @param int $elementid the element id.
      * @param string $filename the file name.
-     * @return bool|\stored_file
+     * @return null|\stored_file
      */
-    public static function get_file_from_ids($contextid, $sectionid, $filename) {
+    public static function get_file_from_ids($contextid, $elementid, $filename): ?\stored_file {
         $fs = get_file_storage();
         $config = self::file_api_params();
-        return $fs->get_file(
+        $file = $fs->get_file(
             $contextid,
             $config['component'],
             $config['filearea'],
-            $sectionid,
+            $elementid,
             $config['filepath'],
             $filename
         );
+        if ($file && $file->get_filename() != '.' && $file->get_filesize() > 0) {
+            return $file;
+        }
+        return null;
     }
 
     /**
@@ -200,44 +152,72 @@ class tile_photo {
      */
     public function get_file() {
         if (!isset($this->file)) {
-            $this->file = self::get_file_from_ids($this->context->id, $this->sectionid, $this->filename);
+            $this->file = self::get_file_from_ids($this->context->id, $this->get_element_id(), $this->filename);
         }
         return $this->file;
     }
 
     /**
-     * When course_section_deleted is trigger we remove related files.
+     * When course_section_deleted / course_module_deleted is trigger we remove related files.
      * @param int $courseid the course id.
-     * @param int $sectionid the section id.
+     * @param int|bool $sectionid the section id (if limiting to a section)
      * @return bool
      */
-    public static function delete_file_from_ids($courseid, $sectionid) {
+    public static function delete_files_from_ids($courseid, $sectionid = false, $cmid = null) {
         $params = self::file_api_params();
         $fs = get_file_storage();
-        $contextid = \context_course::instance($courseid)->id;
-        if ($contextid) {
-            return $fs->delete_area_files(
-                $contextid,
-                $params['component'],
-                $params['filearea'],
-                $sectionid
-            );
+        if ($cmid == null) {
+            $context = \context_course::instance($courseid, IGNORE_MISSING);
+            if ($context) {
+                return $fs->delete_area_files(
+                    $context->id,
+                    $params['component'],
+                    $params['filearea'],
+                    $sectionid
+                );
+            }
         } else {
-            return false;
+            $context = \context_module::instance($cmid, IGNORE_MISSING);
+            if ($context) {
+                return $fs->delete_area_files(
+                    $context->id,
+                    $params['component'],
+                    $params['filearea']
+                );
+            }
         }
+        return false;
     }
 
     /**
      * Used if we already have a stored file that we want to set as the file for this object.
      * E.g. we are converting from Grid format and the file is already saved.
      * @param \stored_file $file
-     * @throws \dml_exception
-     * @throws \required_capability_exception
      */
     public function set_file($file) {
+        global $DB;
+        // Ensure that this section/cm really exists.
+        if ($this->tilesoptiontype == format_option::OPTION_SECTION_PHOTO) {
+            $DB->get_record(
+                'course_sections',
+                ['course' => $this->courseid, 'id' => $this->sectionid],
+                "id",
+                MUST_EXIST
+            );
+        }
+
         $this->file = $file;
         $this->filename = $file->get_filename();
-        $this->set_course_format_option();
+        format_option::set($this->courseid, $this->tilesoptiontype, $this->get_element_id(), $this->filename);
+    }
+
+    /**
+     * Get the element id for this object as used in the format_tiles_tile_options table.
+     * Element id is either section id (for section) or cmid (for course mod).
+     * @return int
+     */
+    private function get_element_id() {
+        return $this->sectionid;
     }
 
     /**
@@ -246,7 +226,6 @@ class tile_photo {
      * @param \stored_file $sourcefile
      * @param string $newfilename
      * @return bool|\stored_file
-     * @throws \dml_exception
      * @throws \file_exception
      * @throws \moodle_exception
      * @throws \required_capability_exception
@@ -254,48 +233,39 @@ class tile_photo {
      */
     public function set_file_from_stored_file($sourcefile, $newfilename) {
         if ($sourcefile) {
-            if ($sourcefile->get_itemid() == $this->sectionid
-                && $sourcefile->get_contextid() == $this->context->id
-                && $sourcefile->get_filename() == $this->filename
-                && $sourcefile->get_filepath() == self::file_api_params()['filepath']) {
-                debugging("File is already set for this section");
-                return false;
-            }
             $sourceimageinfo = $sourcefile->get_imageinfo();
             $newwidth = self::get_max_image_width();
 
             // In case the new file has the same name as the old one, delete it early.
             // Otherwise we do it in a few lines' time when we know we have the new one.
-            if ($this->filename == $sourcefile->get_filename()) {
+            if ($this->get_filename() == $sourcefile->get_filename()) {
                 $this->delete_stored_file();
             }
-
             $newfile = image_processor::adjust_and_copy_file(
                 $sourcefile,
                 $newfilename,
                 $this->context,
-                $this->sectionid,
+                $this->get_element_id(),
                 $newwidth,
                 $sourceimageinfo['height'] * $newwidth / $sourceimageinfo['width']
             );
             if ($newfile) {
-                if ($this->filename != $sourcefile->get_filename()) {
-                    // We didn't delete the file a few lines ago so do it now.
+                if ($this->get_filename() && $this->get_filename() != $sourcefile->get_filename()) {
+                    // We didn't delete the old file a few lines ago so do it now.
                     $this->delete_stored_file();
                 }
                 $this->set_file($newfile);
                 return $newfile;
             } else {
-                debugging('Failed to set file from details - filename ' . $newfilename);
+                debugging('Failed to set file from details - filename ' . $newfilename, DEBUG_DEVELOPER);
 
                 // Restore the original file name of the original file.
-                debugging("New file could not be created");
-                debugging($newfile);
+                debugging("New file could not be created", DEBUG_DEVELOPER);
                 $this->get_file()->rename(self::file_api_params()['filepath'], $this->filename);
                 return false;
             }
         } else {
-            debugging('Failed to set file from details - filename ' . $newfilename);
+            debugging('Failed to set file from details - filename ' . $newfilename, DEBUG_DEVELOPER);
             return false;
         }
     }
@@ -309,9 +279,9 @@ class tile_photo {
     public function verify_aspect_ratio() {
         $file = $this->get_file();
         if (!$file) {
-            debugging("No stored file found");
+            debugging("No stored file found", DEBUG_DEVELOPER);
             $this->clear();
-            return array('status' => false);
+            return ['status' => false];
         }
 
         $requiredratio = 0.666; // Landscape is 2:3 ratio height:width.
@@ -324,28 +294,24 @@ class tile_photo {
         $messageshort = get_string('imagesize', 'format_tiles') . ": ";
         if (abs($ratio - $requiredratio) > $tolerance) {
             if ($ratio > $requiredratio) {
-                $tallorwide = array(
-                    'tallorwide' => get_string('tootall', 'format_tiles')
-                );
+                $tallorwide = ['tallorwide' => get_string('tootall', 'format_tiles')];
                 $messageshort .= get_string('tootall', 'format_tiles');
             } else {
-                $tallorwide = array(
-                    'tallorwide' => get_string('toowide', 'format_tiles'),
-                );
+                $tallorwide = ['tallorwide' => get_string('toowide', 'format_tiles')];
                 $messageshort .= get_string('toowide', 'format_tiles');
             }
-            return array(
+            return [
                 'status' => false,
                 'message' => get_string(
                     'aspectratiotootallorwide',
                     'format_tiles',
                     $tallorwide
                 ),
-                'messageshort' => $messageshort
-            );
+                'messageshort' => $messageshort,
+            ];
         }
         $messageshort .= get_string('ok', 'format_tiles');
-        return array('status' => true, 'message' => $messageshort, 'messageshort' => $messageshort);
+        return ['status' => true, 'message' => $messageshort, 'messageshort' => $messageshort];
     }
 
     /**
@@ -353,38 +319,35 @@ class tile_photo {
      * @throws \dml_exception
      */
     public function clear() {
-        global $DB;
-        if (isset($this->courseid) && isset($this->sectionid)) {
-            $DB->delete_records(
-                'course_format_options',
-                array(
-                    'courseid' => $this->courseid,
-                    'format' => 'tiles',
-                    'sectionid' => $this->sectionid,
-                    'name' => 'tilephoto'
-                )
-            );
-        }
-        $this->courseformatoption = null;
         $this->delete_stored_file();
+        format_option::unset($this->courseid, $this->tilesoptiontype, $this->get_element_id());
     }
 
     /**
-     * When a course is switched in to "Tiles" we may have Tiles images sitting in the database.
-     * This would happen if the course was once in tiles but was switched to something else.
-     * We delete them so that we can start again.
-     * Really we should run this when we switch *out* of tiles too, as a clean up exercise (later release).
+     * Delete all tiles photos and icon choices (can be called by site admin from course nav).
      * @param int $courseid the id for this course.
      * @return bool whether successful.
      */
-    public static function delete_all_tile_photos_course($courseid) {
+    public static function reset_tiles_course($courseid) {
+        global $DB;
+        require_capability('moodle/site:config', \context_system::instance());
         $fs = get_file_storage();
         $fileapiparams = self::file_api_params();
-        return $fs->delete_area_files(
+
+        // Delete tile icon choices.
+        $result = $DB->delete_records(
+                'course_format_options',
+                ['courseid' => $courseid, 'format' => 'tiles', 'name' => 'tileicon']
+            );
+
+        // Delete section tile photos.
+        $result = $result && $fs->delete_area_files(
             \context_course::instance($courseid)->id,
             $fileapiparams['component'],
             $fileapiparams['filearea']
         );
+
+        return $result && format_option::unset_all_course($courseid);
     }
 
     /**
@@ -392,29 +355,16 @@ class tile_photo {
      * @return bool
      */
     private function delete_stored_file() {
-        $file = $this->get_file();
-        if ($file) {
-            return $file->delete();
-        } else {
-            return true;
+        // If we don't have filename then we have nothing to delete.
+        if ($this->get_filename()) {
+            $file = $this->get_file();
+            if ($file) {
+                return $file->delete();
+            } else {
+                return true;
+            }
         }
-    }
-
-    /**
-     * For a given course, find out the IDs of all tiles which have photos instead of icons.
-     * @param int $courseid the course we are interested in.
-     * @return array the array of relevant tile ids.
-     * @throws \dml_exception
-     */
-    public static function get_photo_tile_ids($courseid) {
-        global $DB;
-        $records = $DB->get_records(
-            'course_format_options',
-            array('courseid' => $courseid, 'format' => 'tiles', 'name' => 'tilephoto'),
-            'sectionid',
-            'sectionid'
-        );
-        return(array_keys($records));
+        return true;
     }
 
     /**
@@ -422,7 +372,7 @@ class tile_photo {
      * @return array
      */
     public static function allowed_file_types() {
-        return array('image/gif', 'image/jpeg', 'image/png');
+        return ['image/gif', 'image/jpeg', 'image/png'];
     }
 
     /**
@@ -444,42 +394,53 @@ class tile_photo {
      * Get the most recent x number of photos ($maxnumberphotos) that I uploaded.
      * Or that exist in this course (even if someone else uploaded).
      * Ignore any more than a certain time old.  Used to populate my photo library.
-     * @param int $contextid the id for this context.
+     * @param int $courseid the id for this course.
      * @param int $maxnumberphotos how many to return maximum.
      * @return array details of photos incl filename and details for path to make URL.
      * @throws \dml_exception
      */
-    public static function get_photo_library_photos($contextid, $maxnumberphotos = 20) {
+    public static function get_photo_library_photos(int $courseid, int $maxnumberphotos = 20): array {
         // Did not use (new \file_storage())->get_area_files() for this as it requires context id.
         // We want to filter by user id instead.
         global $DB, $USER;
-        $params['contextid'] = $contextid;
+        if (!is_numeric($courseid)) {
+            debugging('Course id must be numeric', DEBUG_DEVELOPER);
+            return [];
+        }
+
+        $contextids = [\context_course::instance($courseid)->id];
+        list($contextsql, $params) = $DB->get_in_or_equal($contextids, SQL_PARAMS_NAMED);
+
         $params['userid'] = $USER->id;
-        $params['cutofftime'] = strtotime("-12 months");
+        $params['cutofftime'] = strtotime("-36 months");
         $params['filesizecutoff'] = get_real_size("700K"); // Don't want to try to display really large draft files in library.
         $fileapiparams = self::file_api_params();
         $params['component'] = $fileapiparams['component'];
         $params['filearea'] = $fileapiparams['filearea'];
         $params['filepath'] = $fileapiparams['filepath'];
 
-        $sql = "SELECT id, component, filearea, contextid, itemid, filepath, filename, filesize, mimetype
+        $sql = "SELECT id, contenthash, component, filearea, contextid, itemid, filepath, filename, filesize, mimetype
             FROM {files}
-            WHERE component = :component AND filearea = :filearea AND (contextid = :contextid OR userid = :userid)
+            WHERE component = :component AND filearea = :filearea AND (userid = :userid OR contextid $contextsql)
             AND filename != '.' AND filepath = :filepath
             AND timemodified > :cutofftime
-            AND filesize < :filesizecutoff AND filesize > 0";
+            AND filesize < :filesizecutoff AND filesize > 0
+            ORDER BY timemodified DESC";
 
         try {
-            $records = $DB->get_records_sql($sql, $params, 0, $maxnumberphotos);
+            // We set a max number of records for the query that we don't expect to reach, just in case.
+            // We can't use $maxnumberphotos, as query returns duplicate records if same photo used multiple times.
+            $maxnumerofrecords = 1000;
+            $records = $DB->get_records_sql($sql, $params, 0, $maxnumerofrecords);
         } catch (\Exception $ex) {
-            debugging('Failed to run query to get files for library. ' . $ex->getMessage());
+            debugging('Failed to run query to get files for library. ' . $ex->getMessage(), DEBUG_DEVELOPER);
             $records = [];
         }
 
         // If the teacher has nothing in their library, add a sample image.
-        if (count($records) == 0) {
+        if (empty($records)) {
             $params['contextid'] = \context_system::instance()->id;
-            $sql = "SELECT id, component, filearea, contextid, itemid, filepath, filename, filesize, mimetype
+            $sql = "SELECT id, contenthash, component, filearea, contextid, itemid, filepath, filename, filesize, mimetype
             FROM {files}
             WHERE component = :component AND filearea = :filearea AND contextid = :contextid
             AND filename = 'sample_image.jpg'
@@ -488,16 +449,24 @@ class tile_photo {
             $records = $DB->get_records_sql($sql, $params, 0, 1);
         }
 
-        // Reduce to a set (ignore items with same filename/type and *roughly* same size as already existing).
+        // Reduce to a set (ignore items with same contenthash or same filename and roughly same size).
         $set = [];
+        $contenthashes = [];
         $filesizetolerance = 2000; // If file size is within 2kb of another file, we treat that as same size.
 
+        $countadded = 0;
         foreach ($records as $record) {
             $setkey = $record->filename . '|' . $record->mimetype;
-            if (!isset($set[$setkey]) || abs($set[$setkey]->filesize - $record->filesize) > $filesizetolerance) {
+            if (!in_array($record->contenthash, $contenthashes) &&
+            (!isset($set[$setkey]) || abs($set[$setkey]->filesize - $record->filesize) > $filesizetolerance)) {
                 // Seems like we don't already have this file in the set - don't have to be precise here given purpose.
                 unset($record->mimetype);  // Don't need to keep this.
                 $set[$setkey] = $record;
+                $contenthashes[] = $record->contenthash;
+                $countadded++;
+                if ($countadded > $maxnumberphotos) {
+                    return array_values($set);
+                }
             }
         }
         return array_values($set);
@@ -508,12 +477,12 @@ class tile_photo {
      * @return array the config data.
      */
     public static function file_api_params() {
-        return array(
+        return [
             'component' => 'format_tiles',
             'filearea' => 'tilephoto',
             'filepath' => '/tilephoto/',
-            'tempfilearea' => 'temptilephoto'
-        );
+            'tempfilearea' => 'temptilephoto',
+        ];
     }
 
     /**
@@ -527,10 +496,10 @@ class tile_photo {
     /**
      * The sample image file in the database for this Moodle instance.
      * There is only one and it is shown to teacher as a sample if their library is empty.
-     * @return bool|\stored_file
+     * @return null|\stored_file
      * @throws \dml_exception
      */
-    public static function get_sample_image_file() {
+    public static function get_sample_image_file(): ?\stored_file {
         return self::get_file_from_ids(\context_system::instance()->id, 0, 'sample_image.jpg');
     }
 }
