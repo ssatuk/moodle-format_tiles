@@ -129,34 +129,38 @@ class util {
      * The skipcheck URL param is there in case anyone gets stuck at loading icon and clicks it - they escape it for session.
      * @param int $courseid the course ID we are in.
      * @see format_tiles_external::set_session_width() for where the session vars are set from JS.
-     * @return array the data to add to our mustache templates.
+     * @return string the styles to print.
      * @throws \coding_exception
      * @throws \dml_exception
      */
-    public static function width_template_data($courseid) {
+    public static function get_tilefitter_extra_css(int $courseid): string {
         global $SESSION, $PAGE;
-        $data = [];
-        if (get_config('format_tiles', 'fittilestowidth')) {
-            if (optional_param('skipcheck', 0, PARAM_INT) || isset($SESSION->format_tiles_skip_width_check)) {
-                $SESSION->format_tiles_skip_width_check = 1;
-                return ['hidetilesinitially' => 0];
-            } else if ($PAGE->user_is_editing()
-                || !get_config('format_tiles', 'usejavascriptnav')) {
-                // Here we don't tiles initially or restrict screen width.
-                return ['hidetilesinitially' => 0];
-            } else {
-                // If session screen width has been set, send it to template so we can include in inline CSS.
-                $sessionvar = 'format_tiles_width_' . $courseid;
-                $sessionvarvalue = isset($SESSION->$sessionvar) ? $SESSION->$sessionvar : 0;
-                $data['defaultscreenwidthsession'] = $sessionvarvalue;
+        if (!\format_tiles\util::using_js_nav()) {
+            return '';
+        }
+        if (!get_config('format_tiles', 'fittilestowidth')) {
+            return '';
+        }
+        if ($PAGE->user_is_editing()) {
+            return '';
+        }
+        if (\core_useragent::get_device_type() == \core_useragent::DEVICETYPE_MOBILE) {
+            return '';
+        }
+        if (optional_param('skipcheck', 0, PARAM_INT) || isset($SESSION->format_tiles_skip_width_check)) {
+            $SESSION->format_tiles_skip_width_check = 1;
+            return '';
+        }
 
-                // If no session screen width has yet been set, we hide the tiles initally so we can calculate correct width.
-                $data['hidetilesinitially'] = $sessionvarvalue == 0 ? 1 : 0;
-            }
-            return $data;
+        // If session screen width has been set, send it to template so we can include in inline CSS.
+        $sessionvar = 'format_tiles_width_' . $courseid;
+        $sessionvarvalue = $SESSION->$sessionvar ?? 0;
+
+        if ($sessionvarvalue == 0) {
+            // If no session screen width has yet been set, we hide the tiles initally, so we can calculate correct width.
+            return '.format-tiles.jsenabled ul.tiles {opacity: 0;}'; // We will remove this opacity later in JS.
         } else {
-            // Feature is disabled by site admin.
-            return ['hidetilesinitially' => 0];
+            return ".format-tiles.jsenabled ul.tiles {max-width: {$sessionvarvalue}px;}";
         }
     }
 
@@ -275,5 +279,18 @@ class util {
             }
         }
         return null;
+    }
+
+    /**
+     * Is the user using JS navigation i.e. animated tiles?
+     * @return bool
+     * @throws \coding_exception
+     * @throws \dml_exception
+     */
+    public static function using_js_nav() {
+        $userstopjsnav = get_user_preferences('format_tiles_stopjsnav', 0);
+
+        // JS navigation and modals in Internet Explorer are not supported by this plugin so we disable JS nav here.
+        return !$userstopjsnav && get_config('format_tiles', 'usejavascriptnav') && !\core_useragent::is_ie();
     }
 }

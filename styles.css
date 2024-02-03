@@ -1706,6 +1706,15 @@ body.format-tiles.jsenabled .course-content .headerabovetiles {
     width: 100%;
     padding: 10px;
 }
+.format-tiles li.section:not(#section-0).hidden .course-section-header,
+.format-tiles li.section:not(#section-0).restricted .course-section-header {
+    background-color: #efefef;
+    border-top-color: #cdcdcd;
+}
+.format-tiles li.section:not(#section-0).hidden .course-section-header  .tilebarphoto,
+.format-tiles li.section:not(#section-0).restricted .course-section-header .tilebarphoto {
+    filter: grayscale(1);
+}
 .format-tiles li.section:not(#section-0) .course-section-header img.icon {
     width: 32px;
     height: 32px;

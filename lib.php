@@ -1142,3 +1142,26 @@ function format_tiles_output_fragment_get_cm_content(array $args): string {
     }
     throw new invalid_parameter_exception('Module not found woth context ID ' . $args['contextid']);
 }
+
+/**
+ * Callback to add head elements.  Used to add dynamic CSS used by Tiles format.
+ * @see \core_renderer::standard_head_html()
+ * @return string the HTML to inject.
+ * @throws coding_exception
+ * @throws moodle_exception
+ */
+function format_tiles_before_standard_html_head(): string {
+    global $PAGE;
+    $istilescoursefrontpage = $PAGE->pagetype == 'course-view-tiles'
+        && $PAGE->url->compare(new moodle_url('/course/view.php'), URL_MATCH_BASE);
+    if (!$istilescoursefrontpage) {
+        return '';
+    }
+    $courseid = optional_param('id', 0, PARAM_INT);
+    if ($courseid) {
+        $params = ['course' => $courseid];
+        $stylesurl = new moodle_url('/course/format/tiles/styles_extra.php', $params);
+        return '<link rel="stylesheet" type="text/css" href="'. $stylesurl . '">';
+    }
+    return '';
+}

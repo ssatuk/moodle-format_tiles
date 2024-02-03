@@ -94,14 +94,6 @@ if ($ADMIN->fulltree) {
         $colournumber++;
     }
 
-    $page->add(new admin_setting_heading('hovercolourheading', get_string('hovercolour', 'format_tiles'), ''));
-    // Hover colour for all tiles (in hexadecimal RGB with preceding '#').
-    $name = 'format_tiles/hovercolour';
-    $title = get_string('hovercolour', 'format_tiles');
-    $description = get_string('hovercolour_descr', 'format_tiles');
-    $default = '#ED8B00';
-    $setting = new admin_setting_configcolourpicker($name, $title, $description, $default);
-    $page->add($setting);
     $settingscategory->add($page);
 
     // Modal activities / resources.

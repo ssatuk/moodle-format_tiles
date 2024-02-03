@@ -53,15 +53,7 @@ $renderer = $PAGE->get_renderer('format_tiles');
 
 $ismobile = core_useragent::get_device_type() == core_useragent::DEVICETYPE_MOBILE ? 1 : 0;
 $allowphototiles = get_config('format_tiles', 'allowphototiles');
-$userstopjsnav = get_user_preferences('format_tiles_stopjsnav', 0);
-
-// JS navigation and modals in Internet Explorer are not supported by this plugin so we disable JS nav here.
-$usejsnav = !$userstopjsnav && get_config('format_tiles', 'usejavascriptnav') && !core_useragent::is_ie();
-
-// Inline CSS may be required if this course is using different tile colours to default - echo this first if so.
-$inlinecsstemplateable = new \format_tiles\output\inline_css_output($course, $ismobile, $usejsnav, $allowphototiles, $isediting);
-$inlinecssdata = $inlinecsstemplateable->export_for_template($renderer);
-echo $renderer->render_from_template('format_tiles/inline-css', $inlinecssdata);
+$usejsnav = \format_tiles\util::using_js_nav();
 
 if ($isediting) {
     // If user is editing, we render the page the new way.
