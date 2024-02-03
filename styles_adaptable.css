@@ -22,6 +22,7 @@
     background-color: inherit;
 }
 .format-tiles .embed_cm_modal .modal-header .close {
+    /* stylelint-disable-next-line declaration-no-important */
     color: #fff !important;
 }
 .format-tiles li.activity.subtile .badge-info {

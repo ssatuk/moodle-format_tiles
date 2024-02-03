@@ -1811,6 +1811,7 @@ body.format-tiles.jsenabled .course-content .headerabovetiles {
         right: 0;
     }
 }
+
 @media screen and (max-width: 680px) {
     .format-tiles .subtiles {
         /* stylelint-disable-next-line declaration-no-important */
@@ -1846,6 +1847,7 @@ body.format-tiles.jsenabled .course-content .headerabovetiles {
         display: block;
     }
 }
+
 /* get rid of wide margins when viewing course on narrow (mobile) device and
 allow tiles to be taller and thinner so can fit two side by side in portrait on iphone 6/7 */
 @media screen and (max-width: 600px) {

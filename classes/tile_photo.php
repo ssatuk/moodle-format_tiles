@@ -102,7 +102,7 @@ class tile_photo {
 
     /**
      * Set the filename for this tile photo.
-     * @param $filename
+     * @param string $filename
      * @return void
      * @throws \dml_exception
      * @throws \moodle_exception

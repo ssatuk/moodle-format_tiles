@@ -73,7 +73,6 @@ class inline_css_output implements \renderable, \templatable {
      * @param bool $allowphototiles are we allowing photo tiles.
      * @param bool $isediting whether we are editing.
      */
-
     public function __construct($course, bool $ismobile, bool $usejsnav, bool $allowphototiles, bool $isediting) {
         $this->course = $course;
         $this->ismobile = $ismobile;

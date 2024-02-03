@@ -149,7 +149,7 @@ define(["jquery", "core/modal_factory", "core/config", "core/templates", "core/n
                     Fragment.loadFragment(
                         'format_tiles', `get_cm_content`, moduleContextId, {contextid: moduleContextId}
                     )
-                       .then(function(html, js) {
+                       .done(function(html, js) {
                             modal.setBody(html);
                             Templates.runTemplateJS(js);
                         });

@@ -141,7 +141,7 @@ define(["jquery"], function ($) {
                 if (buttonAlreadyPressed) {
                     var pressedButton = $("#filterbutton" + buttonAlreadyPressed);
                     if (!pressedButton) {
-                        Module.setPressedFilterButton(courseId,0);
+                        Module.setPressedFilterButton(courseId, 0);
                     }
                     $(Selector.FILTER_BUTTON).removeClass(ClassNames.SELECTED);
                     const sections = getSectionsForButtons([pressedButton]);
