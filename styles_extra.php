@@ -62,7 +62,8 @@ if (!$basecolour) {
 }
 
 if (!in_array(strlen($basecolour), [4, 7])) {
-    throw new invalid_parameter_exception("Invalid hex code length " . strlen($basecolour) . $basecolour);
+    header('HTTP/1.0 404 not found');
+    die("Invalid hex code length");
 }
 
 if ($courseid) {
@@ -81,8 +82,8 @@ $csscontent .= $OUTPUT->render_from_template('format_tiles/styles_extra', $data)
 // Site admin may have added additional CSS via the plugin settings.
 $csscontent .= get_config('format_tiles', 'customcss') ?? '';
 
-if ($csscontent) {
-    // Based on send_css_xxx methods in lib/csslib.php.
+if (trim($csscontent)) {
+    // This is based on css_send_xxx() methods in lib/csslib.php.
     header('Cache-Control: no-cache, no-store, must-revalidate');
     header('Pragma: no-cache');
     header('Expires: 0');
@@ -92,6 +93,6 @@ if ($csscontent) {
     header('Content-Type: text/css; charset=utf-8');
     header('Content-Length: ' . strlen($csscontent));
 
-    echo $csscontent;
+    echo core_minify::css($csscontent);
     die();
 }

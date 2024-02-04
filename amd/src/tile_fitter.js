@@ -255,7 +255,7 @@ define(["jquery", "core/ajax"], function ($, ajax) {
          * Move content sections to appear under the correct tiles
          * so that when a tile is clicked, they expand under it
          * @param {Array} positionData
-         * @param {[function]} callbacks
+         * @param {function} callbacks
          */
         moveContentSectionsToPlaces: function (positionData, callbacks) {
             positionData.forEach(function (row) {
