@@ -32,19 +32,23 @@
     * none
 
     Context variables required for this template:
-        * base_colour - base colour for this course (i.e. tile top border colour)
-        * tile_light_colour - lighter version of it (for tile background)
-        * tile_hover_colour - tile hover colour
-        * button_hover_colour - button hover colour
+        * base_colour_rgba - base colour for this course (i.e. tile top border colour)
         * shade_heading_bar - do we add a coloured bar to left of headings? (course setting)
+        * isstyle1or2 - Is this tile style 1 or 2 (admin setting)
+        * allowphototiles - Photo tiles allowed? (admin setting)
+        * phototiletextpadding - Photo tile text padding (admin setting)
+        * phototiletextlineheight - Photo tile test line height (admin setting)
+        * photo_tile_text_bg_opacity - Photo tile text bg opacity (admin setting)
 
     Example context (json):
     {
-        "base_colour": "rgba(119,37,131, 1)",
-        "tile_light_colour": "rgba(119,37,131, 0.05)",
-        "tile_hover_colour": "#ED8B00",
-        "button_hover_colour": "rgba(119,37,131, 0.1)",
-        "shade_heading_bar": 0
+        "base_colour_rgba": "119,37,131",
+        "shade_heading_bar": 0,
+        "isstyle1or2": 1,
+        "allowphototiles": 1,
+        "phototiletextpadding": 0,
+        "phototiletextlineheight": 30,
+        "photo_tile_text_bg_opacity": 0,
     }
 }}
 
@@ -52,28 +56,28 @@
 .format-tiles .course-content ul.tiles .tile.tilestyle-2,
 .format-tiles li.section:not(#section-0).tilestyle-1 .course-section-header,
 .format-tiles li.section:not(#section-0).tilestyle-2 .course-section-header {
-    border-top-color: {{base_colour}};
+    border-top-color: rgba({{base_colour_rgba}},1);
     border-radius: 0;
 }
 .format-tiles .course-content ul.tiles .tile.tilestyle-1,
 .format-tiles .course-content ul.tiles .tile.tilestyle-2 {
-    border-top-color: {{base_colour}};
+    border-top-color: rgba({{base_colour_rgba}},1);
     transition: border-top-color 0s;
 }
 .format-tiles .tile-bg,
 .format-tiles li.section:not(#section-0).tilestyle-1 .course-section-header,
 .format-tiles li.section:not(#section-0).tilestyle-2 .course-section-header {
-    background-color: {{tile_light_colour}};
+    background-color: rgba({{base_colour_rgba}},0.05);
 }
 .format-tiles ul.tiles .tile-clickable.tilestyle-1:hover,
 .format-tiles ul.tiles .tile-clickable.tilestyle-1.current:hover,
 .format-tiles ul.tiles .tile-clickable.tilestyle-2:hover,
 .format-tiles ul.tiles .tile-clickable.tilestyle-2.current:hover {
-    border-top-color: {{tile_hover_colour}};
+    border-top-color: rgba({{base_colour_rgba}},0.5);
     transition: border-top-color 0s, transform .2s ease-in-out;
 }
 .format-tiles ul.tiles .tile.selected {
-    border-top-color: {{tile_hover_colour}};
+    border-top-color: rgba({{base_colour_rgba}},0.5);
 }
 .format-tiles ul.tiles .current .sectiontitle::after {
     background-color: red;
@@ -81,7 +85,7 @@
 .format-tiles ul.tiles .headerabovetiles button.selected,
 .headerabovetiles button:active, .headerabovetiles button:focus,
 .format-tiles .embed_cm_modal .modal-header {
-    background-color: {{base_colour}};
+    background-color: rgba({{base_colour_rgba}},1);
 }
 .format-tiles .embed_cm_modal .modal-header h5,
 .format-tiles .embed_cm_modal .modal-header h4 {
@@ -93,33 +97,33 @@
 }
 .format-tiles .sectiontitle::after,
 .format-tiles .badge-info {
-    background-color: {{base_colour}};
+    background-color: rgba({{base_colour_rgba}},1);
 }
 .format-tiles ul.tiles .headerabovetiles button:hover {
-    border-color: {{tile_hover_colour}};
+    border-color: rgba({{base_colour_rgba}},0.5);
 }
 
 .format-tiles .course-content .single-section .navigation-arrows .navigation-arrow:not(.dimmed):hover,
 .format-tiles .embed_cm_modal .embed_file_button:hover {
-    background-color: {{button_hover_colour}};
+    background-color: rgba({{base_colour_rgba}},0.1);
 }
 
 /*boost theme item selected in left hand menu*/
 .format-tiles .filterbutton:hover,
 .sectionbutton:hover {
-    background-color: {{button_hover_colour}};
+    background-color: rgba({{base_colour_rgba}},0.1);
     transition: all 0.1s ease-in-out;
 }
 
 .format-tiles .filterbutton.selected{
-    background-color: {{button_hover_colour}};
+    background-color: rgba({{base_colour_rgba}},0.1);
 }
 
 .format-tiles button.tiles-top-button:hover {
-    background-color: {{button_hover_colour}};
+    background-color: rgba({{base_colour_rgba}},0.1);
 }
 .format-tiles .background-course-base {
-    background-color: {{base_colour}};
+    background-color: rgba({{base_colour_rgba}},1);
 }
 {{#shade_heading_bar}}
     .format-tiles .course-content li.activity.label h1,
@@ -130,7 +134,7 @@
     .format-tiles .editor_atto_content_wrap h2,
     .format-tiles .editor_atto_content_wrap h3,
     .format-tiles .editor_atto_content_wrap h4 {
-        border-left-color: {{base_colour}};
+        border-left-color: rgba({{base_colour_rgba}},1);
         border-left-style: solid;
         padding-left: 0.4em;
         border-left-width: 10px;
@@ -140,17 +144,17 @@
 {{#isstyle1or2}}
     {{#allowphototiles}}
         .format-tiles .course-content ul.tiles .tile.phototile .photo-tile-text h3 {
-            background-color: {{photo_tile_text_bg}};
+            background-color: rgba({{base_colour_rgba}},{{photo_tile_text_bg_opacity}});
             line-height: {{phototiletextlineheight}}px;
             padding: {{phototiletextpadding}}px 7px;
         }
         .format-tiles .phototile .progress-indic,
         .format-tiles .subtile.hasphoto .activitytype,
         .format-tiles.editing .subtile.hasphoto .editable-title {
-            background-color: {{photo_tile_text_bg}};
+            background-color: rgba({{base_colour_rgba}},{{photo_tile_text_bg_opacity}});
         }
         .format-tiles li.activity.subtile.hasphoto {
-            border-top-color: {{base_colour}};
+            border-top-color: rgba({{base_colour_rgba}},1);
         }
 
     {{/allowphototiles}}

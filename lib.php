@@ -1157,11 +1157,25 @@ function format_tiles_before_standard_html_head(): string {
     if (!$istilescoursefrontpage) {
         return '';
     }
+
     $courseid = optional_param('id', 0, PARAM_INT);
     if ($courseid) {
-        $params = ['course' => $courseid];
-        $stylesurl = new moodle_url('/course/format/tiles/styles_extra.php', $params);
-        return '<link rel="stylesheet" type="text/css" href="'. $stylesurl . '">';
+        $format = course_get_format($courseid);
+        $course = $format->get_course();
+        $basecolour = str_replace('#', '', \format_tiles\util::get_tile_base_colour($course->basecolour ?? ''));
+
+        // Will be 1 or 0 for use or not use now.
+        // (Legacy values could be 'standard' for not use, or a colour for use, but in that case treat as 'use').
+        $shadeheadingbar = $course->courseusebarforheadings != 0 && $course->courseusebarforheadings != 'standard'
+            ? 1 : 0;
+
+        $themerev = theme_get_revision();
+        $themename = $PAGE->theme->name;
+
+        $stylesurl = new moodle_url(
+            "/course/format/tiles/styles_extra.php/$themename/$themerev/$courseid/$basecolour/$shadeheadingbar"
+        );
+        return '<link rel="stylesheet" type="text/css" href="'. $stylesurl->out() . '">';
     }
     return '';
 }

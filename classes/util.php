@@ -134,14 +134,11 @@ class util {
      * @throws \dml_exception
      */
     public static function get_tilefitter_extra_css(int $courseid): string {
-        global $SESSION, $PAGE;
-        if (!\format_tiles\util::using_js_nav()) {
+        global $SESSION;
+        if (!self::using_js_nav()) {
             return '';
         }
         if (!get_config('format_tiles', 'fittilestowidth')) {
-            return '';
-        }
-        if ($PAGE->user_is_editing()) {
             return '';
         }
         if (\core_useragent::get_device_type() == \core_useragent::DEVICETYPE_MOBILE) {
@@ -157,10 +154,11 @@ class util {
         $sessionvarvalue = $SESSION->$sessionvar ?? 0;
 
         if ($sessionvarvalue == 0) {
-            // If no session screen width has yet been set, we hide the tiles initally, so we can calculate correct width.
-            return '.format-tiles.jsenabled ul.tiles {opacity: 0;}'; // We will remove this opacity later in JS.
+            // If no session screen width has yet been set, we hide the tiles initially, so we can calculate correct width in JS.
+            // We will remove this opacity later in JS.
+            return ".format-tiles.course-$courseid.jsenabled:not(.editing) ul.tiles {opacity: 0;}";
         } else {
-            return ".format-tiles.jsenabled ul.tiles {max-width: {$sessionvarvalue}px;}";
+            return ".format-tiles.course-$courseid.jsenabled ul.tiles {max-width: {$sessionvarvalue}px;}";
         }
     }
 
@@ -292,5 +290,42 @@ class util {
 
         // JS navigation and modals in Internet Explorer are not supported by this plugin so we disable JS nav here.
         return !$userstopjsnav && get_config('format_tiles', 'usejavascriptnav') && !\core_useragent::is_ie();
+    }
+
+    /**
+     * Get the colour which should be used as the base course for this course
+     * (Can depend on theme, plugin and/or course settings).
+     * @param string $coursebasecolour the course base colour which we may use unless this overrides it.
+     * @return string the hex colour
+     * @throws \dml_exception
+     */
+    public static function get_tile_base_colour($coursebasecolour = ''): string {
+        global $PAGE;
+        $result = null;
+
+        if (!(get_config('format_tiles', 'followthemecolour'))) {
+            if (!$coursebasecolour) {
+                // If no course tile colour is set, use plugin default colour.
+                $result = get_config('format_tiles', 'tilecolour1');
+            } else {
+                $result = $coursebasecolour;
+            }
+        } else {
+            // We are following theme's main colour so find out what it is.
+            if (!$result || !preg_match('/^#[a-f0-9]{6}$/i', $result)) {
+                // Many themes including boost theme and Moove use "brandcolor" so try to get that if current theme has it.
+                $result = get_config('theme_' . $PAGE->theme->name, 'brandcolor');
+                if (!$result) {
+                    // If not got a colour yet, look where essential theme stores its brand color and try that.
+                    $result = get_config('theme_' . $PAGE->theme->name, 'themecolor');
+                }
+            }
+        }
+
+        if (!$result || !preg_match('/^#[a-f0-9]{6}$/i', $result)) {
+            // If still no colour set, use a default colour.
+            $result = '#1670CC';
+        }
+        return $result;
     }
 }

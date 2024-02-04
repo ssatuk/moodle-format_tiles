@@ -36,18 +36,25 @@ require_once($CFG->dirroot .'/course/format/lib.php');
  */
 class styles_extra implements \renderable, \templatable {
     /**
-     * Course object
+     * The hex code for the base colour used in this course.
      * @var
      */
-    private $course;
+    private $basecolourhex;
 
     /**
-     * course_output constructor
-     * @param object $course the course DB object.
-     * @param bool $includeeditstyles whether we need extra styles for editors.
+     * Whether the shade heading bar is set to yes for this course.
+     * @var
      */
-    public function __construct($course) {
-        $this->course = $course;
+    private $shadeheadingbar;
+
+    /**
+     * Styles extra constructor
+     * @param string $basecolourhex the hex code for the base colour used in this course.
+     * @param bool $shadeheadingbar whether the shade heading bar is set to yes for this course.
+     */
+    public function __construct(string $basecolourhex, bool $shadeheadingbar) {
+        $this->basecolourhex = $basecolourhex;
+        $this->shadeheadingbar = $shadeheadingbar;
     }
 
     /**
@@ -60,26 +67,19 @@ class styles_extra implements \renderable, \templatable {
      */
     public function export_for_template($output) {
 
-        $basecolour = $this->get_tile_base_colour($this->course);
         $tilestyle = get_config('format_tiles', 'tilestyle') ?? \format_tiles\output\course_output::TILE_STYLE_STANDARD;
 
+        $basecolourrgba = $this->rgbacolour($this->basecolourhex);
         $outputdata = [
             "isstyle-$tilestyle" => true,
             'isstyle1or2' => $tilestyle == 1 || $tilestyle == 2,
-            'base_colour' => $this->rgbacolour($basecolour),
-            'tile_light_colour' => $this->rgbacolour($basecolour, 0.05),
-            'tile_hover_colour' => $this->rgbacolour($basecolour, 0.5),
-            'button_hover_colour' => $this->rgbacolour($basecolour, 0.1),
-            'base_transparent7_colour' => $this->rgbacolour($basecolour, 0.7),
-            'base_transparent05_colour' => $this->rgbacolour($basecolour, 0.05),
+            'base_colour_rgba' => $basecolourrgba,
         ];
 
         if (get_config('format_tiles', 'allowphototiles')) {
             $outputdata['allowphototiles'] = 1;
-            $outputdata['photo_tile_text_bg'] = $this->rgbacolour(
-                $basecolour,
-                1.0 - (float)get_config('format_tiles', 'phototiletitletransarency')
-            );
+            $outputdata['photo_tile_text_bg_opacity'] =
+                1.0 - (float)get_config('format_tiles', 'phototiletitletransarency');
 
             // The best values here vary by theme and browser, so mostly come from admin setting.
             // If the site admin sets background opacity to solid then it doesn't matter if the lines overlap.
@@ -91,12 +91,7 @@ class styles_extra implements \renderable, \templatable {
                 (float)get_config('format_tiles', 'phototitletitlelineheight') / 10, 1
             );
         }
-
-        if ($this->course->courseusebarforheadings != 0 && $this->course->courseusebarforheadings != 'standard') {
-            // Will be 1 or 0 for use or not use now.
-            // (Legacy values could be 'standard' for not use, or a colour for use, but in that case treat as 'use').
-            $outputdata['shade_heading_bar'] = true;
-        }
+        $outputdata['shade_heading_bar'] = $this->shadeheadingbar;
 
         return $outputdata;
     }
@@ -105,46 +100,10 @@ class styles_extra implements \renderable, \templatable {
      * Convert hex colour from plugin settings admin page to RGBA
      * so that can add transparency to it when used as background
      * @param string $hex the colour in hex form e.g. #979797
-     * @param int $opacity
      * @return string rgba colour
      */
-    private function rgbacolour($hex, $opacity = 1) {
+    private function rgbacolour($hex) {
         list($r, $g, $b) = sscanf($hex, "#%02x%02x%02x");
-        return 'rgba(' . $r . ',' . $g . ',' . $b . ', ' . $opacity . ')';
-    }
-
-    /**
-     * get the colour which should be used as the base course for this course
-     * (Can depend on theme, plugin and/or course settings
-     * @param \stdClass $course the course object
-     * @return mixed|string the hex colour
-     * @throws \dml_exception
-     */
-    private function get_tile_base_colour($course) {
-        global $PAGE;
-        // Get tile colours to echo in CSS.
-        $basecolour = '';
-
-        if (!(get_config('format_tiles', 'followthemecolour'))) {
-            if (!$basecolour = $course->basecolour) {
-                // If no course tile colour is set, use plugin default colour.
-                $basecolour = get_config('format_tiles', 'tilecolour1');
-            }
-        }
-
-        // We are following theme's main colour so find out what it is.
-        if (!$basecolour || !preg_match('/^#[a-f0-9]{6}$/i', $basecolour)) {
-            // Many themes including boost theme and Moove use "brandcolor" so try to get that if current theme has it.
-            $basecolour = get_config('theme_' . $PAGE->theme->name, 'brandcolor');
-            if (!$basecolour) {
-                // If not got a colour yet, look where essential theme stores its brand color and try that.
-                $basecolour = get_config('theme_' . $PAGE->theme->name, 'themecolor');
-            }
-        }
-        if (!$basecolour || !preg_match('/^#[a-f0-9]{6}$/i', $basecolour)) {
-            // If still no colour set, use a default colour.
-            $basecolour = '#1670CC';
-        }
-        return $basecolour;
+        return "$r,$g,$b";
     }
 }

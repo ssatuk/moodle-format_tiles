@@ -88,7 +88,7 @@ class content extends content_base {
                 );
                 $data->editoradvice[] = [
                     'text' => get_string('completionwarning', 'format_tiles') . ' '  . $bulklink . ' ' . $helplink,
-                    'icon' => 'exclamation-triangle', 'class' => 'warning',
+                    'icon' => 'info-circle', 'class' => 'secondary',
                 ];
             }
 

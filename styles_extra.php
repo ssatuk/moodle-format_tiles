@@ -26,31 +26,72 @@ define('NO_DEBUG_DISPLAY', true);
 
 require_once("../../../config.php");
 require_once("$CFG->dirroot/course/format/lib.php");
-require_once($CFG->dirroot.'/lib/csslib.php');
+require_once("$CFG->libdir/configonlylib.php");
 
-$courseid = required_param('course', PARAM_INT);
+require_login();
 
-$format = course_get_format($courseid);
-$course = $format->get_course();
-
-require_login($course);
-
-$context = \context_course::instance($courseid);
-$PAGE->set_context($context);
-$PAGE->set_url(new moodle_url('/course/format/tiles/styles.php', ['course' => $courseid]));
-
-$templateable = new \format_tiles\output\styles_extra($course);
-$data = $templateable->export_for_template($OUTPUT);
+$basecolour = null;
+$shadeheadingbar = false;
+$courseid = null;
 
 $csscontent = '';
+
+$expectednumberofslashargs = 5;
+$slashargument = min_get_slash_argument();
+if ($slashargument) {
+    $slashargument = ltrim($slashargument, '/');
+    $slashargs = explode('/', $slashargument, $expectednumberofslashargs);
+    $countfoundargs = count($slashargs);
+    if ($countfoundargs == $expectednumberofslashargs) {
+        list($themename, $themerev, $courseid, $basecolour, $shadeheadingbar) = $slashargs;
+        $basecolour = '#' . min_clean_param($basecolour, 'SAFEDIR');
+        $shadeheadingbar = min_clean_param($shadeheadingbar, 'INT') ? 1 : 0;
+        $courseid = min_clean_param($courseid, 'INT');
+    } else {
+        // Some slash args missing so add a comment to CSS for debugging. Default values will be used below.
+        $csscontent .= "/*Expected $expectednumberofslashargs found $countfoundargs*/";
+    }
+}
+
+// Should not happen, but if we reach here and have not got a colour from slash args, use default values so that course looks ok.
+if (!$basecolour) {
+    $courseid = $courseid ?? 0;
+    $basecolour = \format_tiles\util::get_tile_base_colour();
+    $shadeheadingbar = $shadeheadingbar ?? false;
+    $csscontent .= "/*Using default colour $basecolour*/";
+}
+
+if (!in_array(strlen($basecolour), [4, 7])) {
+    throw new invalid_parameter_exception("Invalid hex code length " . strlen($basecolour) . $basecolour);
+}
+
+if ($courseid) {
+    // Set course context if present so that any use of $PAGE elsewhere works correctly.
+    $PAGE->set_context(context_course::instance($courseid));
+    $csscontent .= \format_tiles\util::get_tilefitter_extra_css($courseid) . "\n";
+} else {
+    $PAGE->set_context(context_system::instance());
+}
+
+$templateable = new \format_tiles\output\styles_extra($basecolour, $shadeheadingbar);
+$data = $templateable->export_for_template($OUTPUT);
 
 $csscontent .= $OUTPUT->render_from_template('format_tiles/styles_extra', $data);
 
 // Site admin may have added additional CSS via the plugin settings.
 $csscontent .= get_config('format_tiles', 'customcss') ?? '';
 
-$csscontent .= \format_tiles\util::get_tilefitter_extra_css($courseid);
-
 if ($csscontent) {
-    css_send_uncached_css($csscontent);
+    // Based on send_css_xxx methods in lib/csslib.php.
+    header('Cache-Control: no-cache, no-store, must-revalidate');
+    header('Pragma: no-cache');
+    header('Expires: 0');
+    header('Content-Disposition: inline; filename="styles_extra.php"');
+    header('Last-Modified: '. gmdate('D, d M Y H:i:s', time()) .' GMT');
+    header('Accept-Ranges: none');
+    header('Content-Type: text/css; charset=utf-8');
+    header('Content-Length: ' . strlen($csscontent));
+
+    echo $csscontent;
+    die();
 }

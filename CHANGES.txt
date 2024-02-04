@@ -387,3 +387,4 @@ Other
 - New styling for sub tiles using Moodle core icons
 - Fragment API implemented for section content and cm content
 - Photo library image improved
+- Improve handling of course specific CSS (for course tile colours)
