@@ -226,8 +226,8 @@ class course_output implements \renderable, \templatable {
         }
         $data['editing'] = $this->isediting;
         $data['sesskey'] = sesskey();
-        $data['showinitialpageloadingicon'] = !$this->isediting &&
-            strpos(\format_tiles\util::get_tilefitter_extra_css($this->course->id), 'opacity: 0;') !== false;
+        $data['showinitialpageloadingicon'] = !$this->isediting
+            && \format_tiles\output\styles_extra::page_needs_loading_icon($this->course->id);
         $data['jsnavadminallowed'] = get_config('format_tiles', 'usejavascriptnav');
         $data['jsnavuserenabled'] = !get_user_preferences('format_tiles_stopjsnav');
         $data['usingjsnav'] = $data['jsnavadminallowed'] && $data['jsnavuserenabled'];

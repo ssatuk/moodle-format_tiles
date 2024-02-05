@@ -117,52 +117,6 @@ class util {
     }
 
     /**
-     * If we are not on a mobile device we may want to ensure that tiles are nicely fitted depending on our screen width.
-     * E.g. avoid a row with one tile, centre the tiles on screen.  JS will handle this post page load.
-     * However we want to handle it pre-page load if we can to avoid tiles moving around once page is loaded.
-     * So we have JS send the width via AJAX on first load, and we remember the value and apply it next time using inline CSS.
-     * This function gets the data to enable us to add the inline CSS.
-     * This will hide the main tiles window on page load and display a loading icon instead.
-     * Then post page load, JS will get the screen width, re-arrange the tiles, then hide the loading icon and show the tiles.
-     * If session width var has already been set (because JS already ran), we set that width initially.
-     * Then we can load the page immediately at that width without hiding anything.
-     * The skipcheck URL param is there in case anyone gets stuck at loading icon and clicks it - they escape it for session.
-     * @param int $courseid the course ID we are in.
-     * @see format_tiles_external::set_session_width() for where the session vars are set from JS.
-     * @return string the styles to print.
-     * @throws \coding_exception
-     * @throws \dml_exception
-     */
-    public static function get_tilefitter_extra_css(int $courseid): string {
-        global $SESSION;
-        if (!self::using_js_nav()) {
-            return '';
-        }
-        if (!get_config('format_tiles', 'fittilestowidth')) {
-            return '';
-        }
-        if (\core_useragent::get_device_type() == \core_useragent::DEVICETYPE_MOBILE) {
-            return '';
-        }
-        if (optional_param('skipcheck', 0, PARAM_INT) || isset($SESSION->format_tiles_skip_width_check)) {
-            $SESSION->format_tiles_skip_width_check = 1;
-            return '';
-        }
-
-        // If session screen width has been set, send it to template so we can include in inline CSS.
-        $sessionvar = 'format_tiles_width_' . $courseid;
-        $sessionvarvalue = $SESSION->$sessionvar ?? 0;
-
-        if ($sessionvarvalue == 0) {
-            // If no session screen width has yet been set, we hide the tiles initially, so we can calculate correct width in JS.
-            // We will remove this opacity later in JS.
-            return ".format-tiles.course-$courseid.jsenabled:not(.editing) ul.tiles {opacity: 0;}";
-        } else {
-            return ".format-tiles.course-$courseid.jsenabled ul.tiles {max-width: {$sessionvarvalue}px;}";
-        }
-    }
-
-    /**
      * Get the current Moodle major release as a float e.g. 4.3
      * Sometimes we need it, to avoid maintaining multiple versions of this plugin.
      * @return float
@@ -293,39 +247,19 @@ class util {
     }
 
     /**
-     * Get the colour which should be used as the base course for this course
-     * (Can depend on theme, plugin and/or course settings).
-     * @param string $coursebasecolour the course base colour which we may use unless this overrides it.
-     * @return string the hex colour
+     * Iterates through all the colours entered by the administrator under the plugin settings page
+     * @return array list of all the colours and their names for use in the settings forms
      * @throws \dml_exception
      */
-    public static function get_tile_base_colour($coursebasecolour = ''): string {
-        global $PAGE;
-        $result = null;
-
-        if (!(get_config('format_tiles', 'followthemecolour'))) {
-            if (!$coursebasecolour) {
-                // If no course tile colour is set, use plugin default colour.
-                $result = get_config('format_tiles', 'tilecolour1');
-            } else {
-                $result = $coursebasecolour;
-            }
-        } else {
-            // We are following theme's main colour so find out what it is.
-            if (!$result || !preg_match('/^#[a-f0-9]{6}$/i', $result)) {
-                // Many themes including boost theme and Moove use "brandcolor" so try to get that if current theme has it.
-                $result = get_config('theme_' . $PAGE->theme->name, 'brandcolor');
-                if (!$result) {
-                    // If not got a colour yet, look where essential theme stores its brand color and try that.
-                    $result = get_config('theme_' . $PAGE->theme->name, 'themecolor');
-                }
+    public static function get_tiles_palette() {
+        $palette = [];
+        for ($i = 1; $i <= 10; $i++) {
+            $colourname = get_config('format_tiles', 'colourname' . $i);
+            $tilecolour = get_config('format_tiles', 'tilecolour' . $i);
+            if ($tilecolour != '' && $tilecolour != '#000') {
+                $palette[$tilecolour] = $colourname;
             }
         }
-
-        if (!$result || !preg_match('/^#[a-f0-9]{6}$/i', $result)) {
-            // If still no colour set, use a default colour.
-            $result = '#1670CC';
-        }
-        return $result;
+        return $palette;
     }
 }

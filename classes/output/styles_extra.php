@@ -106,4 +106,126 @@ class styles_extra implements \renderable, \templatable {
         list($r, $g, $b) = sscanf($hex, "#%02x%02x%02x");
         return "$r,$g,$b";
     }
+
+    /**
+     * Get the colour which should be used as the base course for this course
+     * (Can depend on theme, plugin and/or course settings).
+     * @param string $coursebasecolour the course base colour which we may use unless this overrides it.
+     * @return string the hex colour
+     * @throws \dml_exception
+     */
+    public static function get_tile_base_colour($coursebasecolour = ''): string {
+        global $PAGE;
+        $result = null;
+
+        if (!(get_config('format_tiles', 'followthemecolour'))) {
+            if (!$coursebasecolour) {
+                // If no course tile colour is set, use plugin default colour.
+                $result = get_config('format_tiles', 'tilecolour1');
+            } else {
+                $result = $coursebasecolour;
+            }
+        } else {
+            // We are following theme's main colour so find out what it is.
+            if (!$result || !preg_match('/^#[a-f0-9]{6}$/i', $result)) {
+                // Many themes including boost theme and Moove use "brandcolor" so try to get that if current theme has it.
+                $result = get_config('theme_' . $PAGE->theme->name, 'brandcolor');
+                if (!$result) {
+                    // If not got a colour yet, look where essential theme stores its brand color and try that.
+                    $result = get_config('theme_' . $PAGE->theme->name, 'themecolor');
+                }
+            }
+        }
+
+        if (!$result || !preg_match('/^#[a-f0-9]{6}$/i', $result)) {
+            // If still no colour set, use a default colour.
+            $result = '#1670CC';
+        }
+        return $result;
+    }
+
+
+    /**
+     * If we are not on a mobile device we may want to ensure that tiles are nicely fitted depending on our screen width.
+     * E.g. avoid a row with one tile, centre the tiles on screen.  JS will handle this post page load.
+     * However we want to handle it pre-page load if we can to avoid tiles moving around once page is loaded.
+     * So we have JS send the width via AJAX on first load, and we remember the value and apply it next time using inline CSS.
+     * This function gets the data to enable us to add the inline CSS.
+     * This will hide the main tiles window on page load and display a loading icon instead.
+     * Then post page load, JS will get the screen width, re-arrange the tiles, then hide the loading icon and show the tiles.
+     * If session width var has already been set (because JS already ran), we set that width initially.
+     * Then we can load the page immediately at that width without hiding anything.
+     * The skipcheck URL param is there in case anyone gets stuck at loading icon and clicks it - they escape it for session.
+     * @param int $courseid the course ID we are in.
+     * @see format_tiles_external::set_session_width() for where the session vars are set from JS.
+     * @return string the styles to print.
+     * @throws \coding_exception
+     * @throws \dml_exception
+     */
+    public static function get_tilefitter_extra_css(int $courseid): string {
+        global $SESSION;
+        if (!\format_tiles\util::using_js_nav()) {
+            return '';
+        }
+        if (!get_config('format_tiles', 'fittilestowidth')) {
+            return '';
+        }
+        if (\core_useragent::get_device_type() == \core_useragent::DEVICETYPE_MOBILE) {
+            return '';
+        }
+        if (optional_param('skipcheck', 0, PARAM_INT) || isset($SESSION->format_tiles_skip_width_check)) {
+            $SESSION->format_tiles_skip_width_check = 1;
+            return '';
+        }
+
+        // If session screen width has been set, send it to template so we can include in inline CSS.
+        $sessionvar = 'format_tiles_width_' . $courseid;
+        $sessionvarvalue = $SESSION->$sessionvar ?? 0;
+
+        if ($sessionvarvalue == 0) {
+            // If no session screen width has yet been set, we hide the tiles initially, so we can calculate correct width in JS.
+            // We will remove this opacity later in JS.
+            return ".format-tiles.course-$courseid.jsenabled:not(.editing) ul.tiles {opacity: 0;}";
+        } else {
+            return ".format-tiles.course-$courseid.jsenabled ul.tiles {max-width: {$sessionvarvalue}px;}";
+        }
+    }
+
+    /**
+     * Does the course main page need to show the loading icon while correct width is calculated?
+     * @param int $courseid
+     * @return bool
+     * @throws \coding_exception
+     * @throws \dml_exception
+     */
+    public static function page_needs_loading_icon(int $courseid): bool {
+        $css = self::get_tilefitter_extra_css($courseid);
+        return strpos($css, 'opacity: 0;') !== false;
+    }
+
+    /**
+     * Send css to browser marked as no cache.
+     * This is based on css_send_xxx() methods in lib/csslib.php.
+     * @param string $csscontent
+     * @param array $errors
+     * @return void
+     */
+    public static function send_uncached_css(string $csscontent, array $errors) {
+        header('Cache-Control: no-cache, no-store, must-revalidate');
+        header('Expires: 0');
+        header('Content-Disposition: inline; filename="styles_extra.php"');
+        header('Last-Modified: '. gmdate('D, d M Y H:i:s', time()) .' GMT');
+        header('Accept-Ranges: none');
+        header('Content-Type: text/css; charset=utf-8');
+        header('Content-Length: ' . strlen($csscontent));
+
+        if (!empty($errors) && ($CFG->debug ?? false)) {
+            // Add errors to start of CSS as a comment for debugging.
+            echo '/*' . implode(', ', $errors) . '*/';
+            echo $csscontent;
+        } else {
+            echo \core_minify::css($csscontent);
+        }
+        die();
+    }
 }

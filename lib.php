@@ -314,23 +314,6 @@ class format_tiles extends core_courseformat\base {
     }
 
     /**
-     * Iterates through all the colours entered by the administrator under the plugin settings page
-     * @return array list of all the colours and their names for use in the settings forms
-     * @throws dml_exception
-     */
-    private function format_tiles_get_tiles_palette() {
-        $palette = [];
-        for ($i = 1; $i <= 10; $i++) {
-            $colourname = get_config('format_tiles', 'colourname' . $i);
-            $tilecolour = get_config('format_tiles', 'tilecolour' . $i);
-            if ($tilecolour != '' && $tilecolour != '#000') {
-                $palette[$tilecolour] = $colourname;
-            }
-        }
-        return $palette;
-    }
-
-    /**
      * Whether this format allows to delete sections (Moodle 3.1+)
      * If format supports deleting sections it is also recommended to define language string
      * 'deletesection' inside the format.
@@ -379,7 +362,7 @@ class format_tiles extends core_courseformat\base {
         }
 
         if ($foreditform && !isset($courseformatoptions['coursedisplay']['label'])) {
-            $tilespalette = $this->format_tiles_get_tiles_palette();
+            $tilespalette = \format_tiles\util::get_tiles_palette();
             $tileicons = (new \format_tiles\icon_set)->available_tile_icons($this->get_courseid());
 
             $courseformatoptionsedit = [
@@ -962,7 +945,6 @@ class format_tiles extends core_courseformat\base {
             } else {
                 $modviewpageneedsjs = false;
             }
-
             // If we are on course/view.php, get details.
             $oncourseviewpagenotediting = $page->pagetype == 'course-view' && !$page->user_is_editing();
             $launchmodalcmid = $oncourseviewpagenotediting ? optional_param('cmid', null, PARAM_INT) : null;
@@ -976,7 +958,8 @@ class format_tiles extends core_courseformat\base {
 
             if ($oncourseviewpagenotediting || $modviewpageneedsjs) {
                 $jsconfig = format_tiles\output\course_output::get_js_config_data($page->course->id, $allowedmodals);
-                echo $OUTPUT->render_from_template('format_tiles/js-config', ['tiles_js_config' => $jsconfig]);
+                $renderer = $page->get_renderer('format_tiles');
+                echo $renderer->render_from_template('format_tiles/js-config', ['tiles_js_config' => $jsconfig]);
                 $page->requires->js_call_amd(
                     'format_tiles/course_mod_modal', 'init',
                     [$page->course->id, false, $page->pagetype, $launchmodalcmid]
@@ -1152,17 +1135,24 @@ function format_tiles_output_fragment_get_cm_content(array $args): string {
  */
 function format_tiles_before_standard_html_head(): string {
     global $PAGE;
-    $istilescoursefrontpage = $PAGE->pagetype == 'course-view-tiles'
+    $html = '';
+
+    $courseid = optional_param('id', 0, PARAM_INT);
+
+    $istilescoursefrontpage = $PAGE->pagetype == 'course-view-tiles' && $courseid
         && $PAGE->url->compare(new moodle_url('/course/view.php'), URL_MATCH_BASE);
     if (!$istilescoursefrontpage) {
+        // We have to be careful in this function as it's called on every page (not just tiles course pages).
         return '';
     }
 
-    $courseid = optional_param('id', 0, PARAM_INT);
     if ($courseid) {
         $format = course_get_format($courseid);
         $course = $format->get_course();
-        $basecolour = str_replace('#', '', \format_tiles\util::get_tile_base_colour($course->basecolour ?? ''));
+        $basecolour = str_replace(
+            '#', '',
+            \format_tiles\output\styles_extra::get_tile_base_colour($course->basecolour ?? '')
+        );
 
         // Will be 1 or 0 for use or not use now.
         // (Legacy values could be 'standard' for not use, or a colour for use, but in that case treat as 'use').
@@ -1175,7 +1165,9 @@ function format_tiles_before_standard_html_head(): string {
         $stylesurl = new moodle_url(
             "/course/format/tiles/styles_extra.php/$themename/$themerev/$courseid/$basecolour/$shadeheadingbar"
         );
-        return '<link rel="stylesheet" type="text/css" href="'. $stylesurl->out() . '">';
+
+        $html .= '<link rel="stylesheet" type="text/css" href="' . $stylesurl->out() . '">';
     }
-    return '';
+
+    return $html;
 }

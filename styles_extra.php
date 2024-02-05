@@ -35,6 +35,7 @@ $shadeheadingbar = false;
 $courseid = null;
 
 $csscontent = '';
+$errors = [];
 
 $expectednumberofslashargs = 5;
 $slashargument = min_get_slash_argument();
@@ -49,50 +50,35 @@ if ($slashargument) {
         $courseid = min_clean_param($courseid, 'INT');
     } else {
         // Some slash args missing so add a comment to CSS for debugging. Default values will be used below.
-        $csscontent .= "/*Expected $expectednumberofslashargs found $countfoundargs*/";
+        $errors[] = "Expected $expectednumberofslashargs found $countfoundargs";
     }
 }
 
-// Should not happen, but if we reach here and have not got a colour from slash args, use default values so that course looks ok.
-if (!$basecolour) {
+// Should not happen, but if we reach here and have not got valid colour from slash args, use default values so that course looks ok.
+if (!$basecolour || strlen($basecolour) !== 7) {
     $courseid = $courseid ?? 0;
-    $basecolour = \format_tiles\util::get_tile_base_colour();
+    $defaultcolour = \format_tiles\output\styles_extra::get_tile_base_colour();
+    $errors[] = "Using default colour $defaultcolour as hex '$basecolour' is invalid";
+    $basecolour = $defaultcolour;
     $shadeheadingbar = $shadeheadingbar ?? false;
-    $csscontent .= "/*Using default colour $basecolour*/";
-}
-
-if (!in_array(strlen($basecolour), [4, 7])) {
-    header('HTTP/1.0 404 not found');
-    die("Invalid hex code length");
 }
 
 if ($courseid) {
     // Set course context if present so that any use of $PAGE elsewhere works correctly.
     $PAGE->set_context(context_course::instance($courseid));
-    $csscontent .= \format_tiles\util::get_tilefitter_extra_css($courseid) . "\n";
+    $csscontent .= \format_tiles\output\styles_extra::get_tilefitter_extra_css($courseid) . "\n";
 } else {
     $PAGE->set_context(context_system::instance());
 }
 
 $templateable = new \format_tiles\output\styles_extra($basecolour, $shadeheadingbar);
 $data = $templateable->export_for_template($OUTPUT);
-
-$csscontent .= $OUTPUT->render_from_template('format_tiles/styles_extra', $data);
+$renderer = $PAGE->get_renderer('format_tiles');
+$csscontent .= $renderer->render_from_template('format_tiles/styles_extra', $data);
 
 // Site admin may have added additional CSS via the plugin settings.
 $csscontent .= get_config('format_tiles', 'customcss') ?? '';
 
 if (trim($csscontent)) {
-    // This is based on css_send_xxx() methods in lib/csslib.php.
-    header('Cache-Control: no-cache, no-store, must-revalidate');
-    header('Pragma: no-cache');
-    header('Expires: 0');
-    header('Content-Disposition: inline; filename="styles_extra.php"');
-    header('Last-Modified: '. gmdate('D, d M Y H:i:s', time()) .' GMT');
-    header('Accept-Ranges: none');
-    header('Content-Type: text/css; charset=utf-8');
-    header('Content-Length: ' . strlen($csscontent));
-
-    echo core_minify::css($csscontent);
-    die();
+    \format_tiles\output\styles_extra::send_uncached_css($csscontent, $errors);
 }
