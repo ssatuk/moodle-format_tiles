@@ -186,7 +186,7 @@ define(["jquery", "core/modal_factory", "core/config", "core/templates", "core/n
 
                     Templates.render(template, templateData).done(function (html) {
                         modal.setBody(html);
-                        modalRoot.find(Selector.modalBody).animate({"min-height": Math.round(win.height() - 60)}, "fast");
+                        modalRoot.find(Selector.modalBody).animate({"min-height": Math.round(win.height() - 120)}, "fast");
 
                         if (objectType === "resource_html" || objectType === 'url') {
                             // HTML files only - set widths to 100% since they may contain embedded videos etc.
@@ -294,6 +294,8 @@ define(["jquery", "core/modal_factory", "core/config", "core/templates", "core/n
             // Do this for every iframe in the course module.
             modalRoot.find(Selector.iframe).each(function (index, iframe) {
 
+                const iframeSelector = $(iframe);
+
                 // Get the modal.
                 var modal;
                 // Boost calls the modal "modal dialog" so try this first.
@@ -305,7 +307,7 @@ define(["jquery", "core/modal_factory", "core/config", "core/templates", "core/n
                 }
 
                 // Now check and adjust the width of the modal.
-                var iframeWidth = Math.min($(iframe).width(), win.width());
+                var iframeWidth = Math.min(iframeSelector.width(), win.width());
                 if (iframeWidth > modal.width() - MODAL_MARGIN) {
                     modal.animate(
                         {"max-width": Math.max(iframeWidth + MODAL_MARGIN, modalMinWidth())},
@@ -318,10 +320,9 @@ define(["jquery", "core/modal_factory", "core/config", "core/templates", "core/n
                 }
 
                 // Then the height of the modal body.
-                var iframeHeight = Math.min($(iframe).height(), win.height());
                 var modalBody = modalRoot.find(Selector.modalBody);
-                if (iframeHeight > modalBody.height() - MODAL_MARGIN) {
-                    modalBody.animate({"min-height": Math.min(iframeHeight + MODAL_MARGIN, win.height()) + 1}, "fast");
+                if (iframeSelector.height() > modalBody.height() - MODAL_MARGIN) {
+                    iframeSelector.attr('height', modalBody.height() - MODAL_MARGIN);
                 }
                 stopAllVideosOnDismiss(modalRoot);
             });
