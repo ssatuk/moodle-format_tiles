@@ -1047,8 +1047,9 @@ class course_output implements \renderable, \templatable {
         // Specific handling for embedded resource items (e.g. PDFs)  as allowed by site admin.
         if ($mod->modname == 'resource') {
             if (in_array($moduleobject['modresourceicon'], $this->usemodalsforcoursemodules['resources'])) {
-                $moduleobject['isEmbeddedResource'] = 1;
-                $moduleobject['launchtype'] = 'resource-modal';
+                // Where onclick is truthy, suggests core JS will open in new window so don't treat as tiles modal.
+                $moduleobject['isEmbeddedResource'] = $mod->onclick ? 0 : 1;
+                $moduleobject['launchtype'] = $mod->onclick ? 'standard' : 'resource-modal';
                 $moduleobject['pluginfileUrl'] = self::plugin_file_url($mod);
             } else {
                 // We are not using modal, so add the standard moodle onclick event to the link to launch pop up if appropriate.
@@ -1060,15 +1061,18 @@ class course_output implements \renderable, \templatable {
         }
 
         // Issue 67 handling for LTI set to open in new window.
-        if ($mod->onclick == 'lti' && $mod->onclick) {
+        // Where onclick is truthy, suggests core JS will open in new window so don't treat as tiles modal.
+        if ($mod->onclick) {
             $moduleobject['onclick'] = htmlspecialchars_decode($mod->onclick, ENT_QUOTES);
             $moduleobject['launchtype'] = 'standard';
         }
 
         // Specific handling for embedded course module items (e.g. page) as allowed by site admin.
         if (in_array($mod->modname, $this->usemodalsforcoursemodules['modules'])) {
-            $moduleobject['isEmbeddedModule'] = 1;
-            $moduleobject['launchtype'] = 'module-modal';
+            // Where onclick is truthy, suggests core JS will open in new window so don't treat as tiles modal.
+            $moduleobject['isEmbeddedModule'] = $mod->onclick ? 0 : 1;
+            $moduleobject['launchtype'] = $mod->onclick ? 'standard' : 'module-modal';
+
         }
         $moduleobject['showdescription'] =
             isset($mod->showdescription) && !$treataslabel ? $mod->showdescription : 0;
@@ -1118,46 +1122,22 @@ class course_output implements \renderable, \templatable {
                 }
             }
         }
-
         if ($mod->modname == 'url') {
-            $url = $DB->get_record('url', ['id' => $mod->instance], '*', MUST_EXIST);
+            $externalurl = $DB->get_field('url', 'externalurl', ['id' => $mod->instance]);
+            $modifiedvideourl = self::check_modify_embedded_url($externalurl);
+
             $usemodalsforurl = in_array('url', $this->usemodalsforcoursemodules['resources']);
-            $modifiedvideourl = self::check_modify_embedded_url($url->externalurl);
-            if ($url->display == RESOURCELIB_DISPLAY_POPUP || $url->display == RESOURCELIB_DISPLAY_NEW) {
-                if ($mod->onclick) {
-                    $moduleobject['onclick'] = $mod->onclick;
-                    $moduleobject['launchtype'] = 'standard';
+            if (!$mod->onclick && $usemodalsforurl) {
+                // We will be launching modal so need secondary URL under embed so users can click if embed doesn't work.
+                // We will also use it to redirect mobile users to YouTube or wherever since embed won't work well for them.
+                if ($modifiedvideourl) {
+                    $moduleobject['pluginfileUrl'] = $modifiedvideourl;
+                    $moduleobject['secondaryurl'] = $modifiedvideourl;
                 } else {
-                    $moduleobject['pluginfileUrl'] = $url->externalurl;
-                    $moduleobject['extraclasses'] .= ' urlpopup';
-                    $moduleobject['launchtype'] = 'urlpopup';
+                    $moduleobject['pluginfileUrl'] = $externalurl;
+                    $moduleobject['secondaryurl'] = $externalurl;
                 }
-            } else if ($url->display == RESOURCELIB_DISPLAY_EMBED) {
-                // We need a secondary URL to show under the embed window so users can click it if embed doesn't work.
-                // We will also use it to redirect mobile users to YouTube or wherever since embed wont work well for them.
-                $moduleobject['secondaryurl'] = $url->externalurl;
-                if ($usemodalsforurl) {
-                    if ($modifiedvideourl) {
-                        $moduleobject['pluginfileUrl'] = $modifiedvideourl;
-                    } else {
-                        $moduleobject['pluginfileUrl'] = $url->externalurl;
-                    }
-                    $moduleobject['launchtype'] = 'url-modal';
-                }
-            } else if ($url->display == RESOURCELIB_DISPLAY_AUTO) {
-                // TODO modify this later to treat embed as launch modal.
-                $treataspopup = [
-                    RESOURCELIB_DISPLAY_EMBED,
-                    RESOURCELIB_DISPLAY_FRAME,
-                    RESOURCELIB_DISPLAY_NEW,
-                    RESOURCELIB_DISPLAY_POPUP,
-                ];
-                require_once("$CFG->dirroot/mod/url/locallib.php");
-                $displaytype = url_get_final_display_type($url);
-                if (in_array($displaytype, $treataspopup)) {
-                    $moduleobject['pluginfileUrl'] = $url->externalurl;
-                    $moduleobject['extraclasses'] .= ' urlpopup';
-                }
+                $moduleobject['launchtype'] = 'url-modal';
             }
 
             if ($modifiedvideourl) {

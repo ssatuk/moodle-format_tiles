@@ -350,38 +350,6 @@ define(["jquery", "core/modal_factory", "core/config", "core/templates", "core/n
             }
         };
 
-
-        /**
-         * If a URL activity is clicked and it's been set to open in "Pop up" then launch a browser pop up.
-         * @param {object} e
-         */
-        var launchUrlPopUp = function (e) {
-            var clickedActivity = $(e.currentTarget).closest(Selector.ACTIVITY);
-            if (clickedActivity.data("url") !== undefined) {
-                e.stopPropagation();
-                e.preventDefault();
-                // Log the fact we viewed it.
-                ajax.call([{
-                    methodname: "format_tiles_log_mod_view", args: {
-                        courseid: courseId,
-                        cmid: clickedActivity.data("cmid")
-                    }
-                }])[0].done(function () {
-                    // Because we intercepted the normal event for the click, process auto completion.
-                    const sectionNum = clickedActivity.closest(Selector.section).data('section');
-                    const cmid = clickedActivity.data('cmid');
-                    require(["format_tiles/completion"], function (completion) {
-                        completion.triggerCompletionChangedEvent(
-                            sectionNum ? parseInt(sectionNum) : 0,
-                            cmid ? parseInt(cmid) : 0
-                        );
-                    });
-                    // Then open the pop up.
-                    window.open(clickedActivity.data("url"));
-                }).fail(Notification.exception);
-            }
-        };
-
         const logCmView = function(cmId) {
             ajax.call([{
                 methodname: "format_tiles_log_mod_view", args: {
@@ -566,13 +534,6 @@ define(["jquery", "core/modal_factory", "core/config", "core/templates", "core/n
                             .done(function (html) {
                                 loadingIconHtml = html; // TODO get this from elsewhere.
                             }).fail(Notification.exception);
-
-                        if (!isEditing) {
-                            // If a URL activity is clicked and it's been set to open in "Pop up" then launch a browser pop up.
-                            pageContent.on("click", Selector.URLACTIVITYPOPUPLINK, function(e) {
-                                launchUrlPopUp(e);
-                            });
-                        }
 
                         // If completion of a cm changes, remove it from store so that it can be re-rendered with correct heading.
                         $(document).on('format-tiles-completion-changed', function(e, data) {

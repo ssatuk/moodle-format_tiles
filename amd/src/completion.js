@@ -276,6 +276,20 @@ define(["jquery", "core/templates", "core/config", "core/ajax", "core/str", "cor
                         pageContent = $("#region-main");
                     }
 
+                    // If an activity with an "onclick" attribute is clicked, this means core is launching an activity pop up.
+                    $('li.section').on('click', function(e) {
+                        const target = $(e.target);
+                        const isCorePopUp = target.attr('onclick')
+                            && target.attr('onclick').indexOf('window.open') === 0;
+                        if (isCorePopUp) {
+                            const cm = target.closest('li.activity');
+                            if (cm.hasClass('completion-view')) {
+                                const section = (target.closest('li.section')).data('section');
+                                triggerCompletionChangedEvent(section, cm.data('cmid'));
+                            }
+                        }
+                    });
+
                     // When behat tests are running, for whatever reason core completion is not initialised, so we do it here.
                     coreManualCompletion.init();
                 });

@@ -742,6 +742,8 @@ define(["jquery", "core/templates", "core/ajax", "format_tiles/browser_storage",
                         }).toArray();
                         // Need to include sec zero as may have completion tracked items.
                         allSectionNums.push(0);
+
+                        // Get the section ID from section number.
                         const contentArea = $(Selector.SECTION_ID + data.section);
                         const sectionId = contentArea.data('sectionid');
                         // This gets the fragment from format_tiles_output_fragment_get_cm_list().
