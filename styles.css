@@ -1327,11 +1327,6 @@ body.format-tiles.jsenabled .course-content .headerabovetiles {
     padding-top: 3px;
     padding-bottom: 3px;
 }
-.format-tiles .section-cm-edit-actions .dropdown-menu {
-    margin-top: 0;
-    left: -30px;
-    position: absolute;
-}
 .format-tiles.editing .section .activity.subtile .cm-inner {
     margin-top: 25px;
 }
