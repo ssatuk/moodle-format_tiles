@@ -40,6 +40,7 @@ define(["jquery", "core/templates", "core/ajax", "format_tiles/browser_storage",
         var courseContextId;
         var resizeLocked = false;
         var enableCompletion;
+        var reorgSectionsDisabledUntil = 0;
 
          // Keep a record of which tile is currently open.
         var openTile = 0;
@@ -298,9 +299,19 @@ define(["jquery", "core/templates", "core/ajax", "format_tiles/browser_storage",
                 setTimeout(() => {
                     applyMathJax(contentArea);
                     // As we have just loaded new content, ensure that we initialise videoJS media player if required.
-                    if (contentArea.find(Selector.MOODLE_VIDEO).length !== 0) {
+                    const moodleVideo = contentArea.find(Selector.MOODLE_VIDEO);
+                    if (moodleVideo.length !== 0) {
                         require(["media_videojs/loader"], function (videoJS) {
                             videoJS.setUp();
+
+                            // Issue 87 - If video fullscreen button is pressed, temporarily disable tile re-orgs on screen resize.
+                            // Allow some time for the div to be populated before setting this listener.
+                            setTimeout(function() {
+                                const disableDurationMilliSeconds = 1000;
+                                moodleVideo.find('.vjs-fullscreen-control').on('click', function() {
+                                    reorgSectionsDisabledUntil = Date.now() + disableDurationMilliSeconds;
+                                });
+                            }, 1000);
                         });
                     }
                 }, 100);
@@ -679,6 +690,10 @@ define(["jquery", "core/templates", "core/ajax", "format_tiles/browser_storage",
                         // Collapse the selected section before doing this.
                         // Otherwise the re-organisation won't work as the tiles' flow will be out when they are analysed.
                         $(window).on("resize", function () {
+                            if (reorgSectionsDisabledUntil > Date.now()) {
+                                return;
+                            }
+
                             // On iOS resize events are triggered often on scroll because the address bar hides itself.
                             // Avoid this using windowWidth here.
                             if (resizeLocked || windowWidth === $(window).outerWidth()) {
