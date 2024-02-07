@@ -82,7 +82,7 @@
                                 cy="20" r="17" fill="none" stroke="none" stroke-width="5" stroke-dasharray="{{percentCircumf}}"
                                 stroke-dashoffset="{{percentOffset}}"></circle>
                         {{! the numeric percentage in centre of circle }}
-                        <text x="{{#isSingleDigit}}15{{/isSingleDigit}}{{^isSingleDigit}}10{{/isSingleDigit}}" y="27" font-family="inherit" font-size="20" id="percent-text-{{tileid}}">
+                        <text x="{{^is-rtl}}{{#isSingleDigit}}15{{/isSingleDigit}}{{^isSingleDigit}}10{{/isSingleDigit}}{{/is-rtl}}{{#is-rtl}}{{#isSingleDigit}}25{{/isSingleDigit}}{{^isSingleDigit}}30{{/isSingleDigit}}{{/is-rtl}}" y="27" font-family="inherit" font-size="20" id="percent-text-{{tileid}}">
                             {{percent}}
                         </text>
                     </svg>

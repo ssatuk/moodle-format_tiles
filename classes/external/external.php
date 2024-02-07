@@ -682,6 +682,8 @@ class external extends external_api {
         $context = context_course::instance($params['courseid']);
         self::validate_context($context);
 
+        $isrtl = right_to_left();
+
         $sections = [];
         $warnings = [];
 
@@ -708,6 +710,7 @@ class external extends external_api {
                     'availabilitymessage' => $renderer->render($availabilitywidget),
                     'numcomplete' => -1, // If we have data, we replace this below.
                     'numoutof' => -1, // If we have data, we replace this below.
+                    'isrtl' => $isrtl,
                 ];
             } else {
                 $warnings[] = [
