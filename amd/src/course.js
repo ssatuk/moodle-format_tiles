@@ -300,29 +300,22 @@ define(["jquery", "core/templates", "core/ajax", "format_tiles/browser_storage",
                     }
                 }
 
-                setTimeout(() => {
-                    applyMathJax(contentArea);
-                    // As we have just loaded new content, ensure that we initialise videoJS media player if required.
-                    const moodleVideo = contentArea.find(Selector.MOODLE_VIDEO);
-                    if (moodleVideo.length !== 0) {
-                        if (moodleVideo.find('vjs_control_bar').length === 0) {
-                            require(["media_videojs/loader"], function (videoJS) {
-                                videoJS.setUp();
-                            });
-                        }
+                applyMathJax(contentArea);
 
-                        // Issue 87 - If video fullscreen button is pressed, temporarily disable tile re-orgs on screen resize.
-                        // Allow some time for the div to be populated before setting this listener.
-                        setTimeout(function() {
-                            const disableDurationMilliSeconds = 1000;
-                            moodleVideo.find('.vjs-fullscreen-control').on('click', function() {
-                                reorgSectionsDisabledUntil = Date.now() + disableDurationMilliSeconds;
-                            });
-                        }, 1000);
-                    }
-                }, 100);
+                const moodleVideos = contentArea.find(Selector.MOODLE_VIDEO);
+                if (moodleVideos.length > 0) {
+                    // This already happens once on page load, but we repeat since reloaded HTML containing lazy load videos.
+                    require(["media_videojs/loader"], function (videoJS) {
+                        videoJS.setUp();
+                    });
 
-            }, 100);
+                    // Issue 87 - If video fullscreen button is pressed, temporarily disable tile re-orgs on screen resize.
+                    document.addEventListener('fullscreenchange', function () {
+                        const disableDurationMilliSeconds = 1000;
+                        reorgSectionsDisabledUntil = Date.now() + disableDurationMilliSeconds;
+                    });
+                }
+            }, 1000);
 
             $(document).trigger('format-tiles-section-content-changed', {
                 courseId: parseInt(courseId),
@@ -706,9 +699,6 @@ define(["jquery", "core/templates", "core/ajax", "format_tiles/browser_storage",
                         // Collapse the selected section before doing this.
                         // Otherwise the re-organisation won't work as the tiles' flow will be out when they are analysed.
                         $(window).on("resize", function () {
-                            if (reorgSectionsDisabledUntil > Date.now()) {
-                                return;
-                            }
 
                             // On iOS resize events are triggered often on scroll because the address bar hides itself.
                             // Avoid this using windowWidth here.
@@ -720,6 +710,12 @@ define(["jquery", "core/templates", "core/ajax", "format_tiles/browser_storage",
                             // We wait for a short time before doing anything, as user may still be dragging window size change.
                             // We don't want to react to say 20 resize events happening over a single drag.
                             setTimeout(function() {
+
+                                if (reorgSectionsDisabledUntil > Date.now()) {
+                                    // We wait until inside our timeout for this as we may be responding to a fullscreen event.
+                                    return;
+                                }
+
                                 // First assume that we are going to resize, but we have checks to make below.
                                 var resizeRequired = true;
 
