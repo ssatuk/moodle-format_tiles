@@ -334,11 +334,19 @@ class course_output implements \renderable, \templatable {
 
     /**
      * Temporary function for Moodle 4.0 upgrade - todo to be replaced.
-     * @param object $mod
+     * @param \cm_info $mod
      * @return bool|string
      * @throws \coding_exception
      */
     private function temp_course_section_cm_availability($mod) {
+        if ($this->courseformatoptions['courseusesubtiles']) {
+            // Subtiles show a badge on the tile with a tool tip including full info.
+            // This needs not to be truncated, whereas core $availabilityclass below will truncate it.
+            // If there are multiple restrictions the tooltip on the subtile then shows them all.
+            $ci = new \core_availability\info_module($mod);
+            $fullinfo = $ci->get_full_information();
+            return \core_availability\info::format_info($fullinfo, $this->course);
+        }
         $availabilityclass = $this->format->get_output_classname('content\\cm\\availability');
         $availability = new $availabilityclass(
             $this->format,

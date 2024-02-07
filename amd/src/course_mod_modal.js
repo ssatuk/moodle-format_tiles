@@ -489,12 +489,14 @@ define(["jquery", "core/modal_factory", "core/config", "core/templates", "core/n
                         pageContent.on("click", modalSelectors, function (e) {
                             // If click is on a completion checkbox within activity, ignore here as handled elsewhere.
                             const tgt = $(e.target);
-                            const isCompletionControl = tgt.hasClass(CLASS.COMPLETION_CHECK_BOX)
+                            const isExcludedControl = tgt.hasClass(CLASS.COMPLETION_CHECK_BOX)
                                 || tgt.parent().hasClass(CLASS.COMPLETION_CHECK_BOX)
                                 || tgt.hasClass(CLASS.COMPLETION_DROPDOWN)
                                 || tgt.parent().hasClass(CLASS.COMPLETION_DROPDOWN)
-                                || tgt.is(":button");
-                            if (isCompletionControl) {
+                                || tgt.is(":button")
+                                || tgt.hasClass('expanded-content') // "Show less" link on restrictions.
+                                || tgt.hasClass('collapsed-content'); // "Show more" link on restrictions
+                            if (isExcludedControl) {
                                 return;
                             }
                             e.preventDefault();
