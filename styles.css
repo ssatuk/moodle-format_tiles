@@ -1802,6 +1802,13 @@ body.format-tiles.jsenabled .course-content .headerabovetiles {
 .format-tiles .course-content ul li.section.moveablesection .side {
     display: block;
 }
+.format-tiles #section-zero-container.format-tiles-no-js #buttonhidesec0 {
+    position: absolute;
+    right: -45px;
+    top: 0;
+    width: 45px;
+    height: 45px;
+}
 
 @media (min-width: 768px) {
     body.format-tiles.limitedwidth:not(.path-mod) #page.drawers .main-inner,

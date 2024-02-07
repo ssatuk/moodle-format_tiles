@@ -41,7 +41,7 @@
     </div>
 {{/editorwarnings}}
 
-<div id="section-zero-container">
+<div id="section-zero-container" {{^usingjsnav}}class="format-tiles-no-js"{{/usingjsnav}}>
 
     {{! on xs devices, show buttons separately at top }}
     <div class="d-block d-sm-none">{{>format_tiles/above_tiles_buttons}}</div>
