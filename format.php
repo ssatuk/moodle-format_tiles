@@ -101,6 +101,7 @@ $jsparams = [
         && !isset($SESSION->format_tiles_skip_width_check)
         && $usejsnav,
     'enablecompletion' => $course->enablecompletion,
+    'usesubtiles' => get_config('format_tiles', 'allowsubtilesview') && $course->courseusesubtiles,
 ];
 
 if (!$isediting) {
@@ -113,7 +114,6 @@ if ($isediting) {
     // Initalise the main JS module for editing users.
     $jsparams['pagetype'] = $PAGE->pagetype;
     $jsparams['allowphototiles'] = $allowphototiles;
-    $jsparams['usesubtiles'] = get_config('format_tiles', 'allowsubtilesview') && $course->courseusesubtiles;
     $jsparams['documentationurl'] = get_config('format_tiles', 'documentationurl');
 
     $PAGE->requires->js_call_amd('format_tiles/edit_course', 'init', $jsparams);

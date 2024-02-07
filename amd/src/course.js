@@ -615,6 +615,7 @@ define(["jquery", "core/templates", "core/ajax", "format_tiles/browser_storage",
                 userId,
                 fitTilesToWidth,
                 enableCompletionInit,
+                useSubTiles,
                 courseContextIdInit
             ) {
                 courseId = courseIdInit;
@@ -633,6 +634,9 @@ define(["jquery", "core/templates", "core/ajax", "format_tiles/browser_storage",
                     userId
                 );
                 $(document).ready(function () {
+                    if (useSubTiles) {
+                        $(Selector.BODY).addClass('format-tiles-subtiles');
+                    }
                     var pageContent = $("#page-content");
                     if (pageContent.length === 0) {
                         // Some themes e.g. RemUI do not have a #page-content div, so use #region-main.

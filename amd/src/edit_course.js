@@ -47,9 +47,9 @@ define(
                 userId,
                 fitTilesToWidth,
                 enablecompletion,
+                useSubTiles,
                 pageType,
                 allowPhotoTiles,
-                useSubTiles,
                 documentationurl
             ) {
                 courseId = courseIdInit;

@@ -388,3 +388,7 @@ Other
 - Fragment API implemented for section content and cm content
 - Photo library image improved
 - Improve handling of course specific CSS (for course tile colours)
+- Fix issue 87: Full screen video failed
+- Fix issue 94: URL Resource pop-up also opens new tab/window
+- Fix issue 35: Unable to close tile detail with keyboard only
+- Fix issue 153: Glossary opens multiple windows

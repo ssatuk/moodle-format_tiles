@@ -1483,6 +1483,11 @@ body.format-tiles.jsenabled .course-content .headerabovetiles {
     border: 2px solid #4a4a4a;
     opacity: 0.98;
 }
+.format-tiles.format-tiles-subtiles .tooltip-inner ul {
+    margin-left: 0;
+    padding-left: 10px;
+    text-align: left;
+}
 .format-tiles.editing .section-summary-activities {
     width: 200px;
     text-align: right;

@@ -56,7 +56,7 @@ class upload_image_form extends moodleform {
         );
         $mform->setExpanded('guidance', true);
 
-        $existingphotourl = isset($instance['existingurl']) ? $instance['existingurl'] : '';
+        $existingphotourl = $instance['existingurl'] ?? '';
         if ($existingphotourl) {
             $mform->addElement('header', 'headertag', get_string('existingimage', 'format_tiles'));
             $formheading = \html_writer::div(
