@@ -109,9 +109,10 @@ define(["jquery", "core/templates", "core/ajax", "format_tiles/browser_storage",
         /**
          * If we have embedded video in section, stop it.
          * Runs when section is closed.
-         * @param {number} section where the video is.
+         * @param {number} section sec number where the video is.
+         * @param {number} sectionId sec ID where the video is.
          */
-        var stopVideoPlaying = function(section) {
+        var stopVideoPlaying = function(section, sectionId) {
             var contentSection = $(Selector.SECTION_ID + section);
 
             // First iframes (e.g. embedded YouTube).
@@ -128,6 +129,9 @@ define(["jquery", "core/templates", "core/ajax", "format_tiles/browser_storage",
             var mediaPlayers = contentSection.find(Selector.MOODLE_VIDEO);
             if (mediaPlayers.length > 0) {
                 contentSection.html("");
+                getSectionContentFromServer(courseContextId, sectionId).done(function (html, js) {
+                    setCourseContentHTML(contentSection, html, js);
+                });
             }
         };
 
@@ -139,7 +143,7 @@ define(["jquery", "core/templates", "core/ajax", "format_tiles/browser_storage",
             $(Selector.MOVEABLE_SECTION).each(function (index, sec) {
                 sec = $(sec);
                 if (sec.is(":visible")) {
-                    stopVideoPlaying(sec.data("section"));
+                    stopVideoPlaying(sec.data("section"), sec.data("sectionid"));
                     sec.slideUp().removeClass(ClassNames.STATE_VISIBLE); // Excludes section 0.
                 }
             });
@@ -301,18 +305,20 @@ define(["jquery", "core/templates", "core/ajax", "format_tiles/browser_storage",
                     // As we have just loaded new content, ensure that we initialise videoJS media player if required.
                     const moodleVideo = contentArea.find(Selector.MOODLE_VIDEO);
                     if (moodleVideo.length !== 0) {
-                        require(["media_videojs/loader"], function (videoJS) {
-                            videoJS.setUp();
+                        if (moodleVideo.find('vjs_control_bar').length === 0) {
+                            require(["media_videojs/loader"], function (videoJS) {
+                                videoJS.setUp();
+                            });
+                        }
 
-                            // Issue 87 - If video fullscreen button is pressed, temporarily disable tile re-orgs on screen resize.
-                            // Allow some time for the div to be populated before setting this listener.
-                            setTimeout(function() {
-                                const disableDurationMilliSeconds = 1000;
-                                moodleVideo.find('.vjs-fullscreen-control').on('click', function() {
-                                    reorgSectionsDisabledUntil = Date.now() + disableDurationMilliSeconds;
-                                });
-                            }, 1000);
-                        });
+                        // Issue 87 - If video fullscreen button is pressed, temporarily disable tile re-orgs on screen resize.
+                        // Allow some time for the div to be populated before setting this listener.
+                        setTimeout(function() {
+                            const disableDurationMilliSeconds = 1000;
+                            moodleVideo.find('.vjs-fullscreen-control').on('click', function() {
+                                reorgSectionsDisabledUntil = Date.now() + disableDurationMilliSeconds;
+                            });
+                        }, 1000);
                     }
                 }, 100);
 
@@ -428,6 +434,12 @@ define(["jquery", "core/templates", "core/ajax", "format_tiles/browser_storage",
          */
         var reOrgSections = function (delayBefore, fitTilesToScreenWidth) {
             var dfd = new $.Deferred();
+            if (reorgSectionsDisabledUntil > Date.now()) {
+                dfd.resolve();
+            }
+            const disableDurationMilliSeconds = 1000;
+            reorgSectionsDisabledUntil = Date.now() + disableDurationMilliSeconds;
+
             var openedSection = $(".moveablesection:visible");
             var openedSectionNum = 0;
             if (openedSection.length > 0) {
@@ -549,7 +561,7 @@ define(["jquery", "core/templates", "core/ajax", "format_tiles/browser_storage",
             $(Selector.MOVEABLE_SECTION).each(function (index, sec) {
                 sec = $(sec);
                 if (sec.is(":visible")) {
-                    stopVideoPlaying(sec.data("section"));
+                    stopVideoPlaying(sec.data("section"), sec.data("sectionid"));
                     sec.slideUp(200).removeClass(ClassNames.STATE_VISIBLE); // Excludes section 0.
                 }
             });

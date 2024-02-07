@@ -1142,15 +1142,15 @@ class course_output implements \renderable, \templatable {
 
             if ($modifiedvideourl) {
                 // Even though it's really a URL activity, display it as "video" activity with video icon.
+                $videostring = get_string('displaytitle_mod_mp4', 'format_tiles');
                 if ($this->courseformatoptions['courseusesubtiles']) {
                     $moduleobject['extraclasses'] .= ' video';
-                    $moduleobject['modnameDisplay'] = get_string('displaytitle_mod_mp4', 'format_tiles');
-                } else {
-                    $moduleobject['icon'] = [
-                        'url' => $output->image_url("play-circle-solid", 'format_tiles'),
-                        'label' => get_string("play"),
-                    ];
+                    $moduleobject['modnameDisplay'] = $videostring;
                 }
+                $moduleobject['icon'] = [
+                    'url' => $output->image_url("circle-play", 'format_tiles'),
+                    'label' => $videostring,
+                ];
             }
         }
 
