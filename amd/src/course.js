@@ -310,9 +310,12 @@ define(["jquery", "core/templates", "core/ajax", "format_tiles/browser_storage",
                     });
 
                     // Issue 87 - If video fullscreen button is pressed, temporarily disable tile re-orgs on screen resize.
-                    document.addEventListener('fullscreenchange', function () {
-                        const disableDurationMilliSeconds = 1000;
-                        reorgSectionsDisabledUntil = Date.now() + disableDurationMilliSeconds;
+                    const fsEvents = ['fullscreenchange', 'webkitfullscreenchang', 'mozfullscreenchange', 'msfullscreenchange'];
+                    fsEvents.forEach(function (ev) {
+                        document.addEventListener(ev, function () {
+                            const disableDurationMilliSeconds = 1000;
+                            reorgSectionsDisabledUntil = Date.now() + disableDurationMilliSeconds;
+                        });
                     });
                 }
             }, 1000);

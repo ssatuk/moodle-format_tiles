@@ -37,17 +37,6 @@ use core_courseformat\output\local\content\cm as core_cm;
 class cm extends core_cm {
 
     /**
-     * Constructor.
-     * @param course_format $format
-     * @param \section_info $section
-     * @param \cm_info $mod
-     * @param array $displayoptions
-     */
-    public function __construct(course_format $format, \section_info $section, \cm_info $mod, array $displayoptions = []) {
-        parent::__construct($format, $section, $mod, $displayoptions);
-    }
-
-    /**
      * Add activity information to the data structure.
      *
      * @param \stdClass $data the current cm data reference

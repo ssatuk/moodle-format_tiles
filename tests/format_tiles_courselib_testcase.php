@@ -1429,7 +1429,7 @@ class format_tiles_courselib_testcase extends advanced_testcase {
     /**
      * Test_course_dates_reset.
      *
-     * @dataProvider course_dates_reset_provider
+     * @dataProvider format_tiles_course_dates_reset_provider
      * @param int $startdate
      * @param int $enddate
      * @param int $resetstartdate
@@ -1484,7 +1484,7 @@ class format_tiles_courselib_testcase extends advanced_testcase {
      *
      * @return array
      */
-    public function course_dates_reset_provider() {
+    public function format_tiles_course_dates_reset_provider() {
 
         // Each example contains the following:
         // - course startdate
