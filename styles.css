@@ -388,9 +388,6 @@ li.activity .tileiconcontainer .tile-icon .icon.fa {
 .format-tiles li.section .tiles-editor-image .tile-icon img {
     filter: brightness(0);
 }
-.format-tiles li.activity .tileiconcontainer .tile-icon img {
-    filter: brightness(0) saturate(100%) invert(100%) sepia(0%) saturate(5989%) hue-rotate(202deg) brightness(112%) contrast(101%);
-}
 .format-tiles .tileiconcontainer.hasphoto {
     width: 85px;
 }
@@ -1782,16 +1779,12 @@ body.format-tiles.jsenabled .course-content .headerabovetiles {
 .format-tiles .moveablesection .availabilityinfo i {
     font-size: 1.2em;
 }
-
-/*If the theme does not use font awesome for completion check marks, need to style the img file.*/
-/*This applies to adaptable and clean and possibly other custom themes based on these*/
-.format-tiles .tiles-activity-container img.activityicon {
-    filter: brightness(0) invert(1);
-}
 .format-tiles li.activity .completioncheckbox img {
     width: 19px;
     padding-left: 3px;
 }
+/*If the theme does not use font awesome for completion check marks, need to style the img file.*/
+/*This applies to adaptable and classic and possibly other custom themes based on these*/
 .format-tiles li.activity .completioncheckbox:not(.complete) img {
     filter: brightness(0.4) invert(1);
 }
