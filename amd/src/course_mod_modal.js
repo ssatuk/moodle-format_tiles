@@ -213,7 +213,7 @@ define(["jquery", "core/modal_factory", "core/config", "core/templates", "core/n
                     activityname: title,
                     tileid: sectionNum,
                     showDownload: objectType === "resource_pdf" ? 1 : 0,
-                    showNewWindow: objectType === "resource_pdf" ? 1 : 0,
+                    showNewWindow: ["resource_pdf", 'url'].includes(objectType) ? 1 : 0,
                     pluginfileUrl: pluginfileUrl,
                     forModal: true
                 };
