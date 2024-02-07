@@ -1808,6 +1808,10 @@ body.format-tiles.jsenabled .course-content .headerabovetiles {
     .format-tiles .header-maxwidth {
         max-width: unset;
     }
+    .format-tiles.editing.dir-rtl #page-content {
+        /*Not 100% as allow space on left for RTL edit menus to use*/
+        max-width: calc(100% - 100px);
+    }
     body.jsenabled.format-tiles .above-tiles-buttons {
         position: absolute;
         right: 0;
