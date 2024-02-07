@@ -54,7 +54,7 @@ if ($slashargument) {
     }
 }
 
-// Should not happen, but if we reach here and have not got valid colour from slash args, use default values so that course looks ok.
+// Should not happen, but if we reach here with no valid colour from slash args, use default values so that course looks ok.
 if (!$basecolour || strlen($basecolour) !== 7) {
     $courseid = $courseid ?? 0;
     $defaultcolour = \format_tiles\output\styles_extra::get_tile_base_colour();
