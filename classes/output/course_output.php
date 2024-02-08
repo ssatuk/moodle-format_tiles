@@ -1149,7 +1149,7 @@ class course_output implements \renderable, \templatable {
                 $moduleobject['launchtype'] = 'url-modal';
             }
 
-            if ($modifiedvideourl) {
+            if ($modifiedvideourl || self::is_video_url($externalurl)) {
                 // Even though it's really a URL activity, display it as "video" activity with video icon.
                 $videostring = get_string('displaytitle_mod_mp4', 'format_tiles');
                 if ($this->courseformatoptions['courseusesubtiles']) {
@@ -1373,6 +1373,7 @@ class course_output implements \renderable, \templatable {
         }
 
         // Vimeo.
+        // E.g. https://vimeo.com/347119375 ==> https://player.vimeo.com/video/347119375
         $pattern = '/^(https?:\/\/)?(www.)?vimeo.com\/([a-zA-Z0-9\-_]{6,11})$/';
         $matches = null;
         preg_match($pattern, $url, $matches);
@@ -1380,5 +1381,23 @@ class course_output implements \renderable, \templatable {
             return "https://player.vimeo.com/video/$matches[3]";
         }
         return null;
+    }
+
+    /**
+     * Is the URL provided a video URL (i.e. show Video icon for URL activity?).
+     * @param string $url
+     * @return bool
+     */
+    public static function is_video_url(string $url): bool{
+        $patterns = [
+            '/^(http(s)??\:\/\/)?(www\.)?(youtube\.com\/|youtu\.be\/)/',
+            '/^(https?:\/\/)?(www.)?vimeo.com\//'
+        ];
+        foreach ($patterns as $pattern) {
+            if (preg_match($pattern, $url)) {
+                return true;
+            }
+        }
+        return false;
     }
 }

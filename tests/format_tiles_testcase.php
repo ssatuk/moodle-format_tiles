@@ -251,5 +251,41 @@ class format_tiles_testcase extends advanced_testcase {
             'https://player.vimeo.com/video/347119375',
             \format_tiles\output\course_output::check_modify_embedded_url('https://vimeo.com/347119375')
         );
+
+        $this->assertTrue(
+            \format_tiles\output\course_output::is_video_url('https://www.youtube.com/embed/abcdefghijk?t=123')
+        );
+
+        $this->assertTrue(
+            \format_tiles\output\course_output::is_video_url(
+                'https://www.youtube.com/shorts/abcdefghijk?t=4&feature=share'
+            )
+        );
+
+        $this->assertTrue(
+            \format_tiles\output\course_output::is_video_url(
+                'https://www.youtube.com/shorts/abcdefghijk?t=4&feature=share'
+            )
+        );
+
+        $this->assertEquals(
+            \format_tiles\output\course_output::check_modify_embedded_url(
+                'https://www.youtube.com/shorts/abcdefghijk?t=4&feature=share'
+            ),
+            null
+        );
+
+        $this->assertTrue(
+            \format_tiles\output\course_output::is_video_url(
+                'https://youtu.be/abcdefghijk?t=49'
+            )
+        );
+
+        $this->assertEquals(
+            \format_tiles\output\course_output::check_modify_embedded_url(
+                'https://youtu.be/abcdefghijk?t=49'
+            ),
+            null
+        );
     }
 }
