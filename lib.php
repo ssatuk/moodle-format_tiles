@@ -936,15 +936,6 @@ class format_tiles extends core_courseformat\base {
         // Course module modals.
         $allowedmodals = format_tiles\util::allowed_modal_modules();
         if (!empty($allowedmodals['resources'] || !empty($allowedmodals['modules']))) {
-            // On /mod/xxx/view.php or course/view.php page passing in cmid, may need to launch modal JS.
-            // This is because the course index needs the JS.  So get details.
-            if (get_config('format_tiles', 'usecourseindex')) {
-                $matches = [];
-                preg_match('/^mod-([a-z]+)-view$/', $page->pagetype, $matches);
-                $modviewpageneedsjs = (bool)($matches[1] ?? null);
-            } else {
-                $modviewpageneedsjs = false;
-            }
             // If we are on course/view.php, get details.
             $oncourseviewpagenotediting = $page->pagetype == 'course-view' && !$page->user_is_editing();
             $launchmodalcmid = $oncourseviewpagenotediting ? optional_param('cmid', null, PARAM_INT) : null;
@@ -954,16 +945,6 @@ class format_tiles extends core_courseformat\base {
                 if (!$modalallowed) {
                     $launchmodalcmid = null;
                 }
-            }
-
-            if ($oncourseviewpagenotediting || $modviewpageneedsjs) {
-                $jsconfig = format_tiles\output\course_output::get_js_config_data($page->course->id, $allowedmodals);
-                $renderer = $page->get_renderer('format_tiles');
-                echo $renderer->render_from_template('format_tiles/js-config', ['tiles_js_config' => $jsconfig]);
-                $page->requires->js_call_amd(
-                    'format_tiles/course_mod_modal', 'init',
-                    [$page->course->id, false, $page->pagetype, $launchmodalcmid]
-                );
             }
         }
     }
@@ -1167,6 +1148,43 @@ function format_tiles_before_standard_html_head(): string {
         );
 
         $html .= '<link rel="stylesheet" type="text/css" href="' . $stylesurl->out() . '">';
+    }
+
+    return $html;
+}
+
+/**
+ * Callback to add head elements.  Used to add dynamic CSS used by Tiles format.
+ * @return string HTML to inject.
+ *
+ * @see \core_renderer::footer()
+ */
+function format_tiles_before_footer() {
+    global $PAGE;
+    $html = '';
+    $oncourseviewpagenotediting = $PAGE->pagetype == 'course-view-tiles' && !$PAGE->user_is_editing();
+    $modviewpageneedsjs = false;
+    $allowedmodals = format_tiles\util::allowed_modal_modules();
+
+    if (get_config('format_tiles', 'usecourseindex')) {
+        if (!empty($allowedmodals['resources'] || !empty($allowedmodals['modules']))) {
+            // On /mod/xxx/view.php or course/view.php page passing in cmid, may need to launch modal JS.
+            // This is because the course index needs the JS.  So get details.
+            $matches = [];
+            preg_match('/^mod-([a-z]+)-view$/', $PAGE->pagetype, $matches);
+            $modviewpageneedsjs = (bool)($matches[1] ?? null);
+        }
+    }
+
+    if ($oncourseviewpagenotediting || $modviewpageneedsjs) {
+        $jsconfig = format_tiles\output\course_output::get_js_config_data($PAGE->course->id, $allowedmodals);
+        $renderer = $PAGE->get_renderer('format_tiles');
+        $html .= $renderer->render_from_template('format_tiles/js-config', ['tiles_js_config' => $jsconfig]);
+        $launchmodalcmid = $oncourseviewpagenotediting ? optional_param('cmid', null, PARAM_INT) : null;
+        $PAGE->requires->js_call_amd(
+            'format_tiles/course_mod_modal', 'init',
+            [$PAGE->course->id, false, $PAGE->pagetype, $launchmodalcmid]
+        );
     }
 
     return $html;

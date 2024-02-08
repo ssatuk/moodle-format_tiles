@@ -240,7 +240,6 @@ class course_output implements \renderable, \templatable {
         }
         // RTL support for nav arrows direction (Arabic/ Hebrew).
         $data['is-rtl'] = right_to_left();
-        $data['tiles_js_config'] = self::get_js_config_data($this->course->id, $this->usemodalsforcoursemodules);
 
         if ($data['canedit'] && \format_tiles\format_option::needs_migration_incomplete_warning($this->course->id)) {
             $message = get_string('coursephotomigrationincomplete', 'format_tiles');
@@ -267,13 +266,15 @@ class course_output implements \renderable, \templatable {
      * @throws \dml_exception
      */
     public static function get_js_config_data(int $courseid, array $allowedmodals) {
+        global $DB;
+
         // Config values to be added to templates for JS to retrieve.
         // May move more to this from existing JS init in format.php.
         $jsconfigvalues = [
             'modalAllowedModNames' => json_encode(
                 array_merge($allowedmodals['modules'], $allowedmodals['resources'])
             ),
-            'modalAllowedResourceCms' => ['pdf' => [], 'url' => [], 'html' => []],
+            'modalAllowedResourceCms' => ['pdf' => [], 'html' => []],
         ];
 
         // If we are using the course index, JS needs to know which PDFs and HTML files in course launch in modals.
@@ -286,10 +287,16 @@ class course_output implements \renderable, \templatable {
             }
         }
         $jsconfigvalues['modalAllowedResourceCms'] = json_encode($jsconfigvalues['modalAllowedResourceCms']);
+        $jsconfigvalues['defaultcourseicon'] = $DB->get_field(
+            'course_format_options', 'value',
+            ['courseid' => $courseid, 'format' => 'tiles', 'sectionid' => 0, 'name' => 'defaulttileicon']
+        );
+
         $data = [];
         foreach ($jsconfigvalues as $k => $v) {
             $data[] = ['key' => $k, 'value' => $v];
         }
+
         return $data;
     }
 

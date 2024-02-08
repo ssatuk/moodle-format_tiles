@@ -100,14 +100,6 @@ class content extends content_base {
                 $data->bulkedittools = $bulkedittools->export_for_template($output);
             }
 
-            $defaulticonthiscourse = $DB->get_field(
-                'course_format_options', 'value',
-                ['courseid' => $course->id, 'format' => 'tiles', 'sectionid' => 0, 'name' => 'defaulttileicon']
-            );
-            $data->tiles_js_config = [
-                ['key' => 'defaultcourseicon', 'value' => $defaulticonthiscourse],
-            ];
-
             // Check if the course photos and icons have not yet finished migrating (4.3 upgrade) and alert if so.
             if ($moodlerelease >= 4.0 && \format_tiles\format_option::needs_migration_incomplete_warning($course->id)) {
                 $message = get_string('coursephotomigrationincomplete', 'format_tiles');

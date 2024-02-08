@@ -387,7 +387,7 @@ define(["jquery", "core/modal_factory", "core/config", "core/templates", "core/n
                     tilesConfig = $('#format-tiles-js-config').data();
                     const courseIndex = $('nav#courseindex');
 
-                    if (pageType === 'course-view') {
+                    if (pageType === 'course-view-tiles') {
                         // We are on the main tiles page.
                         // If any link in the course index on the left is clicked, check if it needs a modal.
                         // If it does, launch the modal instead of following the link.
