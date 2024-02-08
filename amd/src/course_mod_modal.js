@@ -215,7 +215,8 @@ define(["jquery", "core/modal_factory", "core/config", "core/templates", "core/n
                     showDownload: objectType === "resource_pdf" ? 1 : 0,
                     showNewWindow: ["resource_pdf", 'url'].includes(objectType) ? 1 : 0,
                     pluginfileUrl: pluginfileUrl,
-                    forModal: true
+                    forModal: true,
+                    secondaryurl: secondaryUrl
                 };
                 if (completionEnabled) {
                     headerTemplateData.istrackeduser = 1;
@@ -469,7 +470,7 @@ define(["jquery", "core/modal_factory", "core/config", "core/templates", "core/n
                                         data.completionenabled ? 1 : 0,
                                         data.iscomplete ? 1 : 0,
                                         data.ismanualcompletion,
-                                        data.pluginfileurl
+                                        data.secondaryurl
                                     );
                                 }
                             });
@@ -526,7 +527,7 @@ define(["jquery", "core/modal_factory", "core/config", "core/templates", "core/n
                                     clickedCmObject.data('completion-state')
                                         ? parseInt(clickedCmObject.data('completion-state')) : null,
                                     clickedCmObject.hasClass(CLASS.COMPLETION_MANUAL),
-                                    clickedCmObject.closest(Selector.ACTIVITY).data("url-secondary")
+                                    clickedCmObject.data("url-secondary")
                                 );
                             }
                         });

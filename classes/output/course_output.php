@@ -1059,6 +1059,7 @@ class course_output implements \renderable, \templatable {
                 $moduleobject['isEmbeddedResource'] = $mod->onclick ? 0 : 1;
                 $moduleobject['launchtype'] = $mod->onclick ? 'standard' : 'resource-modal';
                 $moduleobject['pluginfileUrl'] = self::plugin_file_url($mod);
+                $moduleobject['secondaryurl'] = $moduleobject['pluginfileUrl'] . '?redirect=1';
             } else {
                 // We are not using modal, so add the standard moodle onclick event to the link to launch pop up if appropriate.
                 if ($mod->onclick) {
@@ -1140,7 +1141,7 @@ class course_output implements \renderable, \templatable {
                 // We will also use it to redirect mobile users to YouTube or wherever since embed won't work well for them.
                 if ($modifiedvideourl) {
                     $moduleobject['pluginfileUrl'] = $modifiedvideourl;
-                    $moduleobject['secondaryurl'] = $modifiedvideourl;
+                    $moduleobject['secondaryurl'] = $externalurl;
                 } else {
                     $moduleobject['pluginfileUrl'] = $externalurl;
                     $moduleobject['secondaryurl'] = $externalurl;
