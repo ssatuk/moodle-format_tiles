@@ -226,4 +226,30 @@ class format_tiles_testcase extends advanced_testcase {
             );
         }
     }
+
+    /**
+     * Test video embed URL replacement
+     */
+    public function test_video_urls() {
+
+        $this->assertEquals(
+            'https://www.youtube.com/embed/abcdefghijk',
+            \format_tiles\output\course_output::check_modify_embedded_url('https://www.youtube.com/watch?v=abcdefghijk')
+        );
+
+        $this->assertEquals(
+            'https://www.youtube.com/embed/abcdefghijk',
+            \format_tiles\output\course_output::check_modify_embedded_url('https://youtu.be/abcdefghijk')
+        );
+
+        $this->assertEquals(
+            'https://www.youtube.com/embed/abcdefghijk',
+            \format_tiles\output\course_output::check_modify_embedded_url('https://www.youtube.com/shorts/abcdefghijk')
+        );
+
+        $this->assertEquals(
+            'https://player.vimeo.com/video/347119375',
+            \format_tiles\output\course_output::check_modify_embedded_url('https://vimeo.com/347119375')
+        );
+    }
 }

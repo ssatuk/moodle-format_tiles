@@ -1339,36 +1339,45 @@ class course_output implements \renderable, \templatable {
     /**
      * If the URL is a YouTube or Vimeo URL etc, make some adjustments for embedding.
      * Teacher probably used standard watch URL so fix it if so.
+     * @see \format_tiles_testcase::test_video_urls()
      * @param string $url
-     * @return string|boolean string the URL if it was en embed video URL, false if not.
+     * @return string|null string the URL if it was en embed video URL, null if not.
      */
-    public static function check_modify_embedded_url(string $url) {
-        // Youtube.
+    public static function check_modify_embedded_url(string $url): ?string {
+
+        // Keep pattern replacements here specific as remote end may use params unknown to this code.
+        // Sophisticated editors wanting to use other params can enter the embed URL directly and won't need this.
+
+        // First match type - "watch" URL with no other params.
+        // E.g. https://www.youtube.com/watch?v=abcdefghijk ==> https://www.youtube.com/embed/abcdefghijk
+        $pattern = '/^(http(s)??\:\/\/)?(www\.)?((youtube\.com\/watch\?v=[a-zA-Z0-9\-_]{11}))$/';
+        if (preg_match($pattern, $url)) {
+            return str_replace('watch?v=', 'embed/', $url);
+        }
+
+        // Second match type - "youtu.be" URL with no other params.
+        // E.g. https://youtu.be/abcdefghijk ==> https://www.youtube.com/embed/abcdefghijk
+        $pattern = '/^(http(s)??\:\/\/)?(www\.)?((youtu\.be\/([a-zA-Z0-9\-_]{11})))$/';
         $matches = null;
-        $pattern = '/^(http(s)??\:\/\/)?(www\.)?((youtube\.com\/watch\?v=)|(youtu.be\/)|(youtube\.com\/shorts\/))'
-            . '([a-zA-Z0-9\-_]+)(\?t=[0-9]+)*$/';
         preg_match($pattern, $url, $matches);
-        if ($matches && isset($matches[7])) {
-            if (isset($matches[9])) {
-                $starttime = filter_var($matches[9], FILTER_SANITIZE_NUMBER_INT);
-                if ($starttime) {
-                    return "https://www.youtube.com/embed/{$matches[7]}?start=$starttime";
-                }
-            }
-            return "https://www.youtube.com/embed/{$matches[8]}";
+        if ($matches && isset($matches[6])) {
+            return 'https://www.youtube.com/embed/' . $matches[6];
+        }
+
+        // Third match type - "shorts" URL with no other params.
+        // E.g. https://www.youtube.com/shorts/abcdefghijk ==> https://www.youtube.com/embed/abcdefghijk
+        $pattern = '/^(http(s)??\:\/\/)?(www\.)?((youtube\.com\/shorts\/[a-zA-Z0-9\-_]{11}))$/';
+        if (preg_match($pattern, $url)) {
+            return str_replace('shorts/', 'embed/', $url);
         }
 
         // Vimeo.
+        $pattern = '/^(https?:\/\/)?(www.)?vimeo.com\/([a-zA-Z0-9\-_]{6,11})$/';
         $matches = null;
-        $pattern = '/^(https?:\/\/)?(www.)?(player.)?vimeo.com\/([a-z]*\/)*([0-9]{6,11})([?]?.*)$/';
         preg_match($pattern, $url, $matches);
-        if ($matches && isset($matches[5])) {
-            if (isset($matches[6])) {
-                return "https://player.vimeo.com/video/{$matches[5]}{$matches[6]}";
-            }
-            return "https://player.vimeo.com/video/{$matches[5]}";
+        if ($matches && isset($matches[3])) {
+            return "https://player.vimeo.com/video/$matches[3]";
         }
-
-        return false;
+        return null;
     }
 }
