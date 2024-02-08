@@ -362,23 +362,28 @@ define(["jquery", "core/modal_factory", "core/config", "core/templates", "core/n
         };
 
         /**
-         * Do we appear to need a modal for this cm?  (Not definitive and subsequent AJAX check needed).
+         * Do we need a modal for this cm?
          * @param {number} cmId course module ID
          * @param {string} url
          * @return boolean
          */
-        const modalCheckNeeded = function(cmId, url) {
-            if (tilesConfig.modalallowedmodnames === undefined || tilesConfig.modalallowedresourcecms === undefined) {
+        const modalRequired = function(cmId, url) {
+            if (tilesConfig.modalallowedmodnames === undefined) {
                 return false;
             }
+            if (tilesConfig.modalallowedcmids === undefined) {
+                return false;
+            }
+            if (!(tilesConfig.modalallowedcmids).includes(cmId)) {
+                return false;
+            }
+
             return ((tilesConfig.modalallowedmodnames).includes('page') && url.startsWith(`${config.wwwroot}/mod/page/view.php`))
                 || ((tilesConfig.modalallowedmodnames).includes('url') && url.startsWith(`${config.wwwroot}/mod/url/view.php`))
-                || (tilesConfig.modalallowedmodnames).includes('pdf')
-                        && (tilesConfig.modalallowedresourcecms.pdf).includes(cmId.toString())
-                || (tilesConfig.modalallowedmodnames).includes('html')
-                        && (tilesConfig.modalallowedresourcecms.html).includes(cmId.toString());
+                || ((tilesConfig.modalallowedmodnames).includes('pdf') && url.startsWith(`${config.wwwroot}/mod/resource/view.php`))
+                || ((tilesConfig.modalallowedmodnames).includes('html')
+                    && url.startsWith(`${config.wwwroot}/mod/resource/view.php`));
         };
-
 
         return {
             init: function (courseIdInit, isEditing, pageType, launchModalCmid) {
@@ -401,7 +406,7 @@ define(["jquery", "core/modal_factory", "core/config", "core/templates", "core/n
                                     const linkUrl = link.attr('href');
                                     if (linkUrl) {
                                         const cmId = link.closest('li.courseindex-item').data('id');
-                                        if (modalCheckNeeded(cmId, linkUrl)) {
+                                        if (modalRequired(cmId, linkUrl)) {
                                             ajax.call([{
                                                 methodname: "format_tiles_get_course_mod_info", args: {cmid: cmId}
                                             }])[0].done(function (data) {
@@ -434,9 +439,9 @@ define(["jquery", "core/modal_factory", "core/config", "core/templates", "core/n
                                                 .fail(function() {
                                                     window.location.href = linkUrl;
                                                 });
-                                        } else {
-                                            window.location.href = linkUrl;
-                                        }
+                                            } else {
+                                                window.location.href = linkUrl;
+                                            }
                                     }
                                 }
                             });
@@ -555,16 +560,9 @@ define(["jquery", "core/modal_factory", "core/config", "core/templates", "core/n
                                 if (linkUrl) {
                                     const link = $(e.target);
                                     const cmId = link.closest('li.courseindex-item').data('id');
-                                    if (modalCheckNeeded(cmId, linkUrl)) {
-                                        ajax.call([{
-                                            methodname: "format_tiles_get_course_mod_info", args: {cmid: cmId}
-                                        }])[0].done(function (data) {
-                                            if (!data || !data.modalallowed) {
-                                                window.location.href = linkUrl;
-                                            }
-                                            window.location.href =
-                                                `${config.wwwroot}/course/view.php?id=${data.courseid}&cmid=${data.id}`;
-                                        });
+                                    if (modalRequired(cmId, linkUrl)) {
+                                        window.location.href =
+                                            `${config.wwwroot}/course/view.php?id=${courseId}&cmid=${cmId}`;
                                     } else {
                                         window.location.href = linkUrl;
                                     }

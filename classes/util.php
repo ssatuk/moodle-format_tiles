@@ -66,30 +66,28 @@ class util {
         $coursecontext = \context_course::instance($courseid);
         $modinfo = get_fast_modinfo($courseid);
         $cm = $modinfo->get_cm($cmid);
-        require_capability('mod/' . $cm->modname . ':view', $coursecontext);
+        $cmrecord = $cm->get_course_module_record(true);
 
-        $isresource = $cm->modname == 'resource';
+        require_capability('mod/' . $cmrecord->modname . ':view', $coursecontext);
+
+        $isresource = $cmrecord->modname == 'resource';
 
         if ($cm->uservisible) {
             $completioninfo = $cm->completion && !isguestuser()
                 ? (new \completion_info(get_course($courseid))) : null;
             $completiondata = $completioninfo
-            && $completioninfo->is_enabled($cm) != COMPLETION_TRACKING_NONE ? $completioninfo->get_data($cm) : null;
+                && $completioninfo->is_enabled($cm) != COMPLETION_TRACKING_NONE ? $completioninfo->get_data($cm) : null;
 
             $allowedmodmodals = self::allowed_modal_modules();
             $resourcetype = $isresource ? self::get_mod_resource_icon_name($cm->context->id) : '';
 
             $modalallowed = ($resourcetype && in_array($resourcetype, $allowedmodmodals['resources']))
-                || in_array($cm->modname, $allowedmodmodals['resources']) || in_array($cm->modname, $allowedmodmodals['modules']);
+                || in_array($cmrecord->modname, $allowedmodmodals['resources']) || in_array($cmrecord->modname, $allowedmodmodals['modules']);
+
             $pluginfileurl = $isresource ? \format_tiles\output\course_output::plugin_file_url($cm) : '';
-            if ($modalallowed && $cm->modname === 'url') {
+            if ($modalallowed && $cmrecord->modname === 'url') {
                 // Extra check that is set to embed.
                 $url = $DB->get_record('url', ['id' => $cm->instance], '*', MUST_EXIST);
-                require_once("$CFG->dirroot/mod/url/locallib.php");
-                $displaytype = \url_get_final_display_type($url);
-                if ($displaytype != RESOURCELIB_DISPLAY_EMBED) {
-                    $modalallowed = false;
-                }
                 $modifiedvideourl = \format_tiles\output\course_output::check_modify_embedded_url($url->externalurl);
                 $pluginfileurl = $modifiedvideourl ?: $url->externalurl;
             }

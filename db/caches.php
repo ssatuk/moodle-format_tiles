@@ -16,7 +16,8 @@
 
 /**
  * format_tiles cache definitions.
- * @see \format_tiles\output\course_output::get_modal_resource_cmids()
+ * @see \format_tiles\output\course_output::get_modal_allowed_cmids()
+ * @see \format_tiles\observer::clear_cache_modal_cmids()
  *
  * @package     format_tiles
  * @category    cache

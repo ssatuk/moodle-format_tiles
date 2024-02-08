@@ -41,7 +41,7 @@ class observer {
         $DB->delete_records("user_preferences", ["name" => 'format_tiles_stopjsnav_' . $courseid]);
         \format_tiles\tile_photo::delete_files_from_ids($courseid);
         \format_tiles\format_option::unset_all_course($courseid);
-        self::clear_cache_resource_modals($courseid);
+        self::clear_cache_modal_cmids($courseid);
     }
 
     /**
@@ -62,8 +62,8 @@ class observer {
      * @param \core\event\course_module_deleted $event
      */
     public static function course_module_deleted(\core\event\course_module_deleted $event) {
-        if ($event->other['modulename'] == 'resource') {
-            self::clear_cache_resource_modals($event->courseid);
+        if (in_array($event->other['modulename'], ['resource', 'page'])) {
+            self::clear_cache_modal_cmids($event->courseid);
         }
 
     }
@@ -73,8 +73,8 @@ class observer {
      * @param \core\event\course_module_created $event
      */
     public static function course_module_created(\core\event\course_module_created $event) {
-        if ($event->other['modulename'] == 'resource') {
-            self::clear_cache_resource_modals($event->courseid);
+        if (in_array($event->other['modulename'], ['resource', 'page'])) {
+            self::clear_cache_modal_cmids($event->courseid);
         }
     }
 
@@ -83,8 +83,8 @@ class observer {
      * @param \core\event\course_module_updated $event
      */
     public static function course_module_updated(\core\event\course_module_updated $event) {
-        if ($event->other['modulename'] == 'resource') {
-            self::clear_cache_resource_modals($event->courseid);
+        if (in_array($event->other['modulename'], ['resource', 'page', 'url'])) {
+            self::clear_cache_modal_cmids($event->courseid);
         }
     }
 
@@ -109,11 +109,13 @@ class observer {
      * @throws \coding_exception
      * @throws \dml_exception
      */
-    private static function clear_cache_resource_modals(int $courseid) {
-        $modalresources = get_config('format_tiles', 'modalresources');
-        $cache = \cache::make('format_tiles', 'modalcmids');
-        foreach (explode(',', $modalresources) as $modalresource) {
-            $cache->delete($courseid . '_' . $modalresource);
+    private static function clear_cache_modal_cmids(int $courseid) {
+        foreach (['modalresources', 'modalmodules'] as $setting) {
+            $modalmodules = get_config('format_tiles', $setting);
+            $cache = \cache::make('format_tiles', 'modalcmids');
+            foreach (explode(',', $modalmodules) as $modalmodule) {
+                $cache->delete($courseid . '_' . $modalmodule);
+            }
         }
     }
 }

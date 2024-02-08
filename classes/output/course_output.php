@@ -270,23 +270,25 @@ class course_output implements \renderable, \templatable {
 
         // Config values to be added to templates for JS to retrieve.
         // May move more to this from existing JS init in format.php.
-        $jsconfigvalues = [
-            'modalAllowedModNames' => json_encode(
-                array_merge($allowedmodals['modules'], $allowedmodals['resources'])
-            ),
-            'modalAllowedResourceCms' => ['pdf' => [], 'html' => []],
-        ];
+        $allowedmodalsmerged = array_merge($allowedmodals['modules'], $allowedmodals['resources']);
+        $jsconfigvalues = ['modalAllowedModNames' => json_encode($allowedmodalsmerged), 'modalAllowedCmids' => []];
 
+        $modinfo = get_fast_modinfo($courseid);
         // If we are using the course index, JS needs to know which PDFs and HTML files in course launch in modals.
         if (get_config('format_tiles', 'usecourseindex') && !empty($allowedmodals['resources'])) {
-            foreach ($allowedmodals['resources'] as $modalresource) {
-                $cmids = self::get_modal_resource_cmids($courseid, $modalresource);
+            foreach ($allowedmodalsmerged as $modalresource) {
+                $cmids = self::get_modal_allowed_cmids($courseid, $modalresource);
                 if (!empty($cmids)) {
-                    $jsconfigvalues['modalAllowedResourceCms'][$modalresource] = $cmids;
+                    foreach ($cmids as $cmid) {
+                        $cm = $modinfo->get_cm($cmid);
+                        if ($cm->uservisible) {
+                            $jsconfigvalues['modalAllowedCmids'][] = (int)$cmid;
+                        }
+                    }
                 }
             }
         }
-        $jsconfigvalues['modalAllowedResourceCms'] = json_encode($jsconfigvalues['modalAllowedResourceCms']);
+        $jsconfigvalues['modalAllowedCmids'] = json_encode($jsconfigvalues['modalAllowedCmids']);
         $jsconfigvalues['defaultcourseicon'] = $DB->get_field(
             'course_format_options', 'value',
             ['courseid' => $courseid, 'format' => 'tiles', 'sectionid' => 0, 'name' => 'defaulttileicon']
@@ -1223,42 +1225,68 @@ class course_output implements \renderable, \templatable {
     /**
      * This is to avoid re-implementing multiple files from the course index.
      * To know which resources to launch in modals, we can get the cmids of all resources which will launch as modals.
+     * This takes no account of whether a user can see the module - handled elsewhere.
      * @param int $courseid
-     * @param string $filetype
+     * @param string $resourcetype e.g. 'pdf', 'html', 'url'.
      * @return array course module IDs to launch in modals.
      */
-    public static function get_modal_resource_cmids(int $courseid, string $filetype): array {
+    public static function get_modal_allowed_cmids(int $courseid, string $resourcetype): array {
         global $DB;
 
-        switch ($filetype) {
-            case 'pdf':
-                $mimetype = 'application/pdf';
-                break;
-            case 'html':
-                $mimetype = 'text/html';
-                break;
-            default:
-                // Only PDF and HTML files are supported.
-                return [];
-        }
-        $cachekey = $courseid . '_' . $filetype;
+        $modinfo = get_fast_modinfo($courseid);
+
+        $cachekey = $courseid . '_' . $resourcetype;
         $cache = \cache::make('format_tiles', 'modalcmids');
         $cachedvalue = $cache->get($cachekey);
         if ($cachedvalue) {
             return $cachedvalue;
         }
 
-        $params = ['courseid' => $courseid, 'mimetype' => $mimetype];
-        $sql = "SELECT cm.id
-            FROM {course_modules} cm
-            JOIN {modules} m ON m.id = cm.module and m.name = 'resource'
-            JOIN {context} ctx ON ctx.instanceid = cm.id AND ctx.contextlevel = 70
-            JOIN {files} f ON f.contextid = ctx.id AND f.component = 'mod_resource'
-                AND f.filesize > 0 and f.filename != '.' AND f.mimetype = :mimetype
-            WHERE cm.course = :courseid";
-        $cmids = $DB->get_fieldset_sql($sql, $params);
-        $cache->set($cachekey, $cmids);
-        return $cmids;
+        if ($resourcetype == 'url') {
+            list($insql, $params) = $DB->get_in_or_equal([RESOURCELIB_DISPLAY_AUTO, RESOURCELIB_DISPLAY_NEW], SQL_PARAMS_NAMED);
+            $params['course'] = $courseid;
+            $cmids = $DB->get_fieldset_sql(
+                "SELECT cm.id FROM {url} u
+                         JOIN {course_modules} cm ON cm.instance = u.id
+                         JOIN {modules} m ON m.id = cm.module AND m.name = 'url'
+                         WHERE u.course = :course AND u.display $insql", $params
+            );
+        } else if (in_array($resourcetype, ['pdf', 'html'])) {
+            // First get file cmids of relevant mime type.
+            $sql = "SELECT cm.id
+                FROM {course_modules} cm
+                JOIN {modules} m ON m.id = cm.module and m.name = 'resource'
+                JOIN {context} ctx ON ctx.instanceid = cm.id AND ctx.contextlevel = 70
+                JOIN {files} f ON f.contextid = ctx.id AND f.component = 'mod_resource'
+                    AND f.filesize > 0 and f.filename != '.' AND f.mimetype = :mimetype
+                WHERE cm.course = :courseid";
+            $cmids = $DB->get_fieldset_sql(
+                $sql,
+                ['courseid' => $courseid, 'mimetype' => $resourcetype == 'pdf' ? 'application/pdf' : 'text/html']
+            );
+
+        } else if ($resourcetype == 'page') {
+            $cmids = [];
+            $pagecms = $modinfo->get_instances_of('page');
+            foreach ($pagecms as $pagecm) {
+                $cmids[] = $pagecm->id;
+            }
+        } else {
+            throw new \invalid_parameter_exception("Invalid resource type $resourcetype");
+        }
+
+        $result = [];
+        if (!empty($cmids)) {
+            foreach ($cmids as $cmid) {
+                $cm = $modinfo->get_cm($cmid);
+                if (!$cm->onclick) {
+                    $result[] = $cm->id;
+                }
+            }
+        }
+
+        $cache->set($cachekey, $result);
+        return $result;
     }
 
     /**
