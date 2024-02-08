@@ -82,7 +82,9 @@ class util {
             $resourcetype = $isresource ? self::get_mod_resource_icon_name($cm->context->id) : '';
 
             $modalallowed = ($resourcetype && in_array($resourcetype, $allowedmodmodals['resources']))
-                || in_array($cmrecord->modname, $allowedmodmodals['resources']) || in_array($cmrecord->modname, $allowedmodmodals['modules']);
+                || in_array(
+                    $cmrecord->modname, $allowedmodmodals['resources']) || in_array($cmrecord->modname, $allowedmodmodals['modules']
+                );
 
             $pluginfileurl = $isresource ? \format_tiles\output\course_output::plugin_file_url($cm) : '';
             if ($modalallowed && $cmrecord->modname === 'url') {

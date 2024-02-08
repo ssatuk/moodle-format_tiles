@@ -1385,14 +1385,14 @@ class course_output implements \renderable, \templatable {
         // Sophisticated editors wanting to use other params can enter the embed URL directly and won't need this.
 
         // First match type - "watch" URL with no other params.
-        // E.g. https://www.youtube.com/watch?v=abcdefghijk ==> https://www.youtube.com/embed/abcdefghijk
+        // E.g. https://www.youtube.com/watch?v=abcdefghijk ==> https://www.youtube.com/embed/abcdefghijk transform.
         $pattern = '/^(http(s)??\:\/\/)?(www\.)?((youtube\.com\/watch\?v=[a-zA-Z0-9\-_]{11}))$/';
         if (preg_match($pattern, $url)) {
             return str_replace('watch?v=', 'embed/', $url);
         }
 
         // Second match type - "youtu.be" URL with no other params.
-        // E.g. https://youtu.be/abcdefghijk ==> https://www.youtube.com/embed/abcdefghijk
+        // E.g. https://youtu.be/abcdefghijk ==> https://www.youtube.com/embed/abcdefghijk transform.
         $pattern = '/^(http(s)??\:\/\/)?(www\.)?((youtu\.be\/([a-zA-Z0-9\-_]{11})))$/';
         $matches = null;
         preg_match($pattern, $url, $matches);
@@ -1401,14 +1401,14 @@ class course_output implements \renderable, \templatable {
         }
 
         // Third match type - "shorts" URL with no other params.
-        // E.g. https://www.youtube.com/shorts/abcdefghijk ==> https://www.youtube.com/embed/abcdefghijk
+        // E.g. https://www.youtube.com/shorts/abcdefghijk ==> https://www.youtube.com/embed/abcdefghijk transform.
         $pattern = '/^(http(s)??\:\/\/)?(www\.)?((youtube\.com\/shorts\/[a-zA-Z0-9\-_]{11}))$/';
         if (preg_match($pattern, $url)) {
             return str_replace('shorts/', 'embed/', $url);
         }
 
         // Vimeo.
-        // E.g. https://vimeo.com/347119375 ==> https://player.vimeo.com/video/347119375
+        // E.g. https://vimeo.com/347119375 ==> https://player.vimeo.com/video/347119375 transform.
         $pattern = '/^(https?:\/\/)?(www.)?vimeo.com\/([a-zA-Z0-9\-_]{6,11})$/';
         $matches = null;
         preg_match($pattern, $url, $matches);
@@ -1423,10 +1423,10 @@ class course_output implements \renderable, \templatable {
      * @param string $url
      * @return bool
      */
-    public static function is_video_url(string $url): bool{
+    public static function is_video_url(string $url): bool {
         $patterns = [
             '/^(http(s)??\:\/\/)?(www\.)?(youtube\.com\/|youtu\.be\/)/',
-            '/^(https?:\/\/)?(www.)?vimeo.com\//'
+            '/^(https?:\/\/)?(www.)?vimeo.com\//',
         ];
         foreach ($patterns as $pattern) {
             if (preg_match($pattern, $url)) {
