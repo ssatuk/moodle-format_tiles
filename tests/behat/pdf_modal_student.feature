@@ -114,6 +114,7 @@ Feature: PDFs can be set to open in modal windows
     And I wait until the page is ready
     And "Test PDF" "dialogue" should not be visible
     And I click on close button for tile "1"
+    And Tiles JS config element exists on page
     And I log out tiles
 
   # Now the same again for student with subtiles on

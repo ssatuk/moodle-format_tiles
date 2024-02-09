@@ -78,6 +78,30 @@ class behat_format_tiles extends behat_base {
                 $this->getSession()
             );
         }
+
+        $jsscript = "(function(){return $('link[href*=\"/course/format/tiles/styles_extra.php\"]').length;})();";
+        $stylesincluded = $this->getSession()->evaluateScript($jsscript) === 1;
+        if (!$stylesincluded) {
+            throw new \Behat\Mink\Exception\ExpectationException(
+                "<link> tag for styles_extra.php not found",
+                $this->getSession()
+            );
+        }
+    }
+
+    /**
+     * Check if JS config <div> appears on page.
+     * @Given /^Tiles JS config element exists on page$/
+     * @return void
+     */
+    public function format_tiles_js_config_exists_on_page() {
+        $script = "(function(){return $('#format-tiles-js-config').length;})()";
+        $result = $this->getSession()->evaluateScript($script);
+        if ($result !== 1) {
+            throw new \Behat\Mink\Exception\ExpectationException(
+                "Tiles JS config div not found", $this->getSession()
+            );
+        }
     }
 
     /**
