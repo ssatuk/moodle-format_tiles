@@ -100,6 +100,7 @@ Feature: PDFs can be set to open in modal windows
     And I wait until the page is ready
     And I click format tiles activity "Test PDF"
     And I wait until the page is ready
+    And I wait "1" seconds
     And "Test PDF" "dialogue" should be visible
     And format_tiles progress for "resource" called "Test PDF" in "Course 1" is "0" in the database
     And I click on "Mark as done" "button" in the "Test PDF" "dialogue"
