@@ -52,7 +52,8 @@ class behat_format_tiles extends behat_base {
     /**
      * Check a tile has expected colour (bg and border top).
      * @Given /^Tile "(?P<tilenumber_int>(?:[\d]|\\")*)" has colour "(?P<colour_string>(?:[^"]|\\")*)"$/
-     * @param string $colourhex
+     * @param int $tilenumber
+     * @param string $colour
      * @return void
      */
     public function format_tiles_tile_has_colour(int $tilenumber, string $colour) {

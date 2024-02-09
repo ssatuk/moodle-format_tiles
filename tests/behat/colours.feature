@@ -11,7 +11,7 @@ Feature: Check that tile colours are correct
       | fullname | shortname | format | coursedisplay | numsections | enablecompletion | basecolour |
       | Course 1 | C1        | tiles  | 0             | 7           | 1                |  #1670CC   |
       | Course 2 | C2        | tiles  | 0             | 7           | 1                |  #009681   |
-        And the following "activities" exist:
+    And the following "activities" exist:
       | activity | name         | intro           | course | idnumber | section | visible | completion |
       | page     | Test page 1a | Test page intro | C1     | page1a   | 1       | 1       | 1          |
       | page     | Test page 1b | Test page intro | C1     | page1b   | 1       | 1       | 1          |
@@ -33,7 +33,7 @@ Feature: Check that tile colours are correct
       | usejavascriptnav       | 1        | format_tiles |
       | tilestyle              | 1        | format_tiles |
 
-@javascript
+  @javascript
   Scenario: Student correctly sees blue base colour in course 1
     When I log in as "student1"
     And I am on "Course 1" course homepage
