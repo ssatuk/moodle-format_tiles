@@ -758,10 +758,13 @@ body.jsenabled.format-tiles #collapsiblesec0 {
     min-height: 42px;
     display: flex;
     justify-content: space-between;
-    width: calc(100%);
+    width: 100%;
 }
 .format-tiles #abovetiles.sec-zero-closed {
     width: calc(100% - 80px);
+}
+.format-tiles #abovetiles.section-zero-empty {
+    width: calc(100% - 40px);
 }
 
 body.format-tiles.jsenabled .course-content .headerabovetiles {
@@ -1822,6 +1825,10 @@ body.format-tiles.jsenabled .course-content .headerabovetiles {
     body.jsenabled.format-tiles .above-tiles-buttons {
         position: absolute;
         right: 0;
+        min-width: 100px;
+    }
+    body.jsenabled.format-tiles .section-zero-empty .above-tiles-buttons {
+        min-width: 50px;
     }
 }
 

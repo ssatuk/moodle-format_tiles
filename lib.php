@@ -1161,12 +1161,19 @@ function format_tiles_before_standard_html_head(): string {
  */
 function format_tiles_before_footer() {
     global $PAGE;
+    if (($PAGE->course->format ?? null) !== 'tiles') {
+        // This is called on every page so check that we are in a tiles course first.
+        return '';
+    }
+
     $html = '';
+
     $oncourseviewpagenotediting = $PAGE->pagetype == 'course-view-tiles' && !$PAGE->user_is_editing();
     $modviewpageneedsjs = false;
-    $allowedmodals = format_tiles\util::allowed_modal_modules();
+    $allowedmodals = null;
 
     if (get_config('format_tiles', 'usecourseindex')) {
+        $allowedmodals = format_tiles\util::allowed_modal_modules();
         if (!empty($allowedmodals['resources'] || !empty($allowedmodals['modules']))) {
             // On /mod/xxx/view.php or course/view.php page passing in cmid, may need to launch modal JS.
             // This is because the course index needs the JS.  So get details.
@@ -1177,6 +1184,7 @@ function format_tiles_before_footer() {
     }
 
     if ($oncourseviewpagenotediting || $modviewpageneedsjs) {
+        $allowedmodals = $allowedmodals === null ? format_tiles\util::allowed_modal_modules() : $allowedmodals;
         $jsconfig = format_tiles\output\course_output::get_js_config_data($PAGE->course->id, $allowedmodals);
         $renderer = $PAGE->get_renderer('format_tiles');
         $html .= $renderer->render_from_template('format_tiles/js-config', ['tiles_js_config' => $jsconfig]);

@@ -62,7 +62,7 @@ class util {
      * @throws \moodle_exception
      */
     public static function get_course_mod_info(int $courseid, int $cmid): ?object {
-        global $CFG, $DB;
+        global $DB;
         $coursecontext = \context_course::instance($courseid);
         $modinfo = get_fast_modinfo($courseid);
         $cm = $modinfo->get_cm($cmid);

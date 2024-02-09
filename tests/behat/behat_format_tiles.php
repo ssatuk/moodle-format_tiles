@@ -48,6 +48,55 @@ class behat_format_tiles extends behat_base {
         $this->sub_tiles_on_off($coursefullname, 1);
     }
 
+
+    /**
+     * Check a tile has expected colour (bg and border top).
+     * @Given /^Tile "(?P<tilenumber_int>(?:[\d]|\\")*)" has colour "(?P<colour_string>(?:[^"]|\\")*)"$/
+     * @param string $colourhex
+     * @return void
+     */
+    public function format_tiles_tile_has_colour(int $tilenumber, string $colour) {
+        $selector = "#tile-$tilenumber";
+        $property = 'border-top-color';
+        $expectedvalue = "rgb($colour)";
+        $value = $this->element_get_css_value($selector, $property);
+        if ($value != $expectedvalue) {
+            throw new \Behat\Mink\Exception\ExpectationException(
+                "The property '$property' for the selector '$selector' is '$value' not 'rgb($expectedvalue)'",
+                $this->getSession()
+            );
+        }
+
+        $selector = "#tile-$tilenumber .tile-bg";
+        $property = 'background-color';
+        $value = $this->element_get_css_value($selector, $property);
+        $expectedvalue = "rgba($colour, 0.05)";
+        if ($value != $expectedvalue) {
+            throw new \Behat\Mink\Exception\ExpectationException(
+                "The property '$property' for the selector '$selector' is '$value' not '$expectedvalue'",
+                $this->getSession()
+            );
+        }
+    }
+
+    /**
+     * Get a CSS property for an element.
+     *
+     * @param string $selector jquery selector e.g. '#tile-1'
+     * @param string $property which CSS property e.g. 'border-top-color'
+     * @return string $value
+     */
+    private function element_get_css_value(string $selector, string $property): string {
+        $script = "(function(){return $('$selector').css('$property');})();";
+        $result = $this->getSession()->evaluateScript($script);
+        if (gettype($result) == 'string') {
+            return $result;
+        }
+        throw new \Behat\Mink\Exception\ExpectationException(
+            "Error getting CSS property $property for $selector", $this->getSession()
+        );
+    }
+
     /**
      * * Set course format option for subtiles off for course.
      *
