@@ -92,6 +92,7 @@ class styles_extra implements \renderable, \templatable {
             );
         }
         $outputdata['shade_heading_bar'] = $this->shadeheadingbar;
+        $outputdata['ismoodle42minus'] = \format_tiles\util::get_moodle_release() <= 4.2;
 
         return $outputdata;
     }
