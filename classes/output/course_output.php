@@ -1057,7 +1057,7 @@ class course_output implements \renderable, \templatable {
                 $modiconurl = $mod->get_icon_url($output);
             }
             $moduleobject['icon'] = ['url' => $modiconurl, 'label' => $mod->name];
-
+            $moduleobject['tileicon'] = false; // Template is shared with top level tile so make clear to template we are in subtile.
             $moduleobject['purpose'] = plugin_supports('mod', $mod->modname, FEATURE_MOD_PURPOSE, MOD_PURPOSE_OTHER);
         }
 

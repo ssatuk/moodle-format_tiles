@@ -213,10 +213,7 @@ class styles_extra {
             // Add errors to start of CSS as a comment for debugging.
             $csscontent = '/*' . implode(', ', $errors) . '*/' . $csscontent;
         }
-        $csscontent = trim(preg_replace(
-            '@({)\s+|(\;)\s+|\R|\s{2,}@is', '$1$2 ', $csscontent
-        ));
-
+        $csscontent = \core_minify::css($csscontent);
         header('Content-Length: ' . strlen($csscontent));
         echo $csscontent;
         die();
