@@ -208,7 +208,6 @@ class styles_extra {
         header('Last-Modified: '. gmdate('D, d M Y H:i:s', time()) .' GMT');
         header('Accept-Ranges: none');
         header('Content-Type: text/css; charset=utf-8');
-        header('Content-Length: ' . strlen($csscontent));
 
         if (!empty($errors) && ($CFG->debug ?? false)) {
             // Add errors to start of CSS as a comment for debugging.
@@ -217,6 +216,8 @@ class styles_extra {
         $csscontent = trim(preg_replace(
             '@({)\s+|(\;)\s+|\R|\s{2,}@is', '$1$2 ', $csscontent
         ));
+
+        header('Content-Length: ' . strlen($csscontent));
         echo $csscontent;
         die();
     }
