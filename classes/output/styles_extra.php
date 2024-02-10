@@ -159,7 +159,7 @@ class styles_extra {
         if (!self::using_tile_fitter()) {
             return false;
         }
-        return (bool)self::get_tile_fitter_max_width($courseid);
+        return !self::get_tile_fitter_max_width($courseid);
     }
 
     /**
