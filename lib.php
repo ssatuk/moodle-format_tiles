@@ -1128,26 +1128,10 @@ function format_tiles_before_standard_html_head(): string {
     }
 
     if ($courseid) {
-        $format = course_get_format($courseid);
-        $course = $format->get_course();
-        $basecolour = str_replace(
-            '#', '',
-            \format_tiles\output\styles_extra::get_tile_base_colour($course->basecolour ?? '')
-        );
-
-        // Will be 1 or 0 for use or not use now.
-        // (Legacy values could be 'standard' for not use, or a colour for use, but in that case treat as 'use').
-        $shadeheadingbar = $course->courseusebarforheadings != 0 && $course->courseusebarforheadings != 'standard'
-            ? 1 : 0;
-
-        $themerev = theme_get_revision();
-        $themename = $PAGE->theme->name;
-
-        $stylesurl = new moodle_url(
-            "/course/format/tiles/styles_extra.php/$themename/$themerev/$courseid/$basecolour/$shadeheadingbar"
-        );
-
-        $html .= '<link rel="stylesheet" type="text/css" href="' . $stylesurl->out() . '">';
+        $cssurl = \format_tiles\output\styles_extra::get_css_url($courseid);
+        if ($cssurl) {
+            $html .= '<link rel="stylesheet" type="text/css" href="' . $cssurl->out() . '">';
+        }
     }
 
     return $html;

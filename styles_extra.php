@@ -23,9 +23,9 @@
  */
 
 define('NO_DEBUG_DISPLAY', true);
+// We cannot use define('ABORT_AFTER_CONFIG', true) since we need to access get_config() etc).
 
 require_once("../../../config.php");
-require_once("$CFG->dirroot/course/format/lib.php");
 require_once("$CFG->libdir/configonlylib.php");
 
 require_login();
@@ -33,21 +33,25 @@ require_login();
 $basecolour = null;
 $shadeheadingbar = false;
 $courseid = null;
+$usingtilefitter = false;
+$tilefittermaxwidth = null;
 
 $csscontent = '';
 $errors = [];
 
-$expectednumberofslashargs = 5;
+$expectednumberofslashargs = 7;
 $slashargument = min_get_slash_argument();
 if ($slashargument) {
     $slashargument = ltrim($slashargument, '/');
     $slashargs = explode('/', $slashargument, $expectednumberofslashargs);
     $countfoundargs = count($slashargs);
     if ($countfoundargs == $expectednumberofslashargs) {
-        list($themename, $themerev, $courseid, $basecolour, $shadeheadingbar) = $slashargs;
+        list($themename, $themerev, $courseid, $basecolour, $shadeheadingbar, $usingtilefitter, $tilefittermaxwidth) = $slashargs;
         $basecolour = '#' . min_clean_param($basecolour, 'SAFEDIR');
         $shadeheadingbar = min_clean_param($shadeheadingbar, 'INT') ? 1 : 0;
         $courseid = min_clean_param($courseid, 'INT');
+        $usingtilefitter = min_clean_param($usingtilefitter, 'INT');
+        $tilefittermaxwidth = min_clean_param($tilefittermaxwidth, 'INT');
     } else {
         // Some slash args missing so add a comment to CSS for debugging. Default values will be used below.
         $errors[] = "Expected $expectednumberofslashargs found $countfoundargs";
@@ -66,18 +70,25 @@ if (!$basecolour || strlen($basecolour) !== 7) {
 if ($courseid) {
     // Set course context if present so that any use of $PAGE elsewhere works correctly.
     $PAGE->set_context(context_course::instance($courseid));
-    $csscontent .= \format_tiles\output\styles_extra::get_tilefitter_extra_css($courseid) . "\n";
+    if ($usingtilefitter) {
+        $csscontent .= \format_tiles\output\styles_extra::get_tilefitter_extra_css($courseid, $tilefittermaxwidth) . "\n";
+    }
 } else {
     $PAGE->set_context(context_system::instance());
 }
 
-$templateable = new \format_tiles\output\styles_extra($basecolour, $shadeheadingbar);
-$data = $templateable->export_for_template($OUTPUT);
-$renderer = $PAGE->get_renderer('format_tiles');
-$csscontent .= $renderer->render_from_template('format_tiles/styles_extra', $data);
+$data = \format_tiles\output\styles_extra::export_for_template($basecolour, $shadeheadingbar);
+$m = new Mustache_Engine;
+$csscontent .= $m->render(
+    file_get_contents("$CFG->dirroot/course/format/tiles/templates/styles_extra.mustache"),
+    $data
+);
 
 // Site admin may have added additional CSS via the plugin settings.
-$csscontent .= get_config('format_tiles', 'customcss') ?? '';
+$adminsetting = get_config('format_tiles', 'customcss') ?? '';
+if (trim($adminsetting)) {
+    $csscontent .= "/*admin*/ " . trim($adminsetting);
+}
 
 if (trim($csscontent)) {
     \format_tiles\output\styles_extra::send_uncached_css($csscontent, $errors);

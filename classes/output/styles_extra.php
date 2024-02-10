@@ -23,53 +23,27 @@
  */
 namespace format_tiles\output;
 
-defined('MOODLE_INTERNAL') || die();
-global $CFG;
-require_once($CFG->dirroot .'/course/format/lib.php');
-
 /**
- * Prepares data for adding extra styles via template to provide custom colour for tiles
+ * Prepares data for adding extra styles via template to provide custom colour for tiles.
  *
  * @package format_tiles
  * @copyright 2018 David Watson {@link http://evolutioncode.uk}
  * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class styles_extra implements \renderable, \templatable {
-    /**
-     * The hex code for the base colour used in this course.
-     * @var
-     */
-    private $basecolourhex;
-
-    /**
-     * Whether the shade heading bar is set to yes for this course.
-     * @var
-     */
-    private $shadeheadingbar;
-
-    /**
-     * Styles extra constructor
-     * @param string $basecolourhex the hex code for the base colour used in this course.
-     * @param bool $shadeheadingbar whether the shade heading bar is set to yes for this course.
-     */
-    public function __construct(string $basecolourhex, bool $shadeheadingbar) {
-        $this->basecolourhex = $basecolourhex;
-        $this->shadeheadingbar = $shadeheadingbar;
-    }
+class styles_extra {
 
     /**
      * Export the data for the mustache template.
      * @see \format_tiles\util::width_template_data()
-     * @param \renderer_base $output
+     * @param string $basecolourhex The hex code for the base colour used in this course.
+     * @param bool $shadeheadingbar Whether the shade heading bar is set to yes for this course.
      * @return array
      * @throws \dml_exception
      * @throws \moodle_exception
      */
-    public function export_for_template($output) {
-
+    public static function export_for_template(string $basecolourhex, bool $shadeheadingbar) {
         $tilestyle = get_config('format_tiles', 'tilestyle') ?? \format_tiles\output\course_output::TILE_STYLE_STANDARD;
-
-        $basecolourrgba = $this->rgbacolour($this->basecolourhex);
+        $basecolourrgba = self::rgbacolour($basecolourhex);
         $outputdata = [
             "isstyle-$tilestyle" => true,
             'isstyle1or2' => $tilestyle == 1 || $tilestyle == 2,
@@ -91,7 +65,7 @@ class styles_extra implements \renderable, \templatable {
                 (float)get_config('format_tiles', 'phototitletitlelineheight') / 10, 1
             );
         }
-        $outputdata['shade_heading_bar'] = $this->shadeheadingbar;
+        $outputdata['shade_heading_bar'] = $shadeheadingbar;
         $outputdata['ismoodle42minus'] = \format_tiles\util::get_moodle_release() <= 4.2;
 
         return $outputdata;
@@ -103,7 +77,7 @@ class styles_extra implements \renderable, \templatable {
      * @param string $hex the colour in hex form e.g. #979797
      * @return string rgba colour
      */
-    private function rgbacolour($hex) {
+    private static function rgbacolour(string $hex) {
         list($r, $g, $b) = sscanf($hex, "#%02x%02x%02x");
         return "$r,$g,$b";
     }
@@ -149,7 +123,7 @@ class styles_extra implements \renderable, \templatable {
     /**
      * If we are not on a mobile device we may want to ensure that tiles are nicely fitted depending on our screen width.
      * E.g. avoid a row with one tile, centre the tiles on screen.  JS will handle this post page load.
-     * However we want to handle it pre-page load if we can to avoid tiles moving around once page is loaded.
+     * However, we want to handle it pre-page load if we can to avoid tiles moving around once page is loaded.
      * So we have JS send the width via AJAX on first load, and we remember the value and apply it next time using inline CSS.
      * This function gets the data to enable us to add the inline CSS.
      * This will hide the main tiles window on page load and display a loading icon instead.
@@ -158,37 +132,19 @@ class styles_extra implements \renderable, \templatable {
      * Then we can load the page immediately at that width without hiding anything.
      * The skipcheck URL param is there in case anyone gets stuck at loading icon and clicks it - they escape it for session.
      * @param int $courseid the course ID we are in.
+     * @param int $maxwidth the max width for tiles if set.
      * @see format_tiles_external::set_session_width() for where the session vars are set from JS.
      * @return string the styles to print.
      * @throws \coding_exception
      * @throws \dml_exception
      */
-    public static function get_tilefitter_extra_css(int $courseid): string {
-        global $SESSION;
-        if (!\format_tiles\util::using_js_nav()) {
-            return '';
-        }
-        if (!get_config('format_tiles', 'fittilestowidth')) {
-            return '';
-        }
-        if (\core_useragent::get_device_type() == \core_useragent::DEVICETYPE_MOBILE) {
-            return '';
-        }
-        if (optional_param('skipcheck', 0, PARAM_INT) || isset($SESSION->format_tiles_skip_width_check)) {
-            $SESSION->format_tiles_skip_width_check = 1;
-            return '';
-        }
-
-        // If session screen width has been set, send it to template so we can include in inline CSS.
-        $sessionvar = 'format_tiles_width_' . $courseid;
-        $sessionvarvalue = $SESSION->$sessionvar ?? 0;
-
-        if ($sessionvarvalue == 0) {
+    public static function get_tilefitter_extra_css(int $courseid, int $maxwidth): string {
+        if ($maxwidth == 0) {
             // If no session screen width has yet been set, we hide the tiles initially, so we can calculate correct width in JS.
             // We will remove this opacity later in JS.
             return ".format-tiles.course-$courseid.jsenabled:not(.editing) ul.tiles {opacity: 0;}";
         } else {
-            return ".format-tiles.course-$courseid.jsenabled ul.tiles {max-width: {$sessionvarvalue}px;}";
+            return ".format-tiles.course-$courseid.jsenabled ul.tiles {max-width: {$maxwidth}px;}";
         }
     }
 
@@ -200,8 +156,42 @@ class styles_extra implements \renderable, \templatable {
      * @throws \dml_exception
      */
     public static function page_needs_loading_icon(int $courseid): bool {
-        $css = self::get_tilefitter_extra_css($courseid);
-        return strpos($css, 'opacity: 0;') !== false;
+        if (!self::using_tile_fitter()) {
+            return false;
+        }
+        return (bool)self::get_tile_fitter_max_width($courseid);
+    }
+
+    /**
+     * If tile fitter has already set a max width for page, what is it?
+     * @param int $courseid
+     * @return int
+     */
+    public static function get_tile_fitter_max_width(int $courseid): int {
+        global $SESSION;
+        $var = 'format_tiles_width_' . $courseid;
+        return $SESSION->$var ?? 0;
+    }
+
+    /**
+     * Is the current user using tile fitter?
+     * @return bool
+     * @throws \coding_exception
+     * @throws \dml_exception
+     */
+    public static function using_tile_fitter(): bool {
+        global $SESSION;
+
+        if (optional_param('skipcheck', 0, PARAM_INT)) {
+            // The skipcheck param is for anyone stuck at loading icon who clicks it - they escape it for session.
+            $SESSION->format_tiles_skip_width_check = 1;
+            return false;
+        }
+
+        return \format_tiles\util::using_js_nav()
+            && get_config('format_tiles', 'fittilestowidth')
+            && \core_useragent::get_device_type() != \core_useragent::DEVICETYPE_MOBILE
+            && ($SESSION->format_tiles_skip_width_check ?? null) != 1;
     }
 
     /**
@@ -222,11 +212,46 @@ class styles_extra implements \renderable, \templatable {
 
         if (!empty($errors) && ($CFG->debug ?? false)) {
             // Add errors to start of CSS as a comment for debugging.
-            echo '/*' . implode(', ', $errors) . '*/';
-            echo $csscontent;
-        } else {
-            echo \core_minify::css($csscontent);
+            $csscontent = '/*' . implode(', ', $errors) . '*/' . $csscontent;
         }
+        $csscontent = trim(preg_replace(
+            '@({)\s+|(\;)\s+|\R|\s{2,}@is', '$1$2 ', $csscontent
+        ));
+        echo $csscontent;
         die();
+    }
+
+    /**
+     * Get the URL for the <link> tag for custom tiles styles.
+     * @param int $courseid
+     * @return \moodle_url
+     * @throws \coding_exception
+     * @throws \dml_exception
+     * @throws \moodle_exception
+     */
+    public static function get_css_url(int $courseid) {
+        global $PAGE;
+        $format = course_get_format($courseid);
+        $course = $format->get_course();
+        $basecolour = str_replace(
+            '#', '',
+            self::get_tile_base_colour($course->basecolour ?? '')
+        );
+
+        // Will be 1 or 0 for use or not use now.
+        // (Legacy values could be 'standard' for not use, or a colour for use, but in that case treat as 'use').
+        $shadeheadingbar = $course->courseusebarforheadings != 0 && $course->courseusebarforheadings != 'standard'
+            ? 1 : 0;
+
+        $themerev = theme_get_revision();
+        $themename = $PAGE->theme->name;
+
+        $usingtilefitter = self::using_tile_fitter();
+        $tilefittermaxwidth = self::get_tile_fitter_max_width($courseid);
+
+        return new \moodle_url(
+            "/course/format/tiles/styles_extra.php/"
+            . "$themename/$themerev/$courseid/$basecolour/$shadeheadingbar/$usingtilefitter/$tilefittermaxwidth"
+        );
     }
 }

@@ -16,7 +16,7 @@ Once installed:
 - an Administrator will be able to see the plugins settings under Site Administration > Plugins > Course Formats > Tiles
 
 ## Compatibility and Support
-This version of the plugin is compatible with Moodle 4.0.  Other versions are available for Moodle 3.x.
+This version of the plugin is compatible with Moodle 4.3.  Other versions are available for prior versions of Moodle.
 
 It supports the Privacy API.
 
