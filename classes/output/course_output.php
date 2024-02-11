@@ -227,7 +227,7 @@ class course_output implements \renderable, \templatable {
         $data['editing'] = $this->isediting;
         $data['sesskey'] = sesskey();
         $data['showinitialpageloadingicon'] = !$this->isediting
-            && \format_tiles\output\styles_extra::page_needs_loading_icon($this->course->id);
+            && \format_tiles\dynamic_styles::page_needs_loading_icon($this->course->id);
         $data['jsnavadminallowed'] = get_config('format_tiles', 'usejavascriptnav');
         $data['jsnavuserenabled'] = !get_user_preferences('format_tiles_stopjsnav');
         $data['usingjsnav'] = $data['jsnavadminallowed'] && $data['jsnavuserenabled'];
@@ -1057,7 +1057,7 @@ class course_output implements \renderable, \templatable {
                 $modiconurl = $mod->get_icon_url($output);
             }
             $moduleobject['icon'] = ['url' => $modiconurl, 'label' => $mod->name];
-            $moduleobject['tileicon'] = false; // Template is shared with top level tile so make clear to template we are in subtile.
+            $moduleobject['tileicon'] = false; // Template is shared with top level tile, so avoiding inheriting parent icon.
             $moduleobject['purpose'] = plugin_supports('mod', $mod->modname, FEATURE_MOD_PURPOSE, MOD_PURPOSE_OTHER);
         }
 

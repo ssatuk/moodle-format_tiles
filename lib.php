@@ -1122,16 +1122,14 @@ function format_tiles_before_standard_html_head(): string {
 
     $istilescoursefrontpage = $PAGE->pagetype == 'course-view-tiles' && $courseid
         && $PAGE->url->compare(new moodle_url('/course/view.php'), URL_MATCH_BASE);
-    if (!$istilescoursefrontpage) {
+    if (!$istilescoursefrontpage || !$courseid) {
         // We have to be careful in this function as it's called on every page (not just tiles course pages).
         return '';
     }
 
-    if ($courseid) {
-        $cssurl = \format_tiles\output\styles_extra::get_css_url($courseid);
-        if ($cssurl) {
-            $html .= '<link rel="stylesheet" type="text/css" href="' . $cssurl->out() . '">';
-        }
+    $dynamiccss = \format_tiles\dynamic_styles::get_tiles_dynamic_css($courseid);
+    if ($dynamiccss) {
+        $html .= "<style id=\"format-tiles-dynamic-css\">$dynamiccss</style>";
     }
 
     return $html;

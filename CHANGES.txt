@@ -392,4 +392,5 @@ Other
 - Fix issue 87: Full screen video failed
 - Fix issue 94: URL Resource pop-up also opens new tab/window
 - Fix issue 153: Glossary opens multiple windows
+- Fix issue 155: course scroll bar issue in Moodle 41
 - Fix issue 184: RTL activity edit menu inaccessible

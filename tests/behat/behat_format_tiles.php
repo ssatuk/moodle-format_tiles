@@ -79,12 +79,11 @@ class behat_format_tiles extends behat_base {
             );
         }
 
-        $jsscript = "(function(){return $('link[href*=\"/course/format/tiles/styles_extra.php\"]').length;})();";
+        $jsscript = "(function(){return $('style#format-tiles-dynamic-css').length;})();";
         $stylesincluded = $this->getSession()->evaluateScript($jsscript) === 1;
         if (!$stylesincluded) {
             throw new \Behat\Mink\Exception\ExpectationException(
-                "<link> tag for styles_extra.php not found",
-                $this->getSession()
+                "style tag for dynamic styles not found", $this->getSession()
             );
         }
     }

@@ -15,22 +15,71 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Tiles course format, extra styles output class
+ * Prepares CSS for Tiles dynamic styles (e.g. course specific colours).
  *
  * @package format_tiles
- * @copyright 2018 David Watson {@link http://evolutioncode.uk}
+ * @copyright 2024 David Watson {@link http://evolutioncode.uk}
  * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-namespace format_tiles\output;
+namespace format_tiles;
 
 /**
- * Prepares data for adding extra styles via template to provide custom colour for tiles.
+ * Prepares CSS for Tiles dynamic styles (e.g. course specific colours).
  *
  * @package format_tiles
- * @copyright 2018 David Watson {@link http://evolutioncode.uk}
+ * @copyright 2024 David Watson {@link http://evolutioncode.uk}
  * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class styles_extra {
+class dynamic_styles {
+
+    /**
+     * Get the tiles dynamic course CSS to be added to <head>.
+     * @param int $courseid
+     * @return string
+     * @throws \coding_exception
+     * @throws \dml_exception
+     * @throws \moodle_exception
+     */
+    public static function get_tiles_dynamic_css(int $courseid): string {
+        global $CFG;
+        require_once("$CFG->dirroot/course/format/lib.php");
+        if (!$courseid) {
+            debugging("Missing course ID");
+            return '';
+        }
+
+        $csscontent = '';
+
+        $format = course_get_format($courseid);
+        $course = $courseid ? $format->get_course() : null;
+        $basecolour = !$course ? null : self::get_tile_base_colour($course->basecolour ?? '');
+
+        // Will be 1 or 0 for use or not use now.
+        // (Legacy values could be 'standard' for not use, or a colour for use, but in that case treat as 'use').
+        $shadeheadingbar = $course->courseusebarforheadings != 0 && $course->courseusebarforheadings != 'standard'
+            ? 1 : 0;
+
+        $usingtilefitter = self::using_tile_fitter();
+        $tilefittermaxwidth = self::get_tile_fitter_max_width($courseid);
+
+        // Course specific colours.
+        $data = self::data_for_template($basecolour, $shadeheadingbar);
+        $m = new \Mustache_Engine;
+        $csscontent .= $m->render(
+            file_get_contents("$CFG->dirroot/course/format/tiles/templates/dynamic_styles.mustache"),
+            $data
+        );
+
+        // Tile fitter if used.
+        if ($usingtilefitter) {
+            $csscontent .= self::get_tilefitter_extra_css($courseid, $tilefittermaxwidth);
+        }
+
+        // Site admin may have added additional CSS via the plugin settings.
+        $csscontent .= trim(get_config('format_tiles', 'customcss') ?? '');
+
+        return $csscontent;
+    }
 
     /**
      * Export the data for the mustache template.
@@ -41,7 +90,7 @@ class styles_extra {
      * @throws \dml_exception
      * @throws \moodle_exception
      */
-    public static function export_for_template(string $basecolourhex, bool $shadeheadingbar) {
+    public static function data_for_template(string $basecolourhex, bool $shadeheadingbar) {
         $tilestyle = get_config('format_tiles', 'tilestyle') ?? \format_tiles\output\course_output::TILE_STYLE_STANDARD;
         $basecolourrgba = self::rgbacolour($basecolourhex);
         $outputdata = [
@@ -89,9 +138,11 @@ class styles_extra {
      * @return string the hex colour
      * @throws \dml_exception
      */
-    public static function get_tile_base_colour($coursebasecolour = ''): string {
+    public static function get_tile_base_colour($coursebasecolour): string {
         global $PAGE;
         $result = null;
+
+        $hexpattern = '/^#(?:[0-9a-fA-F]{3}){1,2}$/';
 
         if (!(get_config('format_tiles', 'followthemecolour'))) {
             if (!$coursebasecolour) {
@@ -102,19 +153,17 @@ class styles_extra {
             }
         } else {
             // We are following theme's main colour so find out what it is.
-            if (!$result || !preg_match('/^#[a-f0-9]{6}$/i', $result)) {
-                // Many themes including boost theme and Moove use "brandcolor" so try to get that if current theme has it.
-                $result = get_config('theme_' . $PAGE->theme->name, 'brandcolor');
-                if (!$result) {
-                    // If not got a colour yet, look where essential theme stores its brand color and try that.
-                    $result = get_config('theme_' . $PAGE->theme->name, 'themecolor');
-                }
+            // Many themes including boost theme and Moove use "brandcolor" so try to get that if current theme has it.
+            $result = get_config('theme_' . $PAGE->theme->name, 'brandcolor');
+            if (!$result) {
+                // If not got a colour yet, look where essential theme stores its brand color and try that.
+                $result = get_config('theme_' . $PAGE->theme->name, 'themecolor');
             }
         }
 
-        if (!$result || !preg_match('/^#[a-f0-9]{6}$/i', $result)) {
+        if (!$result || !preg_match($hexpattern, $result)) {
             // If still no colour set, use a default colour.
-            $result = '#1670CC';
+            $result = get_config('format_tiles', 'tilecolour1') ?? '#1670CC';
         }
         return $result;
     }
@@ -135,8 +184,6 @@ class styles_extra {
      * @param int $maxwidth the max width for tiles if set.
      * @see format_tiles_external::set_session_width() for where the session vars are set from JS.
      * @return string the styles to print.
-     * @throws \coding_exception
-     * @throws \dml_exception
      */
     public static function get_tilefitter_extra_css(int $courseid, int $maxwidth): string {
         if ($maxwidth == 0) {
@@ -169,6 +216,9 @@ class styles_extra {
      */
     public static function get_tile_fitter_max_width(int $courseid): int {
         global $SESSION;
+        if (!$courseid) {
+            return 0;
+        }
         $var = 'format_tiles_width_' . $courseid;
         return $SESSION->$var ?? 0;
     }
@@ -192,64 +242,5 @@ class styles_extra {
             && get_config('format_tiles', 'fittilestowidth')
             && \core_useragent::get_device_type() != \core_useragent::DEVICETYPE_MOBILE
             && ($SESSION->format_tiles_skip_width_check ?? null) != 1;
-    }
-
-    /**
-     * Send css to browser marked as no cache.
-     * This is based on css_send_xxx() methods in lib/csslib.php.
-     * @param string $csscontent
-     * @param array $errors
-     * @return void
-     */
-    public static function send_uncached_css(string $csscontent, array $errors) {
-        header('Cache-Control: no-cache, no-store, must-revalidate');
-        header('Expires: 0');
-        header('Content-Disposition: inline; filename="styles_extra.php"');
-        header('Last-Modified: '. gmdate('D, d M Y H:i:s', time()) .' GMT');
-        header('Accept-Ranges: none');
-        header('Content-Type: text/css; charset=utf-8');
-
-        if (!empty($errors) && ($CFG->debug ?? false)) {
-            // Add errors to start of CSS as a comment for debugging.
-            $csscontent = '/*' . implode(', ', $errors) . '*/' . $csscontent;
-        }
-        $csscontent = \core_minify::css($csscontent);
-        header('Content-Length: ' . strlen($csscontent));
-        echo $csscontent;
-        die();
-    }
-
-    /**
-     * Get the URL for the <link> tag for custom tiles styles.
-     * @param int $courseid
-     * @return \moodle_url
-     * @throws \coding_exception
-     * @throws \dml_exception
-     * @throws \moodle_exception
-     */
-    public static function get_css_url(int $courseid) {
-        global $PAGE;
-        $format = course_get_format($courseid);
-        $course = $format->get_course();
-        $basecolour = str_replace(
-            '#', '',
-            self::get_tile_base_colour($course->basecolour ?? '')
-        );
-
-        // Will be 1 or 0 for use or not use now.
-        // (Legacy values could be 'standard' for not use, or a colour for use, but in that case treat as 'use').
-        $shadeheadingbar = $course->courseusebarforheadings != 0 && $course->courseusebarforheadings != 'standard'
-            ? 1 : 0;
-
-        $themerev = theme_get_revision();
-        $themename = $PAGE->theme->name;
-
-        $usingtilefitter = self::using_tile_fitter();
-        $tilefittermaxwidth = self::get_tile_fitter_max_width($courseid);
-
-        return new \moodle_url(
-            "/course/format/tiles/styles_extra.php/"
-            . "$themename/$themerev/$courseid/$basecolour/$shadeheadingbar/$usingtilefitter/$tilefittermaxwidth"
-        );
     }
 }
