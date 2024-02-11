@@ -63,7 +63,7 @@ class dynamic_styles {
         $tilefittermaxwidth = self::get_tile_fitter_max_width($courseid);
 
         // Course specific colours.
-        $data = self::data_for_template($basecolour, $shadeheadingbar);
+        $data = self::data_for_template($basecolour, $shadeheadingbar, $course->courseusesubtiles ?? false);
         $m = new \Mustache_Engine;
         $csscontent .= $m->render(
             file_get_contents("$CFG->dirroot/course/format/tiles/templates/dynamic_styles.mustache"),
@@ -86,17 +86,19 @@ class dynamic_styles {
      * @see \format_tiles\util::width_template_data()
      * @param string $basecolourhex The hex code for the base colour used in this course.
      * @param bool $shadeheadingbar Whether the shade heading bar is set to yes for this course.
+     * @param bool $usesubtiles Whether the course uses subtiles.
      * @return array
      * @throws \dml_exception
      * @throws \moodle_exception
      */
-    public static function data_for_template(string $basecolourhex, bool $shadeheadingbar) {
+    public static function data_for_template(string $basecolourhex, bool $shadeheadingbar, bool $usesubtiles) {
         $tilestyle = get_config('format_tiles', 'tilestyle') ?? \format_tiles\output\course_output::TILE_STYLE_STANDARD;
-        $basecolourrgba = self::rgbacolour($basecolourhex);
+        $basecolourrgb = self::rgbcolour($basecolourhex);
         $outputdata = [
             "isstyle-$tilestyle" => true,
             'isstyle1or2' => $tilestyle == 1 || $tilestyle == 2,
-            'base_colour_rgba' => $basecolourrgba,
+            'base_colour_rgb' => $basecolourrgb,
+            'usesubtiles' => $usesubtiles
         ];
 
         if (get_config('format_tiles', 'allowphototiles')) {
@@ -121,12 +123,12 @@ class dynamic_styles {
     }
 
     /**
-     * Convert hex colour from plugin settings admin page to RGBA
+     * Convert hex colour from plugin settings admin page to RGB
      * so that can add transparency to it when used as background
      * @param string $hex the colour in hex form e.g. #979797
-     * @return string rgba colour
+     * @return string rgb colour
      */
-    private static function rgbacolour(string $hex) {
+    private static function rgbcolour(string $hex) {
         list($r, $g, $b) = sscanf($hex, "#%02x%02x%02x");
         return "$r,$g,$b";
     }

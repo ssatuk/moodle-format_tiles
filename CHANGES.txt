@@ -376,7 +376,7 @@ Other
 - Fixes issue #152 filter buttons
 - Fixes issue #153 glossary multiple windows
 
-4.3.0.0 BETA (2024020200)
+4.3.0.x BETA (2024020200+)
 =========================
 - Moodle 4.3 compatibility (including completion control and editing mode fixes)
 - Add new database table mdl_format_tiles_tile_options to store photo/icon information
@@ -393,4 +393,5 @@ Other
 - Fix issue 94: URL Resource pop-up also opens new tab/window
 - Fix issue 153: Glossary opens multiple windows
 - Fix issue 155: course scroll bar issue in Moodle 41
+- Fix issue 166: bullet points disappear in edit mode
 - Fix issue 184: RTL activity edit menu inaccessible
