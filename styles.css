@@ -14,7 +14,7 @@
     margin-top: 10px;
     list-style: none;
 }
-.format-tiles .course-content li.section ul {
+.format-tiles .course-content li.section ul.format-tiles-cm-list {
     list-style: none;
 }
 
