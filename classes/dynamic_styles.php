@@ -98,7 +98,7 @@ class dynamic_styles {
             "isstyle-$tilestyle" => true,
             'isstyle1or2' => $tilestyle == 1 || $tilestyle == 2,
             'base_colour_rgb' => $basecolourrgb,
-            'usesubtiles' => $usesubtiles
+            'usesubtiles' => $usesubtiles,
         ];
 
         if (get_config('format_tiles', 'allowphototiles')) {

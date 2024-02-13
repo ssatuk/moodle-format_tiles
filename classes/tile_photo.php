@@ -341,25 +341,20 @@ class tile_photo {
      * @return bool whether successful.
      */
     public static function reset_tiles_course($courseid) {
-        global $DB;
         require_capability('moodle/site:config', \context_system::instance());
         $fs = get_file_storage();
         $fileapiparams = self::file_api_params();
 
-        // Delete tile icon choices.
-        $result = $DB->delete_records(
-                'course_format_options',
-                ['courseid' => $courseid, 'format' => 'tiles', 'name' => 'tileicon']
-            );
+        $result = format_option::unset_all_course($courseid);
 
-        // Delete section tile photos.
+        // Delete section tile files (photos).
         $result = $result && $fs->delete_area_files(
             \context_course::instance($courseid)->id,
             $fileapiparams['component'],
             $fileapiparams['filearea']
         );
 
-        return $result && format_option::unset_all_course($courseid);
+        return $result;
     }
 
     /**

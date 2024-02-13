@@ -28,40 +28,83 @@ global $PAGE, $DB, $OUTPUT;
 
 require_login();
 $systemcontext = context_system::instance();
+$pagecontext = null;
 
-// Admins only for this page.
-if (!has_capability('moodle/site:config', $systemcontext)) {
-    throw new moodle_exception('You do not have permission to perform this action.');
+$issiteadmin = has_capability('moodle/site:config', $systemcontext);
+if ($issiteadmin) {
+    // Site admins can see overview page with all courses.
+    $courseid = optional_param('courseid', 0, PARAM_INT);
+    $pagecontext = $courseid ? context_course::instance($courseid) : $systemcontext;
+} else {
+    // Teacher must pass a course ID to fix one course to which they have access.
+    $courseid = required_param('courseid', PARAM_INT);
+    $pagecontext = context_course::instance($courseid);
+    require_capability('moodle/course:update', $pagecontext);
 }
 
-$courseid = optional_param('courseid', 0, PARAM_INT);
+$pageurlparams = $courseid ? ['courseid' => $courseid] : null;
+$pageurl = new moodle_url('/course/format/tiles/editor/migratecoursedata.php', $pageurlparams);
+$PAGE->set_url($pageurl);
+$PAGE->set_context($pagecontext);
 
 if ($courseid) {
-    require_sesskey();
+    $courseurl = new moodle_url('/course/view.php', ['id' => $courseid]);
+    $course = $DB->get_record('course', ['id' => $courseid, 'format' => 'tiles']);
+    if (!$course) {
+        debugging("Course $courseid is not found or not a tiles course");
+        redirect($courseurl, get_string('error'), null, \core\output\notification::NOTIFY_ERROR);
+    }
+    $PAGE->set_heading($course->fullname);
+    $PAGE->set_course($course);
+
+    $countlegacyoptions = $DB->get_field_sql(
+        "SELECT COUNT(cfo.id) FROM {course_format_options} cfo
+                WHERE cfo.courseid = ? AND  cfo.format = 'tiles' 
+                AND cfo.name IN('tilephoto', 'tileicon')",
+        [$courseid]
+    );
+    if (!$countlegacyoptions) {
+        debugging("No legacy options found for course $courseid");
+        redirect($courseurl, get_string('error'), null, \core\output\notification::NOTIFY_ERROR);
+    }
+
+    // In this case we need to process the course now, if sesskey is present.
+    $sesskey = optional_param('sesskey', '', PARAM_TEXT);
+    if ($sesskey) {
+        require_sesskey();
+    } else {
+        // We need to ask the user if they are sure.
+        echo $OUTPUT->header();
+        echo html_writer::tag(
+            'h4', get_string('suremigratelegacyoptions', 'format_tiles', $countlegacyoptions),
+            ['class' => 'mb-3']
+        );
+        $continueurl = new moodle_url($pageurl, ['sesskey' => sesskey()]);
+        echo html_writer::link($continueurl, get_string('continue'), ['class' => 'btn btn-danger']);
+        echo html_writer::link($courseurl, get_string('cancel'), ['class' => 'btn btn-secondary ml-2']);
+        echo $OUTPUT->footer();
+        die();
+    }
+    \format_tiles\format_option::migrate_legacy_format_options($courseid);
+    \core\notification::info(
+        get_string('migratedcourseid', 'format_tiles', $courseid)
+            . '&nbsp;' . html_writer::link($courseurl, $course->fullname)
+    );
+    redirect($issiteadmin ? $pageurl->out_omit_querystring(): $courseurl);
 }
 
-$pageurl = new moodle_url('/course/format/tiles/editor/migratecoursedata.php');
-$settingsurl = new moodle_url('/admin/settings.php', ['section' => 'formatsettingtiles']);
+if (!$issiteadmin) {
+    throw new \Exception("Not allowed");
+}
 
-$PAGE->set_url($pageurl);
-$PAGE->set_context($systemcontext);
+// If we reach here we are not looking at a specific course - show admin full list of courses.
+$settingsurl = new moodle_url('/admin/settings.php', ['section' => 'formatsettingtiles']);
 $PAGE->set_heading(get_string('admintools', 'format_tiles'));
 $PAGE->navbar->add(get_string('administrationsite'), new moodle_url('/admin/search.php'));
 $PAGE->navbar->add(get_string('plugins', 'admin'), new moodle_url('/admin/category.php', ['category' => 'modules']));
 $PAGE->navbar->add(get_string('courseformats'), new moodle_url('/admin/category.php', ['category' => 'formatsettings']));
 $PAGE->navbar->add(get_string('pluginname', 'format_tiles'), $settingsurl);
 $PAGE->navbar->add(get_string('migratecoursedata', 'format_tiles'));
-
-if ($courseid) {
-    // In this case we need to process the course now.
-    if (!$DB->record_exists('course', ['id' => $courseid, 'format' => 'tiles'])) {
-        \core\notification::error(get_string('error'));
-        redirect($pageurl);
-    }
-    \format_tiles\format_option::migrate_legacy_format_options($courseid);
-    \core\notification::info(get_string('migratedcourseid', 'format_tiles', $courseid));
-    redirect($pageurl);
-}
 
 $legacycourses = $DB->get_records_sql(
 "SELECT * FROM
@@ -93,7 +136,7 @@ foreach ($legacycourses as $legacycourse) {
         $legacycourse->newoptions,
         html_writer::link(
             new moodle_url('/course/format/tiles/editor/migratecoursedata.php',
-                ['courseid' => $legacycourse->courseid, 'sesskey' => sesskey()]),
+                ['courseid' => $legacycourse->courseid]),
             get_string('migratenow', 'format_tiles'),
             ['class' => 'btn btn-primary']
         ),

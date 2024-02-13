@@ -418,3 +418,4 @@ $string['unmigratedcoursesintro'] = 'The following {$a} courses appear not to ha
 $string['legacytiledata'] = 'Legacy tile data count';
 $string['newtiledata'] = 'New tile data count';
 $string['migratenow'] = 'Migrate now';
+$string['suremigratelegacyoptions'] = 'Are you sure you want to migrate {$a} tile photo or icon choices for this course?';

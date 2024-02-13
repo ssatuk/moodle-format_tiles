@@ -163,10 +163,17 @@ class format_option {
      * @param int $courseid
      * @return bool
      */
-    public static function unset_all_course(int $courseid) {
+    public static function unset_all_course(int $courseid): bool {
         global $DB;
         try {
-            return $DB->delete_records('format_tiles_tile_options', ['courseid' => $courseid]);
+            $result = $DB->delete_records('format_tiles_tile_options', ['courseid' => $courseid]);
+
+            // Delete legacy tile icon choices.
+            return $result && $DB->delete_records_select(
+                'course_format_options',
+                "courseid = :courseid AND format = 'tiles' AND name IN('tilephoto', 'tileicon')",
+                ['courseid' => $courseid]
+            );
         } catch (\Exception $e) {
             debugging('Could not unset records ' . $e->getMessage(), DEBUG_DEVELOPER);
             return false;

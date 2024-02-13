@@ -33,7 +33,8 @@ $courseid = required_param('courseid', PARAM_INT);
 require_login($courseid);
 require_capability('moodle/site:config', context_system::instance());
 
-if (optional_param('sure', 0, PARAM_INT)) {
+if (optional_param('sesskey', '', PARAM_TEXT)) {
+    require_sesskey();
     $result = \format_tiles\tile_photo::reset_tiles_course($courseid);
     redirect(
         new moodle_url('/course/view.php', ['id' => $courseid]),
@@ -53,7 +54,7 @@ if (optional_param('sure', 0, PARAM_INT)) {
     $message = html_writer::div(
     html_writer::div(get_string('resetalltilessure', 'format_tiles'), 'mb-2')
         . html_writer::link(
-            new moodle_url('/course/format/tiles/editor/reset.php', ['courseid' => $courseid, 'sure' => 1]),
+            new moodle_url('/course/format/tiles/editor/reset.php', ['courseid' => $courseid, 'sesskey' => sesskey()]),
             html_writer::tag('span', get_string('reset'), ['class' => 'btn btn-danger mr-2'])
         )
         . html_writer::link(

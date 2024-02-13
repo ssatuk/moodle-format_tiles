@@ -243,13 +243,11 @@ class course_output implements \renderable, \templatable {
 
         if ($data['canedit'] && \format_tiles\format_option::needs_migration_incomplete_warning($this->course->id)) {
             $message = get_string('coursephotomigrationincomplete', 'format_tiles');
-            if (is_siteadmin($USER->id)) {
-                $message .= \html_writer::link(
-                    new \moodle_url('/course/format/tiles/editor/migratecoursedata.php'),
-                    '<i class="icon fa fa-cog mr-1"></i>' . get_string('fixproblems', 'format_tiles'),
-                    ['class' => 'ml-1']
-                );
-            }
+            $message .= \html_writer::link(
+                new \moodle_url('/course/format/tiles/editor/migratecoursedata.php', ['courseid' => $this->course->id]),
+                '<i class="icon fa fa-cog mr-1"></i>' . get_string('fixproblems', 'format_tiles'),
+                ['class' => 'ml-1']
+            );
             $data['editorwarnings'][] = [
                 'text' => $message,
                 'icon' => 'exclamation-triangle', 'class' => 'warning',
