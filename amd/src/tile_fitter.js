@@ -185,7 +185,7 @@ define(["jquery", "core/ajax"], function ($, ajax) {
         /**
          * Content sections need to be displayed after the row in which the tile to which they relate appears
          * e.g. we have a row of tiles 1-3 and then after that we need to have the content divs which contain the
-         * related content.  As this depends on device window size, we calcuate this on page load and after window changes
+         * related content.  As this depends on device window size, we calculate this on page load and after window changes
          * e.g. navbar button at side is pressed or browser window is resized
          * @returns {Array} of rows, with the tile they need to be displayed after, and the sections in each row
          */
