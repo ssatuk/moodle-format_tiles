@@ -352,7 +352,15 @@ class course_output implements \renderable, \templatable {
             // If there are multiple restrictions the tooltip on the subtile then shows them all.
             $ci = new \core_availability\info_module($mod);
             $fullinfo = $ci->get_full_information();
-            return \core_availability\info::format_info($fullinfo, $this->course);
+            $description = \core_availability\info::format_info($fullinfo, $this->course);
+            if ($this->moodlerelease == 4.1) {
+                // In Moodle 4.1 activities with multiple restrictions are shown with a show more link.
+                // As that approach now deprecated, this is a quick/sub-optimal fix to remove "show more" link and un-hide items.
+                $description = str_replace('d-none', '', $description);
+                return str_replace('d-block showmore', 'd-none', $description);
+            } else {
+                return $description;
+            }
         }
         $availabilityclass = $this->format->get_output_classname('content\\cm\\availability');
         $availability = new $availabilityclass(
