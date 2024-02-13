@@ -163,7 +163,7 @@ class format_tiles_testcase extends advanced_testcase {
      * Function copied from format_topics with format changed to tiles.
      */
     public function test_update_inplace_editable() {
-        global $CFG, $DB, $PAGE;
+        global $CFG, $DB;
         require_once($CFG->dirroot . '/lib/external/externallib.php');
         require_once($CFG->dirroot . '/lib/external/classes/external_api.php');
 
@@ -231,7 +231,7 @@ class format_tiles_testcase extends advanced_testcase {
      * Test video embed URL replacement
      */
     public function test_video_urls() {
-
+        $this->resetAfterTest();
         $this->assertEquals(
             'https://www.youtube.com/embed/abcdefghijk',
             \format_tiles\output\course_output::check_modify_embedded_url('https://www.youtube.com/watch?v=abcdefghijk')

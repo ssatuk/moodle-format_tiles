@@ -46,14 +46,14 @@ Feature: Teacher can allocate photos to tiles
     And I wait "1" seconds
     And "Pick a new icon or background photo" "dialogue" should be visible
     And I follow "Upload new photo"
-    And I upload "course/format/tiles/tests/fixtures/blueberries.jpg" file to "Upload new photo" filemanager
+    And I upload "course/format/tiles/tests/fixtures/images/placeholder_1.jpg" file to "Upload new photo" filemanager
     And I press "Save changes"
     And I wait until the page is ready
     And I should see "Image saved for 'Tile 1'"
     And I turn editing mode off
     And I wait until the page is ready
     And I wait "2" seconds
-    And course "Business Law" tile "1" should show photo "blueberries.jpg"
+    And course "Business Law" tile "1" should show photo "placeholder_1.jpg"
 
     And I turn editing mode on
     And I wait until the page is ready
@@ -70,7 +70,7 @@ Feature: Teacher can allocate photos to tiles
     And I wait "1" seconds
     And "Pick a new icon or background photo" "dialogue" should be visible
     And I follow "Upload new photo"
-    And I upload "course/format/tiles/tests/fixtures/strawberries.jpg" file to "Upload new photo" filemanager
+    And I upload "course/format/tiles/tests/fixtures/images/placeholder_3.jpg" file to "Upload new photo" filemanager
     And I press "Save changes"
     And I wait until the page is ready
     And I should see "Image saved for 'Tile 3'"
@@ -82,19 +82,19 @@ Feature: Teacher can allocate photos to tiles
     And "Pick a new icon or background photo" "dialogue" should be visible
     And I follow "Photo library"
     And I wait until the page is ready
-    And I click on ".photo[title=\"blueberries.jpg\"]" "css_element" in the "#icon_picker_modal" "css_element"
+    And I click on ".photo[title=\"placeholder_1.jpg\"]" "css_element" in the "#icon_picker_modal" "css_element"
     And I wait until the page is ready
 
     And I turn editing mode off
     And I wait until the page is ready
     And I wait "2" seconds
-    And course "Business Law" tile "1" should show photo "blueberries.jpg"
+    And course "Business Law" tile "1" should show photo "placeholder_1.jpg"
     And course "Business Law" tile "2" should show no photo
-    And course "Business Law" tile "3" should show photo "strawberries.jpg"
+    And course "Business Law" tile "3" should show photo "placeholder_3.jpg"
     And course "Business Law" tile "4" should show no photo
     And course "Business Law" tile "5" should show no photo
     And course "Business Law" tile "6" should show no photo
-    And course "Business Law" tile "7" should show photo "blueberries.jpg"
+    And course "Business Law" tile "7" should show photo "placeholder_1.jpg"
     And course "Business Law" tile "8" should show no photo
 
     And I backup "Business Law" course using this options:
@@ -137,13 +137,13 @@ Feature: Teacher can allocate photos to tiles
     And I turn editing mode off
     And I wait until the page is ready
     And I wait "2" seconds
-    And course "Business Law" tile "1" should show photo "blueberries.jpg"
+    And course "Business Law" tile "1" should show photo "placeholder_1.jpg"
     And course "Business Law" tile "2" should show no photo
-    And course "Business Law" tile "3" should show photo "strawberries.jpg"
+    And course "Business Law" tile "3" should show photo "placeholder_3.jpg"
     And course "Business Law" tile "4" should show no photo
     And course "Business Law" tile "5" should show no photo
     And course "Business Law" tile "6" should show no photo
-    And course "Business Law" tile "7" should show photo "blueberries.jpg"
+    And course "Business Law" tile "7" should show photo "placeholder_1.jpg"
 
     And I am on "Course 2" course homepage with editing mode on
     And I wait until the page is ready
@@ -155,7 +155,7 @@ Feature: Teacher can allocate photos to tiles
     And I follow "Photo library"
     And I wait until the page is ready
     And I wait "1" seconds
-    And I click on ".photo[title=\"blueberries.jpg\"]" "css_element" in the "#icon_picker_modal" "css_element"
+    And I click on ".photo[title=\"placeholder_1.jpg\"]" "css_element" in the "#icon_picker_modal" "css_element"
     And I wait until the page is ready
 
     And I wait "1" seconds
@@ -166,7 +166,7 @@ Feature: Teacher can allocate photos to tiles
     And I follow "Photo library"
     And I wait until the page is ready
     And I wait "1" seconds
-    And I click on ".photo[title=\"strawberries.jpg\"]" "css_element" in the "#icon_picker_modal" "css_element"
+    And I click on ".photo[title=\"placeholder_3.jpg\"]" "css_element" in the "#icon_picker_modal" "css_element"
     And I wait until the page is ready
 
     And I turn editing mode off
@@ -174,10 +174,10 @@ Feature: Teacher can allocate photos to tiles
     And I wait "2" seconds
     And course "Course 2" tile "1" should show no photo
     And course "Course 2" tile "2" should show no photo
-    And course "Course 2" tile "3" should show photo "blueberries.jpg"
+    And course "Course 2" tile "3" should show photo "placeholder_1.jpg"
     And course "Course 2" tile "4" should show no photo
     And course "Course 2" tile "5" should show no photo
-    And course "Course 2" tile "6" should show photo "strawberries.jpg"
+    And course "Course 2" tile "6" should show photo "placeholder_3.jpg"
 
     And I log out tiles
 
@@ -191,9 +191,10 @@ Feature: Teacher can allocate photos to tiles
     And I wait until the page is ready
     And I turn editing mode off
     And I wait "2" seconds
-    And course "Business Law copy 1" tile "1" should show photo "blueberries.jpg"
-    And course "Business Law copy 1" tile "3" should show photo "strawberries.jpg"
-    And course "Business Law copy 1" tile "7" should show photo "blueberries.jpg"
+    And course "Business Law copy 1" tile "1" should show photo "placeholder_1.jpg"
+    And course "Business Law copy 1" tile "3" should show photo "placeholder_3.jpg"
+    And course "Business Law copy 1" tile "7" should show photo "placeholder_1.jpg"
+
     And I log out
 
     And the following "course enrolments" exist:
@@ -203,14 +204,14 @@ Feature: Teacher can allocate photos to tiles
     And I am on "Business Law" course homepage
     And I wait until the page is ready
     And I wait "2" seconds
-    And course "Business Law" tile "1" should show photo "blueberries.jpg"
-    And course "Business Law" tile "3" should show photo "strawberries.jpg"
-    And course "Business Law" tile "7" should show photo "blueberries.jpg"
+    And course "Business Law" tile "1" should show photo "placeholder_1.jpg"
+    And course "Business Law" tile "3" should show photo "placeholder_3.jpg"
+    And course "Business Law" tile "7" should show photo "placeholder_1.jpg"
 
     And I am on "Course 2" course homepage
     And I wait until the page is ready
     And I wait "2" seconds
-    And course "Course 2" tile "3" should show photo "blueberries.jpg"
-    And course "Course 2" tile "6" should show photo "strawberries.jpg"
+    And course "Course 2" tile "3" should show photo "placeholder_1.jpg"
+    And course "Course 2" tile "6" should show photo "placeholder_3.jpg"
 
     And I log out tiles
