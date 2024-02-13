@@ -59,7 +59,7 @@ if ($courseid) {
 
     $countlegacyoptions = $DB->get_field_sql(
         "SELECT COUNT(cfo.id) FROM {course_format_options} cfo
-                WHERE cfo.courseid = ? AND  cfo.format = 'tiles' 
+                WHERE cfo.courseid = ? AND  cfo.format = 'tiles'
                 AND cfo.name IN('tilephoto', 'tileicon')",
         [$courseid]
     );
@@ -72,6 +72,12 @@ if ($courseid) {
     $sesskey = optional_param('sesskey', '', PARAM_TEXT);
     if ($sesskey) {
         require_sesskey();
+        \format_tiles\format_option::migrate_legacy_format_options($courseid);
+        \core\notification::info(
+            get_string('migratedcourseid', 'format_tiles', $courseid)
+            . '&nbsp;' . html_writer::link($courseurl, $course->fullname)
+        );
+        redirect($issiteadmin ? $pageurl->out_omit_querystring() : $courseurl);
     } else {
         // We need to ask the user if they are sure.
         echo $OUTPUT->header();
@@ -85,12 +91,6 @@ if ($courseid) {
         echo $OUTPUT->footer();
         die();
     }
-    \format_tiles\format_option::migrate_legacy_format_options($courseid);
-    \core\notification::info(
-        get_string('migratedcourseid', 'format_tiles', $courseid)
-            . '&nbsp;' . html_writer::link($courseurl, $course->fullname)
-    );
-    redirect($issiteadmin ? $pageurl->out_omit_querystring(): $courseurl);
 }
 
 if (!$issiteadmin) {

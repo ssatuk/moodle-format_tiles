@@ -471,7 +471,7 @@ define(["jquery", "core/modal_factory", "core/config", "core/templates", "core/n
                                         data.sectionnumber,
                                         data.name,
                                         data.modname === 'resource' ? `resource_${data.resourcetype}` : data.modname,
-                                        data.modname === 'url' ? data.pluginfileurl : '',
+                                        ['url', 'resource'].includes(data.modname) ? data.pluginfileurl : '',
                                         data.completionenabled ? 1 : 0,
                                         data.iscomplete ? 1 : 0,
                                         data.ismanualcompletion,

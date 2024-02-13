@@ -932,21 +932,6 @@ class format_tiles extends core_courseformat\base {
                 unset($SESSION->format_tiles_jssuccessfullyused);
             }
         }
-
-        // Course module modals.
-        $allowedmodals = format_tiles\util::allowed_modal_modules();
-        if (!empty($allowedmodals['resources'] || !empty($allowedmodals['modules']))) {
-            // If we are on course/view.php, get details.
-            $oncourseviewpagenotediting = $page->pagetype == 'course-view' && !$page->user_is_editing();
-            $launchmodalcmid = $oncourseviewpagenotediting ? optional_param('cmid', null, PARAM_INT) : null;
-            if ($launchmodalcmid) {
-                // Need to check if this cm allowed a modal.
-                $modalallowed = format_tiles\util::get_course_mod_info($page->course->id, $launchmodalcmid)->modalallowed ?? false;
-                if (!$modalallowed) {
-                    $launchmodalcmid = null;
-                }
-            }
-        }
     }
 
     /**
@@ -1170,7 +1155,20 @@ function format_tiles_before_footer() {
         $jsconfig = format_tiles\output\course_output::get_js_config_data($PAGE->course->id, $allowedmodals);
         $renderer = $PAGE->get_renderer('format_tiles');
         $html .= $renderer->render_from_template('format_tiles/js-config', ['tiles_js_config' => $jsconfig]);
-        $launchmodalcmid = $oncourseviewpagenotediting ? optional_param('cmid', null, PARAM_INT) : null;
+
+        // Course module modals.
+        $launchmodalcmid = null;
+        if (!empty($allowedmodals['resources'] || !empty($allowedmodals['modules']))) {
+            // If we are on course/view.php, get details.
+            $launchmodalcmid = $oncourseviewpagenotediting ? optional_param('cmid', null, PARAM_INT) : null;
+            if ($launchmodalcmid) {
+                // Need to check if this cm allowed a modal.
+                $modalallowed = format_tiles\util::get_course_mod_info($PAGE->course->id, $launchmodalcmid)->modalallowed ?? false;
+                if (!$modalallowed) {
+                    $launchmodalcmid = null;
+                }
+            }
+        }
         $PAGE->requires->js_call_amd(
             'format_tiles/course_mod_modal', 'init',
             [$PAGE->course->id, false, $PAGE->pagetype, $launchmodalcmid]
