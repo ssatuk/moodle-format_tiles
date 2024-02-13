@@ -155,6 +155,9 @@ class format_tiles_course_format_options_testcase extends advanced_testcase {
      * Take an old Moodle 3.11 course MBZ file and restore then check photos.
      * @dataProvider restore_from_old_format_mbz_provider
      * @param int $restoredcourseid
+     * @param array $expectedphotos
+     * @param array $actualphotos
+     * @param array $files
      * @return void
      * @throws dml_exception
      */
@@ -310,6 +313,14 @@ class format_tiles_course_format_options_testcase extends advanced_testcase {
         $filerecord->id = $storedfile->get_id();
     }
 
+    /**
+     * Set an icon to a course using simulated legacy (4.2-) format.
+     * @param int $courseid
+     * @param int $sectionnumber
+     * @param string $icon
+     * @return bool|int
+     * @throws dml_exception
+     */
     public static function helper_set_legacy_tile_icon(int $courseid, int $sectionnumber, string $icon) {
         global $DB;
         $record = (object)[
