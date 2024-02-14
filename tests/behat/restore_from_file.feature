@@ -15,7 +15,7 @@ Feature: Backup and restore of fixture mbz files including images
     And I restore "moodle-311-sample.mbz" backup into a new course using this options:
       | Schema   | Course name            | Course 2 |
       | Schema   | Course short name      | C2       |
-    
+
     And I am on "Course 2" course homepage with editing mode off
     And I wait until the page is ready
     And I wait "2" seconds
