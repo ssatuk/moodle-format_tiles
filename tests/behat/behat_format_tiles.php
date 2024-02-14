@@ -89,6 +89,25 @@ class behat_format_tiles extends behat_base {
     }
 
     /**
+     * Check a tile has expected icon.
+     * @Given /^Tile "(?P<tilenumber_int>(?:[\d]|\\")*)" should have icon "(?P<icon_string>(?:[^"]|\\")*)"$/
+     * @param int $tilenumber
+     * @param string $icon
+     * @return void
+     */
+    public function format_tiles_tile_has_icon (int $tilenumber, string $icon) {
+        $selector = "#tileicon_$tilenumber i";
+        $script = "(function(){return $('$selector').hasClass('fa-$icon');})();";
+        $result = $this->getSession()->evaluateScript($script);
+        if (!$result) {
+            throw new \Behat\Mink\Exception\ExpectationException(
+                "Icon $icon not found on tile $tilenumber",
+                $this->getSession()
+            );
+        }
+    }
+
+    /**
      * Check if JS config <div> appears on page.
      * @Given /^Tiles JS config element exists on page$/
      * @return void
@@ -513,8 +532,18 @@ class behat_format_tiles extends behat_base {
     public function tile_should_show_photo($coursename, $sectionnumber, $photoname) {
         // @codingStandardsIgnoreEnd.
         global $CFG, $DB;
-        $courseid = $DB->get_field('course', 'id', ['fullname' => $coursename], MUST_EXIST);
-        $context = context_course::instance($courseid);
+        $courseid = $DB->get_field('course', 'id', ['fullname' => $coursename], IGNORE_MISSING);
+        if (!$courseid) {
+            throw new \Behat\Mink\Exception\ExpectationException(
+                "Cannot find course ID for course $coursename",  $this->getSession()
+            );
+        }
+        $context = context_course::instance($courseid, IGNORE_MISSING);
+        if (!$context) {
+            throw new \Behat\Mink\Exception\ExpectationException(
+                "Cannot find course context for course $coursename, ID $courseid",  $this->getSession()
+            );
+        }
         $sectionid = $DB->get_field(
             'course_sections', 'id', ['course' => $courseid, 'section' => $sectionnumber], MUST_EXIST
         );
