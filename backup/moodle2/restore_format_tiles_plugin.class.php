@@ -404,26 +404,33 @@ class restore_format_tiles_plugin extends restore_format_plugin {
      */
     private static function update_file_records_sections($newcourseid, $contextid, $olditemid, $newitemid) {
         global $DB;
-        $records = $DB->get_records_select(
-            'files',
+        $fileids = $DB->get_fieldset_select(
+            'files', 'id',
             "contextid = :coursecontextid AND component = 'format_tiles'
             AND filearea = 'tilephoto' AND filepath = '/tilephoto/'
             AND itemid = :olditemid AND filesize > 0",
             ['coursecontextid' => $contextid, 'olditemid' => $olditemid]
         );
-        if (!empty($records)) {
+        if (!empty($fileids)) {
             $fs = get_file_storage();
-            foreach ($records as $record) {
-                $oldfile = $fs->get_file_by_id($record->id);
+            foreach ($fileids as $fileid) {
+                $oldfile = $fs->get_file_by_id($fileid);
                 if ($oldfile) {
                     // We have a file in the table with the old section id.
                     // However if we are merging a backup into an existing course, the new section may already have a photo too.
                     // We have to delete it if it does, before we give new photos the new section uid.
                     \format_tiles\tile_photo::delete_files_from_ids($newcourseid, $newitemid);
 
-                    // Now we can create the new file with new section id.
-                    $record->itemid = $newitemid;
-                    $fs->create_file_from_storedfile($record, $oldfile);
+                    // Issue #165 only pass in needed fields (avoid core converting a null referencefileid to zero MDL-80938).
+                    $newfilerecord = (object)[
+                        'contextid' => $oldfile->get_contextid(),
+                        'component' => $oldfile->get_component(),
+                        'filearea' => $oldfile->get_filearea(),
+                        'filepath' => $oldfile->get_filepath(),
+                        'itemid' => $newitemid, // The new file needs the new section id.
+                        'filename' => $oldfile->get_filename(),
+                    ];
+                    $fs->create_file_from_storedfile($newfilerecord, $oldfile);
 
                     // And finally delete the old file.
                     $oldfile->delete();
