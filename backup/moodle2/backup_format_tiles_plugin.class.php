@@ -62,7 +62,7 @@ class backup_format_tiles_plugin extends backup_format_plugin {
         // This is then used in the restore section as $data['sectionid'] in process_tiles_section();
         // The optiontype and optionvalue fields will be included in each <plugin_format_tiles_section> tag.
         $sectionoptions = new backup_nested_element(
-            $this->get_recommended_name(), // plugin_format_tiles_section.
+            $this->get_recommended_name(), // Expect 'plugin_format_tiles_section'.
             ['sectionid'],
             ['optiontype', 'optionvalue', 'tilesversion']
         );
@@ -72,10 +72,10 @@ class backup_format_tiles_plugin extends backup_format_plugin {
         $const2 = \format_tiles\format_option::OPTION_SECTION_ICON;
 
         // Include tiles version so we can use it on restore.
-        $tilesversion  = get_config('format_tiles', 'version');
+        $tilesversion  = filter_var(get_config('format_tiles', 'version') ?? 0, FILTER_SANITIZE_NUMBER_INT);
 
         $sectionoptions->set_source_sql(
-        "SELECT elementid as sectionid, optiontype, optionvalue, $tilesversion AS tilesversion
+            "SELECT elementid as sectionid, optiontype, optionvalue, $tilesversion AS tilesversion
                 FROM {format_tiles_tile_options}
                 WHERE courseid = :courseid
                 AND (optiontype = $const1 OR optiontype = $const2)

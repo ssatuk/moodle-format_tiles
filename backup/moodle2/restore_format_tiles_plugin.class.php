@@ -120,8 +120,9 @@ class restore_format_tiles_plugin extends restore_format_plugin {
                 $data['optiontype'],
                 $data['optionvalue']
             );
-            $fileapiparams = \format_tiles\tile_photo::file_api_params();
 
+            // Now add the mapping for the files (old section ID to new).
+            $fileapiparams = \format_tiles\tile_photo::file_api_params();
             $oldsectionid = $data['sectionid'] ?? null;
             $newsectionid = $this->task->get_sectionid();
 
@@ -214,15 +215,15 @@ class restore_format_tiles_plugin extends restore_format_plugin {
             $needsunmappedfilesadded = version_compare($backuprelease, '4.0', '<');
             if (!$needsunmappedfilesadded && version_compare($backuprelease, '4.3', '<=')) {
                 // For MBZs from Moodle 4.1, 4.2 and early beta 4.3, we may need unmapped files added.
-                // Check if there are any photo tiles with missing files.
+                // If there are any already mapped files then we assume all is ok.
                 $context = context_course::instance($newcourseid);
                 $hasmappedfiles = $DB->record_exists_sql(
-                "SELECT fo.id
+                    "SELECT fo.id
                         FROM {format_tiles_tile_options} fo
-                        LEFT OUTER JOIN {files} f ON itemid = fo.elementid AND contextid = :coursecontextid
+                        JOIN {files} f ON f.itemid = fo.elementid AND contextid = :coursecontextid
                         AND component = 'format_tiles' AND filearea = 'tilephoto' AND filepath = '/tilephoto/'
                         AND filesize > 0 AND filename != '.'
-                        WHERE fo.optiontype = :optiontype AND f.id IS NOT NULL",
+                        WHERE fo.optiontype = :optiontype",
                     ['coursecontextid' => $context->id, 'optiontype' => format_option::OPTION_SECTION_PHOTO]
                 );
                 $needsunmappedfilesadded = !$hasmappedfiles;
@@ -457,7 +458,7 @@ class restore_format_tiles_plugin extends restore_format_plugin {
         global $DB, $SESSION;
         $maxallowed = \format_tiles\course_section_manager::get_max_sections();
         $courseid = $this->step->get_task()->get_courseid();
-        $sessionvar = 'restore_dest_check_' . $courseid;//todo mutated after closed
+        $sessionvar = 'restore_dest_check_' . $courseid;
         if (isset($SESSION->$sessionvar) && $SESSION->$sessionvar > strtotime('2 minutes ago')) {
             // We've already done this very recently (probably in the same restore process) so don't need to do it now.
             return true;
