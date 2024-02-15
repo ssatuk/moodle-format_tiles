@@ -393,5 +393,12 @@ Other
 - Fix issue 94: URL Resource pop-up also opens new tab/window
 - Fix issue 153: Glossary opens multiple windows
 - Fix issue 155: course scroll bar issue in Moodle 41
+- Fix issue 160: bullets disappear
+- Fix issue 165: referencefileid backup/restore repository issue
 - Fix issue 166: bullet points disappear in edit mode
+- Fix issue 175: url params
 - Fix issue 184: RTL activity edit menu inaccessible
+- Fix issue 186: Icons for external plugins not displayed
+- Fix issue 187: blocks drawer
+- Fix issue 189: show more
+- Fix issue 192: Beta issue with duplicated section 0 content on the top of individual weeks

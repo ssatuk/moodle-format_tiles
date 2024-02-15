@@ -214,7 +214,7 @@ class icon_set {
             return false;
         }
 
-        $fontawesomethemeswhitelist = ['moove'];
+        $fontawesomethemeswhitelist = ['moove', 'workplace'];
         // Using $PAGE->theme->get_icon_system()==icons_system::fontawesome does not work for Moove.
         // However Moove does support font awesome for {{pix}}, so we add a whitelist too.
         if (in_array($PAGE->theme->name, $fontawesomethemeswhitelist)) {
