@@ -57,27 +57,40 @@ class backup_format_tiles_plugin extends backup_format_plugin {
 
         // Define each element separated.
         // Adds tag <plugin_format_tiles_section> within section.xml files of backup file with filename / icon name.
-        $photo = new backup_nested_element(
-            'plugin_format_tiles_section',
-            ['id'],
-            ['optiontype', 'optionvalue']
+        // The "id" field below is the mdl_format_tiles_tile_options.id in the old course.
+        // It will appear in section.xml as <plugin_format_tiles_section sectionid="{sectionid}">
+        // This is then used in the restore section as $data['sectionid'] in process_tiles_section();
+        // The optiontype and optionvalue fields will be included in each <plugin_format_tiles_section> tag.
+        $sectionoptions = new backup_nested_element(
+            $this->get_recommended_name(), // plugin_format_tiles_section.
+            ['sectionid'],
+            ['optiontype', 'optionvalue', 'tilesversion']
         );
 
         // Define sources.
         $const1 = \format_tiles\format_option::OPTION_SECTION_PHOTO;
         $const2 = \format_tiles\format_option::OPTION_SECTION_ICON;
-        $photo->set_source_sql(
-            "SELECT id, optiontype, optionvalue FROM {format_tiles_tile_options}
-                WHERE courseid = ?
+
+        // Include tiles version so we can use it on restore.
+        $tilesversion  = get_config('format_tiles', 'version');
+
+        $sectionoptions->set_source_sql(
+        "SELECT elementid as sectionid, optiontype, optionvalue, $tilesversion AS tilesversion
+                FROM {format_tiles_tile_options}
+                WHERE courseid = :courseid
                 AND (optiontype = $const1 OR optiontype = $const2)
-                AND elementid = ?",
-            [backup::VAR_COURSEID, backup::VAR_SECTIONID]
+                AND elementid = :elementid",
+            ['courseid' => backup::VAR_COURSEID, 'elementid' => backup::VAR_SECTIONID]
         );
 
-        // Define file annotations - first include tile photos.
-        $photo->annotate_files($fileapiparams['component'], $fileapiparams['filearea'], null);
+        // Define file annotations - include tile photos.
+        // Some explanation of annotate_files() is at: https://docs.moodle.org/dev/Backup_2.0_for_developers.
+        // E.g. "The third parameter, if it is needed, must be the name of one of the attributes or fields of [$sectionoptions]".
+        // We use 'sectionid' from the nested element above which is the old section ID.
+        $sectionoptions->annotate_files($fileapiparams['component'], $fileapiparams['filearea'], 'sectionid');
 
-        $plugin->add_child($photo);
+        $plugin->add_child($sectionoptions);
+
         return $plugin;
     }
 

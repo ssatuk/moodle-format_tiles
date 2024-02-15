@@ -73,7 +73,7 @@ if ($courseid) {
     if ($sesskey) {
         require_sesskey();
         \format_tiles\format_option::migrate_legacy_format_options($courseid);
-        \core\notification::info(
+        \core\notification::success(
             get_string('migratedcourseid', 'format_tiles', $courseid)
             . '&nbsp;' . html_writer::link($courseurl, $course->fullname)
         );

@@ -186,10 +186,10 @@ class format_option {
      * @param int $optiontype
      * @param int $elementid
      * @param string $optionvalue
-     * @return bool|int
+     * @return bool
      * @throws \dml_exception|\moodle_exception
      */
-    public static function set(int $courseid, int $optiontype, int $elementid, string $optionvalue) {
+    public static function set(int $courseid, int $optiontype, int $elementid, string $optionvalue): bool {
         global $DB;
         self::validate_option_type($optiontype);
 
@@ -255,52 +255,52 @@ class format_option {
         if (!$legacyoptions->valid()) {
             return;
         }
-        foreach ($legacyoptions as $option) {
-            if ($option->value) {
+        foreach ($legacyoptions as $legacyoption) {
+            if ($legacyoption->value) {
 
                 // If this is a photo to migrate and an icon already set, remove the icon as photo takes priority.
                 if ($optiontype == self::OPTION_SECTION_PHOTO) {
-                    $icon = self::get($courseid, self::OPTION_SECTION_ICON, $option->sectionid);
+                    $icon = self::get($courseid, self::OPTION_SECTION_ICON, $legacyoption->sectionid);
                     if ($icon) {
-                        self::unset($courseid, self::OPTION_SECTION_ICON, $option->sectionid);
+                        self::unset($courseid, self::OPTION_SECTION_ICON, $legacyoption->sectionid);
                     }
                 }
 
                 // If this is an icon and there is a photo already set, skip as photo takes priority.
                 if ($optiontype == self::OPTION_SECTION_ICON) {
-                    $photo = self::get($courseid, self::OPTION_SECTION_PHOTO, $option->sectionid);
+                    $photo = self::get($courseid, self::OPTION_SECTION_PHOTO, $legacyoption->sectionid);
                     if ($photo) {
                         // We already have a photo set so can ignore this icon - nothing to migrate.
-                        $DB->delete_records('course_format_options', ['id' => $option->id]);
+                        $DB->delete_records('course_format_options', ['id' => $legacyoption->id]);
                         continue;
                     }
                 }
 
-                $existing = self::get($courseid, $optiontype, $option->sectionid);
+                $existing = self::get($courseid, $optiontype, $legacyoption->sectionid);
                 // Only if we don't already have a new style option for this item.
                 if (!$existing) {
                     // If it's a photo, check we have a file, and skip if not.
                     if ($optiontype == self::OPTION_SECTION_PHOTO) {
-                        if (!tile_photo::get_file_from_ids($context->id, $option->sectionid, $option->value)) {
-                            $DB->delete_records('course_format_options', ['id' => $option->id]);
+                        if (!tile_photo::get_file_from_ids($context->id, $legacyoption->sectionid, $legacyoption->value)) {
+                            $DB->delete_records('course_format_options', ['id' => $legacyoption->id]);
                             continue;
                         }
                     }
                     $result = self::set(
                         $courseid,
                         $optiontype,
-                        $option->sectionid,
-                        $option->value
+                        $legacyoption->sectionid,
+                        $legacyoption->value
                     );
                     if ($result) {
-                        $DB->delete_records('course_format_options', ['id' => $option->id]);
+                        $DB->delete_records('course_format_options', ['id' => $legacyoption->id]);
                     }
                 } else {
                     // We do already have a new option set for this item so we should discard the old setting.
-                    $DB->delete_records('course_format_options', ['id' => $option->id]);
+                    $DB->delete_records('course_format_options', ['id' => $legacyoption->id]);
                 }
             } else {
-                $DB->delete_records('course_format_options', ['id' => $option->id]);
+                $DB->delete_records('course_format_options', ['id' => $legacyoption->id]);
             }
         }
         $legacyoptions->close();
