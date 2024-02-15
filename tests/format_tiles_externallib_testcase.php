@@ -92,7 +92,7 @@ class format_tiles_externallib_testcase extends externallib_advanced_testcase {
         );
         $result = \core_external\external_api::clean_returnvalue(\format_tiles\external\external::set_image_returns(), $result);
         // Check for 0 warnings.
-        $this->assertEquals(true, $result['status']);
+        $this->assertTrue($result['status']);
 
         // Check it worked and data made it to db.
         $dbvalue = \format_tiles\format_option::get($course->id, \format_tiles\format_option::OPTION_SECTION_ICON, $sectionid);
@@ -153,7 +153,7 @@ class format_tiles_externallib_testcase extends externallib_advanced_testcase {
             \format_tiles\external\external::set_session_width_returns(), $result
         );
         // Check for 0 warnings.
-        $this->assertEquals(true, $result['status']);
+        $this->assertTrue($result['status']);
 
         // Check it worked and data made it to $SESSION.
         $sessionvarname = 'format_tiles_width_' . $course->id;
@@ -172,7 +172,7 @@ class format_tiles_externallib_testcase extends externallib_advanced_testcase {
             \format_tiles\external\external::set_session_width_returns(), $result
         );
         // Check for 0 warnings.
-        $this->assertEquals(true, $result['status']);
+        $this->assertTrue($result['status']);
 
         // Check it worked and data made it to $SESSION.
         $sessionvarname = 'format_tiles_width_' . $course->id;

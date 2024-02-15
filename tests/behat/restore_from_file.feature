@@ -96,7 +96,6 @@ Feature: Backup and restore of fixture mbz files including images
     And course "Course 4" tile "15" should show no photo
     And Tile "15" should have icon "star-o"
 
-
   @javascript @_file_upload
   Scenario: Restore the Moodle 42 pre 2024 mbz file
     Given I am on the "Course 1" "restore" page logged in as "admin"

@@ -47,9 +47,7 @@ class image_processor {
      * @param int $width
      * @param int $height
      * @return \stored_file|bool
-     * @throws \file_exception
      * @throws \required_capability_exception
-     * @throws \stored_file_creation_exception
      */
     public static function adjust_and_copy_file($tempfile, $newfilename, $context, $itemid, $width, $height) {
         require_capability('moodle/course:update', $context);

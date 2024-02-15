@@ -251,7 +251,6 @@ class behat_format_tiles extends behat_base {
      * @Then /^activity in format tiles is dimmed "(?P<activityname_string>(?:[^"]|\\")*)"$/
      * @param string $activityname
      * @return bool
-     * @throws \Behat\Mink\Exception\ExpectationException
      */
     public function activity_in_format_tiles_is_dimmed($activityname) {
         $activityname = behat_context_helper::escape($activityname);
@@ -426,7 +425,6 @@ class behat_format_tiles extends behat_base {
     /**
      * Checks if the course section exists.
      *
-     * @throws \Behat\Mink\Exception\ExpectationException
      * @param int $sectionnumber
      * @return string The xpath of the section.
      */
@@ -474,7 +472,6 @@ class behat_format_tiles extends behat_base {
      * @param int $sectionnumber
      * @param string $showhide
      * @param string $xpath
-     * @throws \Behat\Mink\Exception\ExpectationException
      * @throws coding_exception
      */
     private function i_show_hide($sectionnumber, $showhide, $xpath) {
@@ -527,7 +524,7 @@ class behat_format_tiles extends behat_base {
      * @param string $coursename
      * @param int $sectionnumber
      * @param string $photoname
-     * @return string The style of the image container
+     * @return bool
      */
     public function tile_should_show_photo($coursename, $sectionnumber, $photoname) {
         // @codingStandardsIgnoreEnd.
@@ -584,7 +581,7 @@ class behat_format_tiles extends behat_base {
      * @throws \Behat\Mink\Exception\ExpectationException
      * @param string $coursename
      * @param int $sectionnumber
-     * @return string The style of the image container
+     * @return bool
      */
     public function tile_should_show_no_photo($coursename, $sectionnumber) {
         // @codingStandardsIgnoreEnd.

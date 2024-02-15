@@ -72,7 +72,6 @@ class tile_photo {
      *
      * @param \context $context
      * @param int $sectionid
-     * @throws \coding_exception
      */
     public function __construct(\context $context, int $sectionid) {
         $this->context = $context;
@@ -159,7 +158,7 @@ class tile_photo {
 
     /**
      * Get the image file associated with this tile_photo object.
-     * @return bool|\stored_file
+     * @return \stored_file|null
      */
     public function get_file() {
         if (!isset($this->file)) {
@@ -348,13 +347,11 @@ class tile_photo {
         $result = format_option::unset_all_course($courseid);
 
         // Delete section tile files (photos).
-        $result = $result && $fs->delete_area_files(
+        return $result && $fs->delete_area_files(
             \context_course::instance($courseid)->id,
             $fileapiparams['component'],
             $fileapiparams['filearea']
         );
-
-        return $result;
     }
 
     /**

@@ -123,7 +123,6 @@ class format_option {
      * @param int $optiontype
      * @param int $elementid
      * @return bool
-     * @throws \dml_exception
      */
     public static function unset(int $courseid, int $optiontype, int $elementid) {
         global $DB;

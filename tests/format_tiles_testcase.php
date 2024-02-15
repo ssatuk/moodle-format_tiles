@@ -270,10 +270,10 @@ class format_tiles_testcase extends advanced_testcase {
 
         // If the URL contains a param that we're unsure how to handle, we don't modify (i.e. return null).
         $this->assertEquals(
+            null,
             \format_tiles\output\course_output::check_modify_embedded_url(
                 'https://www.youtube.com/shorts/abcdefghijk?t=4&feature=share'
-            ),
-            null
+            )
         );
 
         $this->assertTrue(
@@ -284,10 +284,10 @@ class format_tiles_testcase extends advanced_testcase {
 
         // If the URL contains a param that we're unsure how to handle, we don't modify (i.e. return null).
         $this->assertEquals(
+            null,
             \format_tiles\output\course_output::check_modify_embedded_url(
                 'https://youtu.be/abcdefghijk?t=49'
-            ),
-            null
+            )
         );
     }
 }

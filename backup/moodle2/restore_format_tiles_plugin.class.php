@@ -368,6 +368,8 @@ class restore_format_tiles_plugin extends restore_format_plugin {
 
     /**
      * Process an item for format_tiles_tile_options table.
+     * @param int $courseid
+     * @param int $sectionid
      * @param int $optiontype
      * @param string $optionvalue
      * @throws moodle_exception

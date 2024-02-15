@@ -164,7 +164,7 @@ class course_output implements \renderable, \templatable {
     /**
      * Export the course data for the mustache template.
      * @param \renderer_base $output
-     * @return array|\stdClass
+     * @return array
      * @throws \coding_exception
      * @throws \dml_exception
      * @throws \moodle_exception
