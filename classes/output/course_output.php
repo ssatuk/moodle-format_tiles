@@ -383,10 +383,13 @@ class course_output implements \renderable, \templatable {
     private function append_section_zero_data($data, $output) {
         $seczero = $this->modinfo->get_section_info(0);
         $coursemods = $this->section_course_mods($seczero, $output);
+        $sectioninfo = $this->modinfo->get_section_info(0);
         $data['section_zero']['summary'] = self::temp_format_summary_text($seczero);
         $data['section_zero']['content']['course_modules'] = $coursemods->mods;
         $data['section_zero']['jsfooter'] = $coursemods->jsfooter;
-        $data['section_zero']['secid'] = $this->modinfo->get_section_info(0)->id;
+        $data['section_zero']['secid'] = $sectioninfo->id;
+        $data['section_zero']['title'] = $sectioninfo->name && trim($sectioninfo->name)
+            ? format_string($sectioninfo->name, true, ['context' => $this->coursecontext]) : '';
         $data['section_zero']['is_section_zero'] = true;
         $data['section_zero']['tileid'] = 0;
         $data['section_zero']['visible'] = true;

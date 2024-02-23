@@ -941,6 +941,37 @@ define(["jquery", "core/templates", "core/ajax", "format_tiles/browser_storage",
                         // Move focus to the first tile in the course (not sec zero contents if present).
                         // $("ul.tiles .tile").first().focus();
                     }
+
+                    // When a section is open, fix close/edit buttons to top of screen (else hidden on scroll).
+                    let fixButtonsDisabled = false;
+                    $(window).scroll(function() {
+                        if (!fixButtonsDisabled) {
+                            try {
+                                if ($(window).scrollTop() >= 300) {
+                                    $('.moveablesection.state-visible').each((i, s) => {
+                                        s = $(s);
+                                        const section = document.getElementById('section-' + s.data('section'));
+                                        const sectionRect = section.getBoundingClientRect();
+                                        const right = document.body.clientWidth - sectionRect.right + 30;
+                                        const sectionButtons = s.find('.sectionbuttons');
+                                        const topMargin = $("#page").offset().top;
+                                        if (sectionRect.top + topMargin < 0 && sectionRect.bottom - topMargin > 0) {
+                                            sectionButtons.addClass('position-fixed');
+                                            sectionButtons.css({'top': topMargin + 10, 'right': right});
+                                        } else {
+                                            sectionButtons.removeClass('position-fixed');
+                                            sectionButtons.css({'top': 'unset', 'right': 'unset'});
+                                        }
+                                    });
+                                }
+                            } catch (err) {
+                                require(["core/log"], function(log) {
+                                    log.debug(err);
+                                });
+                                fixButtonsDisabled = true;
+                            }
+                        }
+                    });
                 });
             },
             populateAndExpandSection(courseContextId, sectionId, sectionNumber) {
