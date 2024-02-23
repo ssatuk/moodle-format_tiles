@@ -115,7 +115,7 @@ class tile_photo {
      * Get the image url associated with this tile_photo object.
      * @return null|string
      */
-    public function get_image_url (): ?string {
+    public function get_image_url(): ?string {
         if (!$this->get_filename()) {
             return null;
         } else {

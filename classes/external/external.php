@@ -401,7 +401,7 @@ class external extends external_api {
      * @return external_description
      * @since Moodle 3.0
      */
-    public static function log_tile_click_returns () {
+    public static function log_tile_click_returns() {
         return new external_single_structure(
             ['status' => new external_value(PARAM_BOOL, 'status: true if success')]
         );
@@ -498,7 +498,7 @@ class external extends external_api {
      * @return external_description
      * @since Moodle 3.0
      */
-    public static function log_mod_view_returns () {
+    public static function log_mod_view_returns() {
         return new external_single_structure(
             ['status' => new external_value(PARAM_BOOL, 'status: true if success')]
         );
@@ -574,7 +574,7 @@ class external extends external_api {
      * @return external_description
      * @since Moodle 3.3
      */
-    public static function get_icon_set_returns () {
+    public static function get_icon_set_returns() {
         return new external_single_structure(
             [
                 'icons' => new external_value(PARAM_RAW, 'Icon set available for use on tile icons (JSON array)'),
@@ -649,7 +649,7 @@ class external extends external_api {
      * @return external_description
      * @since Moodle 3.0
      */
-    public static function set_session_width_returns () {
+    public static function set_session_width_returns() {
         return new external_single_structure(
             ['status' => new external_value(PARAM_BOOL, 'status: true if success')]
         );

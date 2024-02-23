@@ -87,7 +87,7 @@ class course_section_manager {
      * @return array
      * @throws \dml_exception
      */
-    public static function get_problem_courses ($maxsections) {
+    public static function get_problem_courses($maxsections) {
         global $DB;
         return $DB->get_records_sql(
             "SELECT
@@ -122,7 +122,7 @@ class course_section_manager {
      * @throws \dml_exception
      * @throws \moodle_exception
      */
-    public static function schedule_empty_sec_deletion ($courseid) {
+    public static function schedule_empty_sec_deletion($courseid) {
         global $USER;
         if (!has_capability('moodle/site:config', \context_system::instance())) {
             throw new \moodle_exception('You do not have permission to perform this action.');
@@ -138,7 +138,7 @@ class course_section_manager {
      * Cancel a previously scheduled task to delete all empty sections in a given course.
      * @param int $courseid
      */
-    public static function cancel_empty_sec_deletion ($courseid) {
+    public static function cancel_empty_sec_deletion($courseid) {
         unset_config('delete_empty_sections_' . $courseid, 'format_tiles');
     }
 

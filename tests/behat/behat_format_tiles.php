@@ -95,7 +95,7 @@ class behat_format_tiles extends behat_base {
      * @param string $icon
      * @return void
      */
-    public function format_tiles_tile_has_icon (int $tilenumber, string $icon) {
+    public function format_tiles_tile_has_icon(int $tilenumber, string $icon) {
         $selector = "#tileicon_$tilenumber i";
         $script = "(function(){return $('$selector').hasClass('fa-$icon');})();";
         $result = $this->getSession()->evaluateScript($script);
