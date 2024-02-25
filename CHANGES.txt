@@ -391,9 +391,12 @@ Other
 - Fix issue 35: Unable to close tile detail with keyboard only
 - Fix issue 87: Full screen video failed
 - Fix issue 94: URL Resource pop-up also opens new tab/window
+- Fix issue 122: Option to enable course index drawer in Moodle 4
+- Fix issue 149: Tiles does not show 0-section heading
 - Fix issue 153: Glossary opens multiple windows
 - Fix issue 155: course scroll bar issue in Moodle 41
 - Fix issue 160: bullets disappear
+- Fix issue 162: Can't drag page from scrollbar in Edge when a tile is opened.
 - Fix issue 165: referencefileid backup/restore repository issue
 - Fix issue 166: bullet points disappear in edit mode
 - Fix issue 175: url params
