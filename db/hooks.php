@@ -15,7 +15,7 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Hook callbacks for Moodle app tools
+ * Hook callbacks for format tiles.
  *
  * @package   format_tiles
  * @copyright 2024 David Watson {@link http://evolutioncode.uk}
