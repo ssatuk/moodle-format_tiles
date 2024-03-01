@@ -272,6 +272,7 @@ $string['photoguidance_desc'] = '<p>Upload a photo in <strong>landscape</strong>
 <p>Photos in portrait format will not match the shape of the tile.  Large images or files will be scaled down and compressed if necessary, after upload.</p>';
 $string['photolibrary'] = 'Photo library';
 $string['pluginname'] = 'Tiles format';
+$string['plugin_description'] = 'A visually rich format, divided into sections represented by tiles.  Photos or icons appear on each tile, with customisable colours.';
 $string['previoustopic'] = 'Previous topic';
 $string['privacypolicy'] = 'Privacy policy';
 $string['progress'] = 'Progress';
