@@ -143,46 +143,6 @@ class format_tiles extends core_courseformat\base {
     }
 
     /**
-     * The URL to use for the specified course (with section)
-     *
-     * @param int|stdClass $section Section object from database or just field course_sections.section
-     *     if omitted the course view page is returned
-     * @param array $options options for view URL. At the moment core uses:
-     *     'navigation' (bool) if true and section has no separate page, the function returns null
-     *     'sr' (int) used by multipage formats to specify to which section to return
-     * @return null|moodle_url
-     * @throws moodle_exception
-     */
-    public function get_view_url($section, $options = []) {
-        $course = $this->get_course();
-        $url = new moodle_url('/course/view.php', ['id' => $course->id]);
-
-        $sr = null;
-        if (array_key_exists('sr', $options)) {
-            $sr = $options['sr'];
-        }
-        if (is_object($section)) {
-            $sectionno = $section->section;
-        } else {
-            $sectionno = $section;
-        }
-        if ($sectionno !== null) {
-            if ($sr) {
-                $sectionno = $sr;
-            }
-            if ($sectionno != 0) {
-                $url->param('section', $sectionno);
-            } else {
-                if (!empty($options['navigation'])) {
-                    return null;
-                }
-                $url->set_anchor('section-' . $sectionno);
-            }
-        }
-        return $url;
-    }
-
-    /**
      * Returns the information about the ajax support in the given source format
      *
      * The returned object's property (boolean)capable indicates that
@@ -1036,37 +996,6 @@ function format_tiles_output_fragment_get_cm_content(array $args): string {
         }
     }
     throw new invalid_parameter_exception('Module not found woth context ID ' . $args['contextid']);
-}
-
-/**
- * Callback to add head elements.  Used to add dynamic CSS used by Tiles format.
- * @see \core_renderer::standard_head_html()
- * @return string the HTML to inject.
- * @throws coding_exception
- * @throws moodle_exception
- */
-function format_tiles_before_standard_html_head(): string {
-    global $PAGE;
-    $html = '';
-
-    try {
-        $courseid = optional_param('id', 0, PARAM_INT);
-
-        $istilescoursefrontpage = $PAGE->pagetype == 'course-view-tiles' && $courseid
-            && $PAGE->url->compare(new moodle_url('/course/view.php'), URL_MATCH_BASE);
-        if (!$istilescoursefrontpage || !$courseid) {
-            // We have to be careful in this function as it's called on every page (not just tiles course pages).
-            return '';
-        }
-
-        $dynamiccss = \format_tiles\dynamic_styles::get_tiles_dynamic_css($courseid);
-        if ($dynamiccss) {
-            $html .= "<style id=\"format-tiles-dynamic-css\">$dynamiccss</style>";
-        }
-    } catch (\Exception $e) {
-        debugging("Could not prepare format_tiles head data: " . $e->getMessage(), DEBUG_DEVELOPER);
-    }
-    return $html;
 }
 
 /**
