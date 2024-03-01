@@ -41,7 +41,7 @@ $context = context_course::instance($course->id);
 $isediting = $PAGE->user_is_editing();
 $displaysection = optional_param('section', 0, PARAM_INT);
 if (!empty($displaysection)) {
-    $format->set_section_number($displaysection);
+    $format->set_sectionnum($displaysection);
 }
 
 if (($marker >= 0) && has_capability('moodle/course:setcurrentsection', $context) && confirm_sesskey()) {
