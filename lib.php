@@ -42,8 +42,8 @@ class format_tiles extends core_courseformat\base {
      *
      * Please use {@see course_get_format($courseorid)} to get an instance of the format class
      *
-     * @param string $format
-     * @param int $courseid
+     * @param string $format the course format.
+     * @param int $courseid the course ID.
      */
     protected function __construct($format, $courseid) {
         if ($courseid === 0) {
@@ -869,7 +869,7 @@ function format_tiles_inplace_editable($itemtype, $itemid, $newvalue) {
     require_once($CFG->dirroot . '/course/lib.php');
     if ($itemtype === 'sectionname' || $itemtype === 'sectionnamenl') {
         $section = $DB->get_record_sql(
-            'SELECT s.* FROM {course_sections} s JOIN {course} c ON s.course = c.id WHERE s.id = ? AND c.format = ?',
+            "SELECT s.* FROM {course_sections} s JOIN {course} c ON s.course = c.id WHERE s.id = ? AND c.format = ?",
             [$itemid, 'tiles'], MUST_EXIST);
         return course_get_format($section->course)->inplace_editable_update_section_name($section, $itemtype, $newvalue);
     }
