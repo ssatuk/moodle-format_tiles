@@ -143,8 +143,8 @@ class format_tiles_course_format_options_testcase extends advanced_testcase {
                         FROM {files} f
                         JOIN {course_sections} cs ON cs.id = f.itemid AND cs.course = :courseid
                         WHERE contextid = :contextid
-                        AND component = 'format_tiles' AND filearea = 'tilephoto'
-                        AND filename != '' AND filesize > 0",
+                        AND f.component = 'format_tiles' AND f.filearea = 'tilephoto'
+                        AND f.filename != '' AND f.filesize > 0",
                     ['contextid' => $context->id, 'courseid' => $restoredcourseid]
                 );
                 $restoredcourseids[$newcoursename] = [$restoredcourseid, $expectedphotos, $actualphotos, $files];

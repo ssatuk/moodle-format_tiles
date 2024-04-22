@@ -5,7 +5,6 @@ Feature: Backup and restore of fixture mbz files including images
     Given the following "courses" exist:
       | fullname | shortname | category | format |
       | Course 1 | C1        | 0        | tiles  |
-
     And the following config values are set as admin:
       | enableasyncbackup | 0 |
 
