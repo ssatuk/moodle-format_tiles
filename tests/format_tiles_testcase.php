@@ -108,7 +108,6 @@ class format_tiles_testcase extends advanced_testcase {
             'usesubtilesseczero' => '0',
             'courseusebarforheadings' => '0',
         ];
-        // TODO work out why basecolour setting fails here - maybe to do with followthemecolour admin config option?
 
         $format = course_get_format($course);
         $format->update_course_format_options($pushedvalues);
@@ -138,7 +137,6 @@ class format_tiles_testcase extends advanced_testcase {
             'usesubtilesseczero' => '1',
             'courseusebarforheadings' => '1',
         ];
-        // TODO work out why basecolour setting fails here - maybe to do with followthemecolour admin config option?
 
         $format = course_get_format($course);
         $format->update_course_format_options($pushedvalues);

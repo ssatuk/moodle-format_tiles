@@ -57,7 +57,7 @@ $usejsnav = \format_tiles\util::using_js_nav();
 
 if ($isediting) {
     // If user is editing, we render the page the new way.
-    // TODO we will use this for non editing as well, but not yet.
+    // We will use this for non editing as well in a later version, but not yet.
     $outputclass = $format->get_output_classname('content');
     $widget = new $outputclass($format);
 
