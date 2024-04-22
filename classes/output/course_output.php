@@ -148,7 +148,6 @@ class course_output implements \renderable, \templatable {
         $this->format = course_get_format($this->course);
         $this->modinfo = get_fast_modinfo($this->course);
 
-        // TODO this class is no longer used if the user is editing.  To be removed.
         $this->isediting = false;
         $this->coursecontext = \context_course::instance($this->course->id);
         $this->canviewhidden = has_capability('moodle/course:viewhiddensections', $this->coursecontext);
