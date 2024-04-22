@@ -30,7 +30,7 @@ class standard_head_html_prepend {
      *
      * @param \core\hook\output\standard_head_html_prepend $hook
      */
-    public static function callback(\core\hook\output\standard_head_html_prepend $hook): void {
+    public static function callback(\core\hook\output\before_standard_head_html_generation $hook): void {
         global $PAGE;
         try {
             $courseid = optional_param('id', 0, PARAM_INT);
@@ -41,7 +41,6 @@ class standard_head_html_prepend {
                 // We have to be careful in this function as it's called on every page (not just tiles course pages).
                 return;
             }
-
             $dynamiccss = \format_tiles\dynamic_styles::get_tiles_dynamic_css($courseid);
             if ($dynamiccss) {
                 $hook->add_html("<style id=\"format-tiles-dynamic-css\">$dynamiccss</style>");

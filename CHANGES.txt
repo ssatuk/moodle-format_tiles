@@ -406,3 +406,7 @@ Other
 - Fix issue 187: blocks drawer
 - Fix issue 189: show more
 - Fix issue 192: Beta issue with duplicated section 0 content on the top of individual weeks
+
+4.4.0.1 RC (2024042200)
+===========================
+- Moodle 4.4. compatibility
