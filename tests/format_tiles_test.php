@@ -22,9 +22,9 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-defined('MOODLE_INTERNAL') || die();
+namespace format_tiles;
 
-use format_tiles\format_option;
+defined('MOODLE_INTERNAL') || die();
 
 global $CFG;
 require_once($CFG->dirroot . '/course/lib.php');
@@ -34,7 +34,7 @@ require_once($CFG->dirroot . '/course/lib.php');
  * @copyright  2018 David Watson {@link http://evolutioncode.uk}
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class format_tiles_testcase extends advanced_testcase {
+class format_tiles_test extends \advanced_testcase {
 
     /**
      * The format options to use when setting up a course in tiles format.
@@ -56,7 +56,8 @@ class format_tiles_testcase extends advanced_testcase {
 
     /**
      * Test updating the section format options e.g. changing the tile icon for a tile.
-     * @throws moodle_exception
+     * @covers \format_tiles\format_option::set
+     * @throws \moodle_exception
      */
     public function test_update_section_format_options() {
         $this->resetAfterTest(true);
@@ -87,7 +88,8 @@ class format_tiles_testcase extends advanced_testcase {
 
     /**
      * Test updating the course format options e.g. change the tile for a course.
-     * @throws dml_exception
+     * @covers \format_tiles::update_course_format_options
+     * @throws \dml_exception
      */
     public function test_update_course_format_options() {
         global $DB;
@@ -162,6 +164,7 @@ class format_tiles_testcase extends advanced_testcase {
     /**
      * Test web service updating section name
      * Function copied from format_topics with format changed to tiles.
+     * @covers \format_tiles_inplace_editable
      */
     public function test_update_inplace_editable() {
         global $CFG, $DB;
@@ -176,9 +179,9 @@ class format_tiles_testcase extends advanced_testcase {
 
         // Call webservice without necessary permissions.
         try {
-            core_external::update_inplace_editable('format_tiles', 'sectionname', $section->id, 'New section name');
+            \core_external::update_inplace_editable('format_tiles', 'sectionname', $section->id, 'New section name');
             $this->fail('Exception expected');
-        } catch (moodle_exception $e) {
+        } catch (\moodle_exception $e) {
             $this->assertEquals('Course or activity not accessible. (Not enrolled)',
                 $e->getMessage());
         }
@@ -187,8 +190,8 @@ class format_tiles_testcase extends advanced_testcase {
         $teacherrole = $DB->get_record('role', ['shortname' => 'editingteacher']);
         $this->getDataGenerator()->enrol_user($user->id, $course->id, $teacherrole->id);
 
-        $res = core_external::update_inplace_editable('format_tiles', 'sectionname', $section->id, 'New section name');
-        $res = \core_external\external_api::clean_returnvalue(core_external::update_inplace_editable_returns(), $res);
+        $res = \core_external::update_inplace_editable('format_tiles', 'sectionname', $section->id, 'New section name');
+        $res = \core_external\external_api::clean_returnvalue(\core_external::update_inplace_editable_returns(), $res);
         $this->assertEquals('New section name', $res['value']);
         $this->assertEquals('New section name', $DB->get_field('course_sections', 'name', ['id' => $section->id]));
     }
@@ -196,6 +199,7 @@ class format_tiles_testcase extends advanced_testcase {
     /**
      * Test callback updating section name
      * Function copied from format_topics with format changed to tiles.
+     * @covers \format_tiles_inplace_editable
      */
     public function test_inplace_editable() {
         global $DB, $PAGE;
@@ -220,7 +224,7 @@ class format_tiles_testcase extends advanced_testcase {
         try {
             $tmpl = component_callback('format_weeks', 'inplace_editable', ['sectionname', $section->id, 'New name']);
             $this->fail('Exception expected');
-        } catch (moodle_exception $e) {
+        } catch (\moodle_exception $e) {
             $this->assertTrue(
                 preg_match('/^Can not find data record in database/', $e->getMessage()) === 1
                 || preg_match('/^Can\'t find data record in database/', $e->getMessage()) === 1
@@ -230,6 +234,7 @@ class format_tiles_testcase extends advanced_testcase {
 
     /**
      * Test video embed URL replacement
+     * @covers \format_tiles\output\course_output::check_modify_embedded_url
      */
     public function test_video_urls() {
         $this->resetAfterTest();
