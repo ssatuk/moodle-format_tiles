@@ -39,7 +39,7 @@ require_once($CFG->dirroot . '/enrol/imsenterprise/tests/imsenterprise_test.php'
  * @copyright 2018 David Watson {@link http://evolutioncode.uk} based on core version 2012 Petr Skoda {@link http://skodak.org}
  * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class format_tiles_courselib_test extends \advanced_testcase {
+final class format_tiles_courselib_test extends \advanced_testcase {
 
     /**
      * Test the create_course function
@@ -1470,7 +1470,7 @@ class format_tiles_courselib_test extends \advanced_testcase {
 
     /**
      * Test_course_check_module_updates_since.
-     * @throws\coding_exception
+     * @throws \coding_exception
      * @throws \comment_exception
      * @throws \dml_exception
      * @throws \moodle_exception
