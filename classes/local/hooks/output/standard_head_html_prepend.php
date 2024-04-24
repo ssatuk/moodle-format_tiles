@@ -28,7 +28,7 @@ class standard_head_html_prepend {
     /**
      * Callback to add head elements.  Used to add dynamic CSS used by Tiles format.
      *
-     * @param \core\hook\output\standard_head_html_prepend $hook
+     * @param \core\hook\output\before_standard_head_html_generation $hook
      */
     public static function callback(\core\hook\output\before_standard_head_html_generation $hook): void {
         global $PAGE;
