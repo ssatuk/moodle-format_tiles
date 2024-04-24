@@ -39,7 +39,7 @@ require_once($CFG->dirroot . '/webservice/tests/helpers.php');
  * @copyright  2018 David Watson {@link http://evolutioncode.uk}
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class format_tiles_externallib_test extends \externallib_advanced_testcase {
+final class format_tiles_externallib_test extends \externallib_advanced_testcase {
 
     /**
      * The format options to use when setting up a course in tiles format.
@@ -70,7 +70,7 @@ class format_tiles_externallib_test extends \externallib_advanced_testcase {
      * @throws \required_capability_exception
      * @throws \restricted_context_exception
      */
-    public function test_set_image() {
+    public function test_set_image(): void {
         global $DB;
 
         $this->resetAfterTest(true);
@@ -136,7 +136,7 @@ class format_tiles_externallib_test extends \externallib_advanced_testcase {
      * @throws \invalid_response_exception
      * @throws \moodle_exception
      */
-    public function test_set_session_width() {
+    public function test_set_session_width(): void {
         global $DB, $SESSION, $CFG;
         $this->resetAfterTest(true);
 

@@ -29,7 +29,7 @@ namespace format_tiles;
  * @copyright  2024 David Watson {@link http://evolutioncode.uk}
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class format_tiles_course_format_options_test extends \advanced_testcase {
+final class format_tiles_course_format_options_test extends \advanced_testcase {
 
     /**
      * This method is called before the first test of this test class is run.
@@ -48,7 +48,7 @@ class format_tiles_course_format_options_test extends \advanced_testcase {
      * @throws \dml_exception
      * @throws \moodle_exception
      */
-    public function test_course_format_option_migration() {
+    public function test_course_format_option_migration(): void {
         global $DB, $CFG;
         require_once($CFG->dirroot . '/course/format/tiles/tests/helperlib.php');
 
@@ -142,9 +142,9 @@ class format_tiles_course_format_options_test extends \advanced_testcase {
                     "SELECT cs.section, f.filename
                         FROM {files} f
                         JOIN {course_sections} cs ON cs.id = f.itemid AND cs.course = :courseid
-                        WHERE contextid = :contextid
-                        AND component = 'format_tiles' AND filearea = 'tilephoto'
-                        AND filename != '' AND filesize > 0",
+                        WHERE f.contextid = :contextid
+                        AND f.component = 'format_tiles' AND f.filearea = 'tilephoto'
+                        AND f.filename != '' AND f.filesize > 0",
                     ['contextid' => $context->id, 'courseid' => $restoredcourseid]
                 );
                 $restoredcourseids[$newcoursename] = [$restoredcourseid, $expectedphotos, $actualphotos, $files];
@@ -167,7 +167,7 @@ class format_tiles_course_format_options_test extends \advanced_testcase {
      * @throws \dml_exception
      */
     public function test_restore_from_old_format_mbz(int $restoredcourseid, array $expectedphotos, array $actualphotos,
-                                                     array $files) {
+                                                     array $files): void {
         global $DB;
         $this->resetAfterTest();
         if ($restoredcourseid) {
