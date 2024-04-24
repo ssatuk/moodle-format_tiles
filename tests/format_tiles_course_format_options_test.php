@@ -22,32 +22,31 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-defined('MOODLE_INTERNAL') || die();
-
-use format_tiles\format_option;
-
-global $CFG;
+namespace format_tiles;
 
 /**
  * Class format_tiles_course_format_options_testcase
  * @copyright  2024 David Watson {@link http://evolutioncode.uk}
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class format_tiles_course_format_options_testcase extends advanced_testcase {
+class format_tiles_course_format_options_test extends \advanced_testcase {
 
     /**
      * This method is called before the first test of this test class is run.
      */
     public static function setUpBeforeClass(): void {
+        global $CFG;
+        require_once("$CFG->dirroot/backup/util/includes/backup_includes.php");
         \backup_controller_dbops::apply_version_and_release();
-        phpunit_util::bootstrap_init();
+        \phpunit_util::bootstrap_init();
     }
 
     /**
      * Create a mock course with legacy format options and test migration.
+     * @covers \format_tiles\format_option::migrate_legacy_format_options
      * @return void
-     * @throws dml_exception
-     * @throws moodle_exception
+     * @throws \dml_exception
+     * @throws \moodle_exception
      */
     public function test_course_format_option_migration() {
         global $DB, $CFG;
@@ -58,7 +57,7 @@ class format_tiles_course_format_options_testcase extends advanced_testcase {
 
         $generator = $this->getDataGenerator();
         $course = $generator->create_course(['format' => 'tiles', 'numsections' => 15]);
-        $context = context_course::instance($course->id);
+        $context = \context_course::instance($course->id);
 
         $fs = get_file_storage();
         for ($sectionnumber = 1; $sectionnumber <= 10; $sectionnumber++) {
@@ -106,9 +105,10 @@ class format_tiles_course_format_options_testcase extends advanced_testcase {
 
     /**
      * Data provider for test_restore_from_old_format_mbz.
+     * @see test_restore_from_old_format_mbz which this provides data for.
      * @return array
      */
-    public function restore_from_old_format_mbz_provider() {
+    public static function restore_from_old_format_mbz_provider(): array {
         global $DB, $CFG;
         require_once($CFG->dirroot . '/course/format/tiles/tests/helperlib.php');
         $restoredcourseids = [];
@@ -137,7 +137,7 @@ class format_tiles_course_format_options_testcase extends advanced_testcase {
                             WHERE fo.optiontype = :optiontype AND fo.courseid = :courseid",
                     ['courseid' => $restoredcourseid, 'optiontype' => format_option::OPTION_SECTION_PHOTO]
                 );
-                $context = context_course::instance($restoredcourseid);
+                $context = \context_course::instance($restoredcourseid);
                 $files = $DB->get_records_sql(
                     "SELECT cs.section, f.filename
                         FROM {files} f
@@ -161,8 +161,10 @@ class format_tiles_course_format_options_testcase extends advanced_testcase {
      * @param array $expectedphotos
      * @param array $actualphotos
      * @param array $files
+     * @covers \backup_format_tiles_plugin
+     * @covers \restore_format_tiles_plugin
      * @return void
-     * @throws dml_exception
+     * @throws \dml_exception
      */
     public function test_restore_from_old_format_mbz(int $restoredcourseid, array $expectedphotos, array $actualphotos,
                                                      array $files) {
