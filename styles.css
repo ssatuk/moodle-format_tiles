@@ -377,8 +377,6 @@ li.activity .tileiconcontainer {
     color: #fff;
     width: 65px;
     height: 65px;
-    padding-top: 11px;
-    padding-left: 2px;
     margin: 0;
 }
 .format-tiles li.tile .tile-icon .icon {
@@ -1822,6 +1820,58 @@ body.format-tiles.jsenabled .course-content .headerabovetiles {
     height: 45px;
 }
 
+.format-tiles li.subtile .tileiconcontainer.administration{
+    border: 3px solid #da58ef;
+}
+.format-tiles li.subtile .tileiconcontainer.assessment {
+    border: 3px solid #f90086;
+}
+.format-tiles li.subtile .tileiconcontainer.content {
+    border: 3px solid #0099ad;
+}
+.format-tiles li.subtile .tileiconcontainer.collaboration {
+    border: 3px solid #6f46f7;
+}
+.format-tiles li.subtile .tileiconcontainer.communication {
+    border: 3px solid #eb6200;
+}
+.format-tiles li.subtile .tileiconcontainer.interactivecontent {
+    border: 3px solid #8d3d1b;
+}
+.format-tiles li.subtile .tileiconcontainer.other {
+    border: 3px solid #212529;
+}
+.format-tiles .format-tiles-colour-subtile-icon-bg li.subtile .tileiconcontainer.administration{
+    background-color: #da58ef;
+}
+.format-tiles .format-tiles-colour-subtile-icon-bg li.subtile .tileiconcontainer.assessment {
+    background-color: #f90086;
+}
+.format-tiles .format-tiles-colour-subtile-icon-bg li.subtile .tileiconcontainer.content {
+    background-color: #0099ad;
+ }
+.format-tiles .format-tiles-colour-subtile-icon-bg li.subtile .tileiconcontainer.collaboration {
+    background-color: #6f46f7;
+}
+.format-tiles .format-tiles-colour-subtile-icon-bg li.subtile .tileiconcontainer.communication {
+    background-color: #eb6200;
+}
+.format-tiles .format-tiles-colour-subtile-icon-bg li.subtile .tileiconcontainer.interactivecontent {
+    background-color: #8d3d1b;
+}
+.format-tiles .format-tiles-colour-subtile-icon-bg li.subtile .tileiconcontainer.other {
+    background-color: #212529;
+}
+.format-tiles .format-tiles-colour-subtile-icon-bg li.subtile .activityiconcontainer:not(.isbranded) .activityicon:not(.nofilter),
+.format-tiles .format-tiles-colour-subtile-icon-bg li.subtile .activityiconcontainer:not(.isbranded) .icon:not(.nofilter) {
+    filter: brightness(0) invert(1);
+}
+.format-tiles li.subtile .tile-icon {
+    height: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
 @media (min-width: 768px) {
     body.format-tiles.limitedwidth:not(.path-mod) #page.drawers .main-inner,
     .format-tiles .header-maxwidth {

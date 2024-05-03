@@ -233,6 +233,8 @@ class course_output implements \renderable, \templatable {
 
         $data['useSubtiles'] = get_config('format_tiles', 'allowsubtilesview') && $this->courseformatoptions['courseusesubtiles'];
         $data['usetooltips'] = get_config('format_tiles', 'usetooltips');
+        $data['ulextraclasses'] = get_config('format_tiles', 'subtileiconcolourbackground')
+            ? 'format-tiles-colour-subtile-icon-bg' : '';
 
         foreach ($this->courseformatoptions as $k => $v) {
             $data[$k] = $v;
@@ -1077,6 +1079,13 @@ class course_output implements \renderable, \templatable {
             } else {
                 $modiconurl = $mod->get_icon_url($output);
             }
+
+            // No filter icons.  Big blue button has a coloured monologo which cannot be filtered.
+            $nofiltericons = ['bigbluebuttonbn'];
+            if (in_array($mod->modname, $nofiltericons)) {
+                $iconclass = 'nofilter';
+            }
+
             $moduleobject['icon'] = ['url' => $modiconurl, 'label' => $mod->name, 'iconclass' => $iconclass];
             $moduleobject['tileicon'] = false; // Template is shared with top level tile, so avoiding inheriting parent icon.
             $moduleobject['purpose'] = plugin_supports('mod', $mod->modname, FEATURE_MOD_PURPOSE, MOD_PURPOSE_OTHER);
