@@ -280,7 +280,7 @@ class format_tiles extends core_courseformat\base {
      *     'expanded' (bool) if true the section will be shown expanded, true by default
      * @return null|moodle_url
      */
-    public function get_view_url($section, $options = array()) {
+    public function get_view_url($section, $options = []) {
         // MDL-79986 introduced new /course/section.php page which we want to avoid  using JS nav.
         if (get_config('format_tiles', 'usejavascriptnav')) {
             if (!get_user_preferences('format_tiles_stopjsnav')) {
@@ -298,8 +298,8 @@ class format_tiles extends core_courseformat\base {
                         '/course/view.php',
                         ['id' => $sectioninfo->course, 'section' => $sectioninfo->sectionnum]
                     );
-                }        
-            }    
+                }
+            }
         }
         return \core_courseformat\base::get_view_url($section, $options);
     }

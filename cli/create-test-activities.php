@@ -30,7 +30,6 @@ require_once("$CFG->dirroot/lib/testing/generator/component_generator_base.php")
 require_once("$CFG->dirroot/lib/testing/generator/module_generator.php");
 require_once("$CFG->dirroot/lib/testing/generator/data_generator.php");
 
-
 if (!$CFG->debugdeveloper || !$CFG->debugdisplay || !($CFG->phpunit_dataroot ?? null)) {
     mtrace("This development script should never be run on production sites");
     die();
@@ -81,13 +80,12 @@ foreach ($modules as $module) {
             $data->downloadcontent  = DOWNLOAD_COURSE_CONTENT_ENABLED;
             $data->intro = '';
             $data->introformat = 1;
-            
+
             $class = new $classname($generator);
             $class->create_instance($data);
         } else {
             echo "\nClass not found $classname";
         }
-
     } catch (Exception $e) {
         echo "\nCould not create $module->name";
     }
