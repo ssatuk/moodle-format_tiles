@@ -265,6 +265,46 @@ class format_tiles extends core_courseformat\base {
     }
 
     /**
+     * The URL to use for the specified course (with section)
+     *
+     * Please note that course view page /course/view.php?id=COURSEID is hardcoded in many
+     * places in core and contributed modules. If course format wants to change the location
+     * of the view script, it is not enough to change just this function. Do not forget
+     * to add proper redirection.
+     *
+     * @param int|stdClass $section Section object from database or just field course_sections.section
+     *     if null the course view page is returned
+     * @param array $options options for view URL. At the moment core uses:
+     *     'navigation' (bool) if true and section not empty, the function returns section page; otherwise, it returns course page.
+     *     'sr' (int) used by course formats to specify to which section to return
+     *     'expanded' (bool) if true the section will be shown expanded, true by default
+     * @return null|moodle_url
+     */
+    public function get_view_url($section, $options = array()) {
+        // MDL-79986 introduced new /course/section.php page which we want to avoid  using JS nav.
+        if (get_config('format_tiles', 'usejavascriptnav')) {
+            if (!get_user_preferences('format_tiles_stopjsnav')) {
+                if (array_key_exists('sr', $options)) {
+                    $sectionno = $options['sr'];
+                } else if (is_object($section)) {
+                    $sectionno = $section->section;
+                } else {
+                    $sectionno = $section;
+                }
+                if ((!empty($options['navigation']) || array_key_exists('sr', $options)) && $sectionno !== null) {
+                    // Display section on separate page.
+                    $sectioninfo = $this->get_section($sectionno);
+                    return new moodle_url(
+                        '/course/view.php',
+                        ['id' => $sectioninfo->course, 'section' => $sectioninfo->sectionnum]
+                    );
+                }        
+            }    
+        }
+        return \core_courseformat\base::get_view_url($section, $options);
+    }
+
+    /**
      * Returns the list of blocks to be automatically added for the newly created course
      *
      * @return array of default blocks, must contain two keys BLOCK_POS_LEFT and BLOCK_POS_RIGHT
