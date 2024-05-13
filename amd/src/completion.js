@@ -55,15 +55,15 @@ define(["jquery", "core/templates", "core/config", "core/ajax", "core/str", "cor
         /**
          * When completion is changed it may be necessary to re-render a progress indicator.
          * This helps assemble the data.
-         * @param {number} tileId which tile is this for
+         * @param {number} tileNumber which tile is this for
          * @param {number} numComplete how many items has the user completed
          * @param {number} outOf how many items are there to complete
          * @param {boolean} asPercent should we show this as a percentage
          * @returns {{}}
          */
-        var progressTemplateData = function (tileId, numComplete, outOf, asPercent) {
+        var progressTemplateData = function (tileNumber, numComplete, outOf, asPercent) {
             var data = {
-                tileid: tileId,
+                tileid: tileNumber,
                 numComplete: numComplete,
                 numOutOf: outOf,
                 showAsPercent: asPercent,
@@ -72,10 +72,10 @@ define(["jquery", "core/templates", "core/config", "core/ajax", "core/str", "cor
                 percentOffset: outOf > 0 ? Math.round(((outOf - numComplete) / outOf) * 106.8) : 0,
                 isComplete: false,
                 isSingleDigit: false,
-                hastilephoto: $(Selector.tileId + tileId).hasClass("phototile"),
+                hastilephoto: $(Selector.tileNumber + tileNumber).hasClass("phototile"),
             };
-            if (tileId === 0) {
-                data.isOverall = 1;
+            if (tileNumber === 0) {
+               data.isOverall = 1;
             } else {
                 data.isOverall = 0;
             }
@@ -150,7 +150,7 @@ define(["jquery", "core/templates", "core/config", "core/ajax", "core/str", "cor
          */
         const updateSectionsInfo = function(sections, overallcomplete, overalloutof) {
             sections.forEach(sec => {
-                const tile = $(Selector.tileId + sec.sectionnum);
+                const tile = $(Selector.tileNumber + sec.sectionnum);
                 // If this tile is now unrestricted / visible, give it the right classes.
                 if (sec.isavailable && tile.hasClass('tile-restricted')) {
                     tile.removeClass('tile-restricted');
@@ -168,9 +168,11 @@ define(["jquery", "core/templates", "core/config", "core/ajax", "core/str", "cor
                     tile.removeClass('is-complete');
                 }
                 // Now re-render the progress indicator if necessary with correct data.
-                const progressIndicator = $(Selector.progressIndicatorId + sec.sectionnum);
-                changeProgressIndicatorSection(sec.sectionnum, progressIndicator, sec.numcomplete);
-                setOverallProgressIndicator(overallcomplete, overalloutof);
+                // There may not be a progress indicator e.g. if tile contains no trackable activities.
+                const progressIndicator = $(Selector.progressIndicatorSecNumber + (sec.sectionnum).toString());
+                if (progressIndicator.length) {
+                    changeProgressIndicatorSection(sec.sectionnum, progressIndicator, sec.numcomplete);
+                }
 
                 // Finally change or re-render the availability message if necessary.
                 const availabilityInfoDiv = tile.find(Selector.availabilityinfo);
@@ -194,6 +196,7 @@ define(["jquery", "core/templates", "core/config", "core/ajax", "core/str", "cor
                     }
                 }
             });
+            setOverallProgressIndicator(overallcomplete, overalloutof);
         };
 
         /**
