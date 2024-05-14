@@ -1248,7 +1248,7 @@ class course_output implements \renderable, \templatable {
         // But it may save us some time.
         $cache = \cache::make('format_tiles', 'modalcmids');
         $cachedvalue = $cache->get($courseid);
-        if (!$cachedvalue) {
+        if ($cachedvalue === false) {
             // Config values to be added to templates for JS to retrieve.
             // May move more to this from existing JS init in format.php.
 
@@ -1292,6 +1292,7 @@ class course_output implements \renderable, \templatable {
             $cache->set($courseid, $cmids);
 
         } else {
+            // We already have a cached value so use that.
             $cmids = $cachedvalue;
         }
 
