@@ -1240,57 +1240,62 @@ class course_output implements \renderable, \templatable {
         if (empty($allowedmodals)) {
             return [];
         }
-        $cache = \cache::make('format_tiles', 'modalcmids');
-        $cachedvalue = $cache->get($courseid);
-        if ($cachedvalue) {
-            return $cachedvalue;
-        }
-
-        // Config values to be added to templates for JS to retrieve.
-        // May move more to this from existing JS init in format.php.
-        if (empty($allowedmodals)) {
-            $cache->set($courseid, []);
-            return [];
-        }
+        $modinfo = get_fast_modinfo($courseid);
 
         $cmids = [];
-        $modinfo = get_fast_modinfo($courseid);
-        foreach ($allowedmodals as $allowedmodule) {
-            if ($allowedmodule == 'url') {
-                $displayoptions = [
-                    RESOURCELIB_DISPLAY_AUTO, RESOURCELIB_DISPLAY_NEW, RESOURCELIB_DISPLAY_EMBED,
-                ];
-                list($insql, $params) = $DB->get_in_or_equal($displayoptions, SQL_PARAMS_NAMED);
-                $params['course'] = $courseid;
-                $cmids = array_merge($cmids, $DB->get_fieldset_sql(
-                    "SELECT cm.id FROM {url} u
-                         JOIN {course_modules} cm ON cm.instance = u.id
-                         JOIN {modules} m ON m.id = cm.module AND m.name = 'url'
-                         WHERE u.course = :course AND u.display $insql", $params
-                ));
-            } else if (in_array($allowedmodule, ['pdf', 'html'])) {
-                // First get file cmids of relevant mime type.
-                $sql = "SELECT cm.id
-                FROM {course_modules} cm
-                JOIN {modules} m ON m.id = cm.module and m.name = 'resource'
-                JOIN {context} ctx ON ctx.instanceid = cm.id AND ctx.contextlevel = 70
-                JOIN {files} f ON f.contextid = ctx.id AND f.component = 'mod_resource'
-                    AND f.filesize > 0 and f.filename != '.' AND f.mimetype = :mimetype
-                WHERE cm.course = :courseid";
-                $cmids = array_merge($cmids, $DB->get_fieldset_sql(
-                    $sql,
-                    ['courseid' => $courseid, 'mimetype' => $allowedmodule == 'pdf' ? 'application/pdf' : 'text/html']
-                ));
 
-            } else if ($allowedmodule == 'page') {
-                $cmids = [];
-                $pagecms = $modinfo->get_instances_of('page');
-                foreach ($pagecms as $pagecm) {
-                    $cmids[] = $pagecm->id;
+        // The cached value is for the course and does not take user visibility into account.
+        // But it may save us some time.
+        $cache = \cache::make('format_tiles', 'modalcmids');
+        $cachedvalue = $cache->get($courseid);
+        if (!$cachedvalue) {
+            // Config values to be added to templates for JS to retrieve.
+            // May move more to this from existing JS init in format.php.
+
+            foreach ($allowedmodals as $allowedmodule) {
+                if ($allowedmodule == 'url') {
+                    $displayoptions = [
+                        RESOURCELIB_DISPLAY_AUTO, RESOURCELIB_DISPLAY_NEW, RESOURCELIB_DISPLAY_EMBED,
+                    ];
+                    list($insql, $params) = $DB->get_in_or_equal($displayoptions, SQL_PARAMS_NAMED);
+                    $params['course'] = $courseid;
+                    $cmids = array_merge($cmids, $DB->get_fieldset_sql(
+                        "SELECT cm.id FROM {url} u
+                             JOIN {course_modules} cm ON cm.instance = u.id
+                             JOIN {modules} m ON m.id = cm.module AND m.name = 'url'
+                             WHERE u.course = :course AND u.display $insql", $params
+                    ));
+                } else if (in_array($allowedmodule, ['pdf', 'html'])) {
+                    // First get file cmids of relevant mime type.
+                    $sql = "SELECT cm.id
+                    FROM {course_modules} cm
+                    JOIN {modules} m ON m.id = cm.module and m.name = 'resource'
+                    JOIN {context} ctx ON ctx.instanceid = cm.id AND ctx.contextlevel = 70
+                    JOIN {files} f ON f.contextid = ctx.id AND f.component = 'mod_resource'
+                        AND f.filesize > 0 and f.filename != '.' AND f.mimetype = :mimetype
+                    WHERE cm.course = :courseid";
+                    $cmids = array_merge($cmids, $DB->get_fieldset_sql(
+                        $sql,
+                        ['courseid' => $courseid, 'mimetype' => $allowedmodule == 'pdf' ? 'application/pdf' : 'text/html']
+                    ));
+
+                } else if ($allowedmodule == 'page') {
+                    $cmids = [];
+                    $pagecms = $modinfo->get_instances_of('page');
+                    foreach ($pagecms as $pagecm) {
+                        $cmids[] = $pagecm->id;
+                    }
                 }
             }
+
+            // Now we can set the cached value for all users, before going on to check visibility for this user only.
+            $cache->set($courseid, $cmids);
+
+        } else {
+            $cmids = $cachedvalue;
         }
 
+        // Now we check user visibility for the cmids which may be relevant.
         $result = [];
         if (!empty($cmids)) {
             foreach ($cmids as $cmid) {
@@ -1300,8 +1305,6 @@ class course_output implements \renderable, \templatable {
                 }
             }
         }
-
-        $cache->set($courseid, $result);
         return $result;
     }
 
