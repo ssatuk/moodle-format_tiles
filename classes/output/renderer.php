@@ -35,8 +35,8 @@ class renderer extends section_renderer {
         $format = course_get_format($this->page->course->id);
         $displaysection = optional_param('section', 0, PARAM_INT);
         if ($this->page->user_is_editing()) {
-        // If user is editing, we render the page the new way.
-        // We will use this for non editing as well in a later version, but not yet.
+            // If user is editing, we render the page the new way.
+            // We will use this for non editing as well in a later version, but not yet.
             $template = 'format_tiles/local/content';
             $contentclass = $format->get_output_classname('content');
             $displayoptions = [];
@@ -55,7 +55,7 @@ class renderer extends section_renderer {
                 $templateable = new \format_tiles\output\course_output($course, false, null, $this);
                 $data = $templateable->export_for_template($this);
             } else {
-                $template ='format_tiles/single_section_page';
+                $template = 'format_tiles/single_section_page';
                 $templateable = new \format_tiles\output\course_output($course, false, $displaysection, $this);
                 $data = $templateable->export_for_template($this);
             }
