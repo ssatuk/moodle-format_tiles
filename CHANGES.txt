@@ -420,8 +420,8 @@ Other
 - Correct test namespace
 - Fix issue #204 upgrade path
 
-4.4.0.3
-=======
+4.4.0.3 (2024051700)
+====================
 - Fix issue 205 Embedded URL activity video stop
 - Fix issue 206 overall progress missing if JS nav disabled
 - Improve overall progress indicator
