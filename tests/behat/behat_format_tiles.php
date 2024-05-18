@@ -65,7 +65,7 @@ class behat_format_tiles extends behat_base {
         // We ignore the opacity since if the element happens to be on hover during behat test, opacity will be < 1.
         // Actual value may be like rgb(22, 112, 204) rgba(22, 112, 204, 0.5) and both are ok.
         $pattern = '/rgba?\(' . $expectedvalue . '(\)|, \d\.\d\))$/';
-        if(!preg_match($pattern, $value)) {
+        if (!preg_match($pattern, $value)) {
             throw new \Behat\Mink\Exception\ExpectationException(
                 "The property '$property' for the selector '$selector' is '$value' not '$expectedvalue'",
                 $this->getSession()
