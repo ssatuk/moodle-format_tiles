@@ -428,3 +428,7 @@ Other
 - Various PHPUnit fixes, PHP docs typos
 - YouTube embedded in label max width fix
 - Simplify function to get modal allowed CM IDs
+
+4.4.0.4 (2024051800)
+====================
+- Edge case behat fix
