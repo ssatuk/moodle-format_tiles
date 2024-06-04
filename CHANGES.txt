@@ -416,3 +416,8 @@ Other
 - Various PHPUnit fixes, PHP docs typos
 - YouTube embedded in label max width fix
 - Simplify function to get modal allowed CM IDs
+
+4.3.0.28 (2024060400)
+=====================
+- Fix issue #208 overlap on tile when using style 2
+- Registration bug and other minor bug fixes
