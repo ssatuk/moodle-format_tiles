@@ -1825,7 +1825,7 @@ body.format-tiles.jsenabled .course-content .headerabovetiles {
     height: 45px;
 }
 
-.format-tiles li.subtile .tileiconcontainer.administration{
+.format-tiles li.subtile .tileiconcontainer.administration {
     border: 3px solid #da58ef;
 }
 .format-tiles li.subtile .tileiconcontainer.assessment {
@@ -1846,7 +1846,7 @@ body.format-tiles.jsenabled .course-content .headerabovetiles {
 .format-tiles li.subtile .tileiconcontainer.other {
     border: 3px solid #212529;
 }
-.format-tiles .format-tiles-colour-subtile-icon-bg li.subtile .tileiconcontainer.administration{
+.format-tiles .format-tiles-colour-subtile-icon-bg li.subtile .tileiconcontainer.administration {
     background-color: #da58ef;
 }
 .format-tiles .format-tiles-colour-subtile-icon-bg li.subtile .tileiconcontainer.assessment {
@@ -1854,7 +1854,7 @@ body.format-tiles.jsenabled .course-content .headerabovetiles {
 }
 .format-tiles .format-tiles-colour-subtile-icon-bg li.subtile .tileiconcontainer.content {
     background-color: #0099ad;
- }
+}
 .format-tiles .format-tiles-colour-subtile-icon-bg li.subtile .tileiconcontainer.collaboration {
     background-color: #6f46f7;
 }
@@ -1877,6 +1877,7 @@ body.format-tiles.jsenabled .course-content .headerabovetiles {
     justify-content: center;
     align-items: center;
 }
+
 @media (min-width: 768px) {
     body.format-tiles.limitedwidth:not(.path-mod) #page.drawers .main-inner,
     .format-tiles .header-maxwidth {
