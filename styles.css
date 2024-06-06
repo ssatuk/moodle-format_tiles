@@ -70,7 +70,7 @@
 }
 .format-tiles .progress-indic {
     display: inline-block;
-    color: #999;
+    color: #676767;
 }
 
 .format-tiles .progress-indic svg {
@@ -114,7 +114,7 @@
     vertical-align: top;
     line-height: 40px;
     margin-right: 3px;
-    color: #999;
+    color: #676767;
     font-size: 0.9em;
 }
 
