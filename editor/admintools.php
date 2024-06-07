@@ -214,6 +214,8 @@ function cancel_delete_empty_sections() {
  * @package format_tiles
  */
 function list_problem_courses() {
+    global $DB;
+
     $maxsections = course_section_manager::get_max_sections();
 
     // Find the courses which have section numbers we would not expect (too high).
@@ -225,6 +227,27 @@ function list_problem_courses() {
         . ' (' . get_string('experimental', 'format_tiles') . ')'
     );
 
+    // Moodle 4+ course format options unmigrated options check.
+    $countlegacyoptions = $DB->get_field_sql(
+        "SELECT COUNT(cfo.id)
+                FROM {course_format_options} cfo
+                WHERE cfo.format = 'tiles'
+                AND cfo.name IN('tilephoto', 'tileicon')"
+    );
+
+    $legacyoptionshtml = !$countlegacyoptions ? '' :
+        html_writer::div(
+            html_writer::link(
+                new moodle_url('/course/format/tiles/editor/migratecoursedata.php'),
+                get_string('migratecoursedata', 'format_tiles'),
+                ['class' => 'btn btn-primary']
+            ),
+        'm-3'
+        );
+
+    $o .= $legacyoptionshtml;
+
+    // Now the original problem courses code.
     if (count($problemcourses)) {
         $displaycourses = [];
         foreach ($problemcourses as $problemcourse) {
