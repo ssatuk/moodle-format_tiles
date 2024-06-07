@@ -631,6 +631,7 @@ define(["jquery", "core/templates", "core/ajax", "format_tiles/browser_storage",
                 );
                 $(document).ready(function () {
                     if (useSubTiles) {
+                        // We need to be able to style tooltips outside of ul.tiles element.
                         $(Selector.BODY).addClass('format-tiles-subtiles');
                     }
                     var pageContent = $("#page-content");
@@ -783,7 +784,8 @@ define(["jquery", "core/templates", "core/ajax", "format_tiles/browser_storage",
 
                         // Get the section ID from section number.
                         const contentArea = $(Selector.SECTION_ID + data.section);
-                        const sectionId = contentArea.data('sectionid');
+                        const sectionId = contentArea.data('sectionid')
+                            ?? contentArea.data('section-id');
                         // This gets the fragment from format_tiles_output_fragment_get_cm_list().
                         Fragment.loadFragment(
                             'format_tiles', 'get_cm_list', courseContextId, {sectionid: sectionId}
