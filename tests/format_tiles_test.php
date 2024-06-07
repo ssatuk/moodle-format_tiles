@@ -24,6 +24,8 @@
 
 namespace format_tiles;
 
+use format_tiles\local\format_option;
+
 defined('MOODLE_INTERNAL') || die();
 
 global $CFG;

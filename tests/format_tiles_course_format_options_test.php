@@ -45,7 +45,7 @@ final class format_tiles_course_format_options_test extends \advanced_testcase {
 
     /**
      * Create a mock course with legacy format options and test migration.
-     * @covers format_option::migrate_legacy_format_options
+     * @covers \format_tiles\local\format_option::migrate_legacy_format_options
      * @return void
      * @throws \dml_exception
      * @throws \moodle_exception
