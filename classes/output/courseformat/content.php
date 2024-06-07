@@ -26,6 +26,7 @@ namespace format_tiles\output\courseformat;
 
 
 use core_courseformat\output\local\content as content_base;
+use format_tiles\local\dynamic_styles;
 
 /**
  * Format tiles class to render course content.
@@ -45,6 +46,7 @@ class content extends content_base {
     public function export_for_template(\renderer_base $output) {
         global $PAGE, $DB, $USER;
         $isediting = $PAGE->user_is_editing();
+        $course = $this->format->get_course();
 
         $data = parent::export_for_template($output);
         $data->editoradvice = [];
@@ -52,6 +54,9 @@ class content extends content_base {
         $moodlerelease = \format_tiles\local\util::get_moodle_release();
         $data->ismoodle42minus = $moodlerelease <= 4.2;
         $data->ismoodle41minus = $moodlerelease <= 4.1;
+
+        $data->basecolourrgb = dynamic_styles::rgbcolour($course->basecolour ?? '');
+        $data->cssvarsstring = dynamic_styles::make_course_colour_styles_string($data->basecolourrgb);
 
         // For now this class is only used if user is editing but check anyway as one day it will be used when not editing.
         if ($isediting) {

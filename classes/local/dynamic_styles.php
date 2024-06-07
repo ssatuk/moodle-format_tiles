@@ -81,6 +81,20 @@ class dynamic_styles {
         return $csscontent;
     }
 
+
+    /**
+     * Make a string to set the vars for all course colours.
+     * @param string $basecolourrgb
+     * @return string
+     */
+    public static function make_course_colour_styles_string(string $basecolourrgb): string {
+        return "--format-tiles-colour: rgb($basecolourrgb);"
+            . "--format-tiles-colour-7:rgba($basecolourrgb,0.7);"
+            . "--format-tiles-colour-5:rgba($basecolourrgb,0.5);"
+            . "--format-tiles-colour-1:rgba($basecolourrgb,0.1);"
+            . "--format-tiles-colour-05:rgb($basecolourrgb,0.05)";
+    }
+
     /**
      * Export the data for the mustache template.
      * @see \format_tiles\local\util::width_template_data()
@@ -91,7 +105,7 @@ class dynamic_styles {
      * @throws \dml_exception
      * @throws \moodle_exception
      */
-    public static function data_for_template(string $basecolourhex, bool $shadeheadingbar, bool $usesubtiles) {
+    public static function data_for_template(string $basecolourhex, bool $shadeheadingbar, bool $usesubtiles): array {
         $tilestyle = get_config('format_tiles', 'tilestyle') ?? \format_tiles\output\course_output::TILE_STYLE_STANDARD;
         $basecolourrgb = self::rgbcolour($basecolourhex);
         $outputdata = [
@@ -118,6 +132,7 @@ class dynamic_styles {
         }
         $outputdata['shade_heading_bar'] = $shadeheadingbar;
         $outputdata['ismoodle42minus'] = \format_tiles\local\util::get_moodle_release() <= 4.2;
+        $outputdata['ismoodle44'] = \format_tiles\local\util::get_moodle_release() === 4.4;
 
         return $outputdata;
     }
@@ -128,7 +143,7 @@ class dynamic_styles {
      * @param string $hex the colour in hex form e.g. #979797
      * @return string rgb colour
      */
-    private static function rgbcolour(string $hex) {
+    public static function rgbcolour(string $hex): string {
         list($r, $g, $b) = sscanf($hex, "#%02x%02x%02x");
         return "$r,$g,$b";
     }

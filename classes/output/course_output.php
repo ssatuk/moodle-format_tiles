@@ -23,6 +23,7 @@
  */
 namespace format_tiles\output;
 
+use format_tiles\local\dynamic_styles;
 use format_tiles\local\format_option;
 use format_tiles\local\tile_photo;
 use format_tiles\local\filters;
@@ -234,6 +235,9 @@ class course_output implements \renderable, \templatable {
 
         $data['useSubtiles'] = get_config('format_tiles', 'allowsubtilesview') && $this->courseformatoptions['courseusesubtiles'];
         $data['usetooltips'] = get_config('format_tiles', 'usetooltips');
+
+        $basecolourrgb = dynamic_styles::rgbcolour($this->course->basecolour ?? '');
+        $data['cssvarsstring'] = dynamic_styles::make_course_colour_styles_string($basecolourrgb);
 
         foreach ($this->courseformatoptions as $k => $v) {
             $data[$k] = $v;
