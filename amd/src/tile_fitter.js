@@ -51,7 +51,7 @@ define(["jquery", "core/ajax"], function ($, ajax) {
      * If we have a single tile on the last row it looks odd.
      * We might want to shrink the tile window down a little to even it out.
      * So we work out how many per row would be optimal, and shrink the window accordingly.
-     * @see \format_tiles\util::width_template_data() for more information.
+     * @see \format_tiles\local\util::width_template_data() for more information.
      * @return {Promise}
      */
     var resizeTilesDivWidth = function() {

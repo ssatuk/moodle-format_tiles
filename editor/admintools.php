@@ -24,6 +24,8 @@
 
 require_once('../../../../config.php');
 
+use format_tiles\local\course_section_manager;
+
 global $PAGE, $DB, $OUTPUT;
 
 require_login();
@@ -176,9 +178,9 @@ function schedule_delete_empty_sections() {
     require_sesskey();
     $courseid = required_param('courseid', PARAM_INT);
     $course = get_course($courseid);
-    format_tiles\course_section_manager::schedule_empty_sec_deletion($course->id);
+    course_section_manager::schedule_empty_sec_deletion($course->id);
     redirect(
-        \format_tiles\course_section_manager::get_list_problem_courses_url(),
+        course_section_manager::get_list_problem_courses_url(),
         get_string('scheduleddeleteemptysections', 'format_tiles'),
         null,
         core\output\notification::NOTIFY_SUCCESS
@@ -194,9 +196,9 @@ function schedule_delete_empty_sections() {
  */
 function cancel_delete_empty_sections() {
     $courseid = required_param('courseid', PARAM_INT);
-    format_tiles\course_section_manager::cancel_empty_sec_deletion($courseid);
+    course_section_manager::cancel_empty_sec_deletion($courseid);
     redirect(
-        \format_tiles\course_section_manager::get_list_problem_courses_url(),
+        course_section_manager::get_list_problem_courses_url(),
         get_string('cancelled'),
         null,
         core\output\notification::NOTIFY_SUCCESS
@@ -212,10 +214,10 @@ function cancel_delete_empty_sections() {
  * @package format_tiles
  */
 function list_problem_courses() {
-    $maxsections = \format_tiles\course_section_manager::get_max_sections();
+    $maxsections = course_section_manager::get_max_sections();
 
     // Find the courses which have section numbers we would not expect (too high).
-    $problemcourses = \format_tiles\course_section_manager::get_problem_courses($maxsections);
+    $problemcourses = course_section_manager::get_problem_courses($maxsections);
 
     $o = html_writer::tag(
         'h2',
@@ -239,7 +241,7 @@ function list_problem_courses() {
             $displaycourse->count_sections = $problemcourse->count_sections;
             $displaycourse->max_section_number = $problemcourse->max_section_number;
             if ($problemcourse->count_sections > $maxsections) {
-                $displaycourse->action = \format_tiles\course_section_manager::get_schedule_button($problemcourse->id);
+                $displaycourse->action = course_section_manager::get_schedule_button($problemcourse->id);
             } else {
                 $url = new moodle_url(
                     '/course/format/tiles/editor/admintools.php',
@@ -284,6 +286,6 @@ function list_problem_courses() {
 function resolve_section_misnumbering() {
     $courseid = required_param('courseid', PARAM_INT);
     require_sesskey();
-    \format_tiles\course_section_manager::resolve_section_misnumbering($courseid);
-    redirect(\format_tiles\course_section_manager::get_list_problem_courses_url());
+    course_section_manager::resolve_section_misnumbering($courseid);
+    redirect(course_section_manager::get_list_problem_courses_url());
 }

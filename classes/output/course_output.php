@@ -23,8 +23,8 @@
  */
 namespace format_tiles\output;
 
-use format_tiles\format_option;
-use format_tiles\tile_photo;
+use format_tiles\local\format_option;
+use format_tiles\local\tile_photo;
 
 defined('MOODLE_INTERNAL') || die();
 global $CFG;
@@ -144,7 +144,7 @@ class course_output implements \renderable, \templatable {
             $this->courserenderer = $courserenderer;
         }
         $this->devicetype = \core_useragent::get_device_type();
-        $this->usemodalsforcoursemodules = \format_tiles\util::allowed_modal_modules();
+        $this->usemodalsforcoursemodules = \format_tiles\local\util::allowed_modal_modules();
         $this->format = course_get_format($this->course);
         $this->modinfo = get_fast_modinfo($this->course);
 
@@ -157,7 +157,7 @@ class course_output implements \renderable, \templatable {
         $this->completionenabled = $course->enablecompletion && !isguestuser();
         $this->courseformatoptions = $this->get_course_format_options($this->fromajax);
 
-        $this->moodlerelease = \format_tiles\util::get_moodle_release();
+        $this->moodlerelease = \format_tiles\local\util::get_moodle_release();
     }
 
     /**
@@ -226,7 +226,7 @@ class course_output implements \renderable, \templatable {
         $data['editing'] = $this->isediting;
         $data['sesskey'] = sesskey();
         $data['showinitialpageloadingicon'] = !$this->isediting
-            && \format_tiles\dynamic_styles::page_needs_loading_icon($this->course->id);
+            && \format_tiles\local\dynamic_styles::page_needs_loading_icon($this->course->id);
         $data['jsnavadminallowed'] = get_config('format_tiles', 'usejavascriptnav');
         $data['jsnavuserenabled'] = !get_user_preferences('format_tiles_stopjsnav');
         $data['usingjsnav'] = $data['jsnavadminallowed'] && $data['jsnavuserenabled'];
@@ -240,7 +240,7 @@ class course_output implements \renderable, \templatable {
         // RTL support for nav arrows direction (Arabic/ Hebrew).
         $data['is-rtl'] = right_to_left();
 
-        if ($data['canedit'] && \format_tiles\format_option::needs_migration_incomplete_warning($this->course->id)) {
+        if ($data['canedit'] && format_option::needs_migration_incomplete_warning($this->course->id)) {
             $message = get_string('coursephotomigrationincomplete', 'format_tiles');
             $message .= \html_writer::link(
                 new \moodle_url('/course/format/tiles/editor/migratecoursedata.php', ['courseid' => $this->course->id]),
@@ -268,7 +268,7 @@ class course_output implements \renderable, \templatable {
 
         // If we are using the course index, JS needs to know which PDFs and HTML files in course launch in modals.
         if (get_config('format_tiles', 'usecourseindex')) {
-            $allowedmodals = \format_tiles\util::allowed_modal_modules();
+            $allowedmodals = \format_tiles\local\util::allowed_modal_modules();
             $modnames = array_merge($allowedmodals['modules'] ?? [], $allowedmodals['resources'] ?? []);
             $jsconfigvalues['modalAllowedModNames'] = json_encode($modnames);
             $jsconfigvalues['modalAllowedCmids'] = json_encode(self::get_modal_allowed_cmids($courseid, $modnames));
@@ -536,7 +536,7 @@ class course_output implements \renderable, \templatable {
             $data['allowphototiles'] = 1;
             $data['showprogressphototiles'] = get_config('format_tiles', 'showprogresssphototiles');
             $phototileids = array_keys(
-                \format_tiles\format_option::get_multiple($this->course->id, format_option::OPTION_SECTION_PHOTO)
+                format_option::get_multiple($this->course->id, format_option::OPTION_SECTION_PHOTO)
             );
             $phototileextraclasses = 'phototile';
         } else {
@@ -557,7 +557,7 @@ class course_output implements \renderable, \templatable {
         }
         $usingoutcomesfilter = in_array(
             $this->courseformatoptions['displayfilterbar'],
-            [\format_tiles\format_option::FILTER_OUTCOMES_ONLY, \format_tiles\format_option::FILTER_OUTCOMES_AND_NUMBERS]
+            [format_option::FILTER_OUTCOMES_ONLY, format_option::FILTER_OUTCOMES_AND_NUMBERS]
         );
 
         foreach ($secsall as $sectionnum => $section) {
@@ -576,7 +576,7 @@ class course_output implements \renderable, \templatable {
                         $a = new \stdClass();
                         $a->max = $maxallowedsections;
                         $a->tilename = $previoustiletitle;
-                        $button = \format_tiles\course_section_manager::get_schedule_button($this->course->id);
+                        $button = \format_tiles\local\course_section_manager::get_schedule_button($this->course->id);
                         \core\notification::error(get_string('coursetoomanysections', 'format_tiles', $a) . $button);
                         $sectioncountwarningissued = true;
                     }
@@ -700,7 +700,7 @@ class course_output implements \renderable, \templatable {
         if ($this->courseformatoptions['displayfilterbar']) {
             $usingnumbersfilter = in_array(
                 $this->courseformatoptions['displayfilterbar'],
-                [\format_tiles\format_option::FILTER_NUMBERS_ONLY, \format_tiles\format_option::FILTER_OUTCOMES_AND_NUMBERS]
+                [format_option::FILTER_NUMBERS_ONLY, format_option::FILTER_OUTCOMES_AND_NUMBERS]
             );
             if ($usingnumbersfilter) {
                 $data['filternumberedbuttons'] = $this->get_filter_numbered_buttons_data($data['tiles']);
@@ -1031,7 +1031,7 @@ class course_output implements \renderable, \templatable {
             $moduleobject['modinstance'] = $mod->instance;
         }
         $moduleobject['modresourceicon'] = $mod->modname == 'resource'
-            ? \format_tiles\util::get_mod_resource_icon_name($mod->context->id) : null;
+            ? \format_tiles\local\util::get_mod_resource_icon_name($mod->context->id) : null;
 
         $treataslabel = $mod->has_custom_cmlist_item();
         if (!$treataslabel && get_config('format_tiles', 'allowphototiles')) {

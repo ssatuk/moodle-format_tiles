@@ -45,7 +45,7 @@ class cm extends core_cm {
      * @return bool if the cm has format data
      */
     protected function add_format_data(\stdClass &$data, array $haspartials, \renderer_base $output): bool {
-        $moodlerelease = \format_tiles\util::get_moodle_release();
+        $moodlerelease = \format_tiles\local\util::get_moodle_release();
         $data->ismoodle42minus = $moodlerelease <= 4.2;
         $data->ismoodle41minus = $moodlerelease <= 4.1;
         $data->ismoodle40 = $moodlerelease === 4.0;
