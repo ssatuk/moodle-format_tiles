@@ -216,7 +216,7 @@ class format_tiles extends core_courseformat\base {
         }
         if (($data['displayfilterbar'] == \format_tiles\local\format_option::FILTER_OUTCOMES_ONLY
                 || $data['displayfilterbar'] == \format_tiles\local\format_option::FILTER_OUTCOMES_AND_NUMBERS)
-            && empty($this->format_tiles_get_course_outcomes($courseid))) {
+            && empty(\format_tiles\local\filters::get_course_outcomes($courseid))) {
             $outcomeslink = html_writer::link(
                 new moodle_url('/grade/edit/outcome/course.php', ['id' => $courseid]),
                 new lang_string('outcomes', 'format_tiles')
@@ -515,7 +515,7 @@ class format_tiles extends core_courseformat\base {
                     '(' . new lang_string('outcomes', 'format_tiles') . ')'
                 );
                 $label = get_string('tileoutcome', 'format_tiles') . ' ' . $outcomeslink;
-                $outcomes = $this->format_tiles_get_course_outcomes($course->id);
+                $outcomes = \format_tiles\local\filters::get_course_outcomes($course->id);
                 if (!empty($outcomes)) {
                     $outcomes[0] = get_string('none', 'format_tiles');
                 }
@@ -770,31 +770,6 @@ class format_tiles extends core_courseformat\base {
             $editlabel = new lang_string('newsectionname', 'format_tiles', $title);
         }
         return parent::inplace_editable_render_section_name($section, $linkifneeded, $editable, $edithint, $editlabel);
-    }
-
-
-    /**
-     * Get an array of all the Outcomes set for this course by the teacher, so that they can
-     * be attached to individual Tiles, and then used to filter tiles by Outcome
-     * @see get_filter_outcome_buttons()
-     * @see course_format_options() and the displayfilterbar option
-     * @param int $courseid
-     * @return array|null
-     */
-    public function format_tiles_get_course_outcomes($courseid) {
-        global $CFG;
-        if (!empty($CFG->enableoutcomes)) {
-            require_once($CFG->libdir . '/gradelib.php');
-            $outcomes = [];
-            $outcomesfull = grade_outcome::fetch_all_available($courseid);
-            foreach ($outcomesfull as $outcome) {
-                $outcomes[$outcome->id] = $outcome->fullname;
-            }
-            asort($outcomes);
-            return $outcomes;
-        } else {
-            return null;
-        }
     }
 
     /**
