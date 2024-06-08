@@ -236,9 +236,6 @@ class course_output implements \renderable, \templatable {
         $data['useSubtiles'] = get_config('format_tiles', 'allowsubtilesview') && $this->courseformatoptions['courseusesubtiles'];
         $data['usetooltips'] = get_config('format_tiles', 'usetooltips');
 
-        $basecolourrgb = dynamic_styles::rgbcolour($this->course->basecolour ?? '');
-        $data['cssvarsstring'] = dynamic_styles::make_course_colour_styles_string($basecolourrgb);
-
         foreach ($this->courseformatoptions as $k => $v) {
             $data[$k] = $v;
         }

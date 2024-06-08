@@ -81,20 +81,6 @@ class dynamic_styles {
         return $csscontent;
     }
 
-
-    /**
-     * Make a string to set the vars for all course colours.
-     * @param string $basecolourrgb
-     * @return string
-     */
-    public static function make_course_colour_styles_string(string $basecolourrgb): string {
-        return "--format-tiles-colour: rgb($basecolourrgb);"
-            . "--format-tiles-colour-7:rgba($basecolourrgb,0.7);"
-            . "--format-tiles-colour-5:rgba($basecolourrgb,0.5);"
-            . "--format-tiles-colour-1:rgba($basecolourrgb,0.1);"
-            . "--format-tiles-colour-05:rgb($basecolourrgb,0.05)";
-    }
-
     /**
      * Export the data for the mustache template.
      * @see \format_tiles\local\util::width_template_data()
