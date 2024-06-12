@@ -429,3 +429,8 @@ Other
 - Refactor move tiles local classes to \format_tiles\local\
 - Refactor dynamic styles to use CSS vars and less inline CSS
 - Other minor changes: tile fitter JS, registration, book icon & Adaptable theme CSS
+
+4.3.0.30 (2024061200)
+=====================
+- Respect section permalinks https://docs.moodle.org/403/en/Course_homepage#Get_a_permalink_to_a_course_section
+- Remove CSS error
