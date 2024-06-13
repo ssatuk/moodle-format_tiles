@@ -96,13 +96,13 @@ $jsparams = [
 ];
 
 if (!$isediting) {
-    // Initalise the main JS module for non editing users.
+    // Initialise the main JS module for non editing users.
     $PAGE->requires->js_call_amd(
         'format_tiles/course', 'init', array_merge($jsparams, ['courseContextId' => $context->id])
     );
 }
 if ($isediting) {
-    // Initalise the main JS module for editing users.
+    // Initialise the main JS module for editing users.
     $jsparams['pagetype'] = $PAGE->pagetype;
     $jsparams['allowphototiles'] = $allowphototiles;
     $jsparams['documentationurl'] = get_config('format_tiles', 'documentationurl');
