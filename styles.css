@@ -618,7 +618,7 @@ li.activity .tileiconcontainer .tile-icon .icon.fa {
 .format-tiles .navigation-arrows .navigation-arrow.dimmed:hover {
     background-color: inherit;
 }
-.format-tiles .single-section a.navigation-arrow {
+.format-tiles .single-section .navigation-arrow {
     color: grey;
 }
 

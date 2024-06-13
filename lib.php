@@ -1026,20 +1026,11 @@ function format_tiles_output_fragment_get_cm_content(array $args): string {
  * @throws moodle_exception
  */
 function format_tiles_before_standard_html_head(): string {
-    global $PAGE;
     $html = '';
-
     try {
-        $courseid = optional_param('id', 0, PARAM_INT);
-
-        $istilescoursefrontpage = $PAGE->pagetype == 'course-view-tiles' && $courseid
-            && $PAGE->url->compare(new moodle_url('/course/view.php'), URL_MATCH_BASE);
-        if (!$istilescoursefrontpage || !$courseid) {
-            // We have to be careful in this function as it's called on every page (not just tiles course pages).
-            return '';
-        }
-
-        $dynamiccss = \format_tiles\local\dynamic_styles::get_tiles_dynamic_css($courseid);
+        // We have to be careful in this function as it's called on every page (not just tiles course pages).
+        // The method get_tiles_dynamic_css() will check that we are on a page that really needs it.
+        $dynamiccss = \format_tiles\local\dynamic_styles::get_tiles_dynamic_css();
         if ($dynamiccss) {
             $html .= "<style id=\"format-tiles-dynamic-css\">$dynamiccss</style>";
         }

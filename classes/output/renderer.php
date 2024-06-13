@@ -34,6 +34,11 @@ class renderer extends section_renderer {
     public function render_content() {
         $format = course_get_format($this->page->course->id);
         $displaysection = optional_param('section', 0, PARAM_INT);
+        if (!$displaysection) {
+            // Try to get it from url params which may have been added /course/view.php incl from sectionid.
+            // This enables us to respect "permalink" section URLs as AMD format_tiles/course redirects them to &sectionid=xx.
+            $displaysection = $this->page->url->param('section') ?? 0;
+        }
         if ($this->page->user_is_editing()) {
             // If user is editing, we render the page the new way.
             // We will use this for non editing as well in a later version, but not yet.
