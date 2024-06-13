@@ -982,6 +982,18 @@ define(["jquery", "core/templates", "core/ajax", "format_tiles/browser_storage",
                             }
                         }
                     });
+
+                    // The URL may include a section ID in the form "#sectionid-xx-title" where xx is section ID.
+                    // We cannot get that value in PHP so try redirect from here instead.
+                    const urlPattern = /.*\/course\/view\.php\?id=([\d]+)#sectionid-([\d+]+)-title/;
+                    const urlMatches = window.location.href.match(urlPattern);
+                    if (urlMatches && urlMatches.length === 3) {
+                        const sectionId = urlMatches[2];
+                        const redirectUrl = urlMatches[0].replace(
+                            `#sectionid-${sectionId}-title`, `&sectionid=${sectionId}`
+                        );
+                        window.location.replace(redirectUrl);
+                    }
                 });
             },
             populateAndExpandSection(courseContextId, sectionId, sectionNumber) {
