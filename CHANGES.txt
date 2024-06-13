@@ -455,3 +455,8 @@ Other
 =====================
 - Dynamic styles improve
 - Non JS mode - fix Moodle 4.4 section.php page incl colours, fix dimmed nav arrow colour.
+
+4.3.0.32 (2024061302)
+=====================
+- Refactor JS init and remove some redundant editor JS
+- Avoid imprecision warning on image upload

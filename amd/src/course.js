@@ -987,6 +987,7 @@ define(["jquery", "core/templates", "core/ajax", "format_tiles/browser_storage",
                     // The URL may include a section ID in the form "#sectionid-xx-title" where xx is section ID.
                     // This would be from a section "permalink".
                     // We cannot get that value in PHP so try redirect from here instead.
+                    // This is not needed from Moodle 4.4+ as then the section.php URL is used for permalinks.
                     const urlPattern = /.*\/course\/view\.php\?id=([\d]+)#sectionid-([\d+]+)-title/;
                     const urlMatches = window.location.href.match(urlPattern);
                     if (urlMatches && urlMatches.length === 3) {

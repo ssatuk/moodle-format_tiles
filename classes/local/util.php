@@ -265,7 +265,9 @@ class util {
 
     /**
      * Include AMD module required for tiles course.
-     * @param $course
+     * @param \stdClass $course
+     * @param int $contextid
+     * @param int|null $displaysection
      * @return void
      * @throws \coding_exception
      * @throws \dml_exception
@@ -306,7 +308,7 @@ class util {
                 'courseId' => $course->id,
                 'pageType' => $PAGE->pagetype,
                 'allowPhotoTiles' => get_config('format_tiles', 'allowphototiles'),
-                'documentationurl' => get_config('format_tiles', 'documentationurl')
+                'documentationurl' => get_config('format_tiles', 'documentationurl'),
             ];
             $PAGE->requires->js_call_amd('format_tiles/edit_icon_picker', 'init', $editparams);
         }
