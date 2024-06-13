@@ -434,3 +434,8 @@ Other
 =====================
 - Respect section permalinks https://docs.moodle.org/403/en/Course_homepage#Get_a_permalink_to_a_course_section
 - Remove CSS error
+
+4.3.0.31 (2024061300)
+=====================
+- Dynamic styles improve
+- Non JS mode - fix Moodle 4.4 section.php page incl colours, fix dimmed nav arrow colour.
