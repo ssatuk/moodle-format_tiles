@@ -984,6 +984,7 @@ define(["jquery", "core/templates", "core/ajax", "format_tiles/browser_storage",
                     });
 
                     // The URL may include a section ID in the form "#sectionid-xx-title" where xx is section ID.
+                    // This would be from a section "permalink".
                     // We cannot get that value in PHP so try redirect from here instead.
                     const urlPattern = /.*\/course\/view\.php\?id=([\d]+)#sectionid-([\d+]+)-title/;
                     const urlMatches = window.location.href.match(urlPattern);

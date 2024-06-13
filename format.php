@@ -44,12 +44,11 @@ $displaysection = optional_param('section', 0, PARAM_INT);
 if (!$displaysection) {
     // Try to get it from url params which may have been added /course/view.php incl from sectionid.
     // This enables us to respect "permalink" section URLs as AMD format_tiles/course redirects them to &sectionid=xx.
-    $displaysection = $PAGE->url->param('section') ?? null;
+    $displaysection = $PAGE->url->param('section') ?? 0;
 }
-if (!empty($displaysection)) {
+if (!$displaysection) {
     $format->set_sectionnum($displaysection);
 }
-
 if (($marker >= 0) && has_capability('moodle/course:setcurrentsection', $context) && confirm_sesskey()) {
     $course->marker = $marker;
     course_set_marker($course->id, $marker);
@@ -96,13 +95,13 @@ $jsparams = [
 ];
 
 if (!$isediting) {
-    // Initalise the main JS module for non editing users.
+    // Initialise the main JS module for non editing users.
     $PAGE->requires->js_call_amd(
         'format_tiles/course', 'init', array_merge($jsparams, ['courseContextId' => $context->id])
     );
 }
 if ($isediting) {
-    // Initalise the main JS module for editing users.
+    // Initialise the main JS module for editing users.
     $jsparams['pagetype'] = $PAGE->pagetype;
     $jsparams['allowphototiles'] = $allowphototiles;
     $jsparams['documentationurl'] = get_config('format_tiles', 'documentationurl');
