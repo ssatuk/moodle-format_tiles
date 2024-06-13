@@ -14,7 +14,7 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
-namespace format_tiles\local\hooks\output;
+namespace format_tiles\hooks\output;
 
 /**
  * Allows plugins to add any elements to the page <head> html tag
