@@ -825,6 +825,7 @@ define(["jquery", "core/templates", "core/ajax", "format_tiles/browser_storage",
 
                     if (enableCompletion) {
                         // We use pageContent for listener here, as completion button is replaced by core JS when it's clicked.
+                        // This is for non-subtiles only.
                         // We wait half a second to enable the completion change to be registered first.
                         pageContent.on(Event.CLICK, Selector.MANUAL_COMPLETION, function(e) {
                             const currentTarget = $(e.currentTarget);
