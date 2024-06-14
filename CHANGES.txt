@@ -444,3 +444,9 @@ Other
 =====================
 - Refactor JS init and remove some redundant editor JS
 - Avoid imprecision warning on image upload
+
+4.3.0.33 (2024061400)
+=====================
+- Support for section.php on Moodle 4.4
+- Move some helper methods and minor refactor
+- Fix modals non JS navigation mode
