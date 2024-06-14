@@ -1092,7 +1092,7 @@ function format_tiles_before_footer() {
             }
             $PAGE->requires->js_call_amd(
                 'format_tiles/course_mod_modal', 'init',
-                [$PAGE->course->id, false, $PAGE->pagetype, $launchmodalcmid]
+                [$PAGE->course->id, false, $PAGE->pagetype, $launchmodalcmid, \format_tiles\local\util::using_js_nav()]
             );
         }
 
