@@ -56,7 +56,7 @@ class modal_helper {
      * Is a particular modname e.g. page allowed a modal.
      * For resource we check the resource type as well e.g. pdf.
      * @param string $modname e.g. page, resource, url.
-     * @param string $resourcetype e.g. pdf, html, docx.
+     * @param string $resourcetype only used for modname = resource, e.g. pdf, html, docx.
      * @return bool
      * @throws \dml_exception
      */

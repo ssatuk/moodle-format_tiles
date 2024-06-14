@@ -445,11 +445,13 @@ define(["jquery", "core/modal_factory", "core/config", "core/templates", "core/n
                                 if (data && data.modalallowed) {
                                     const expandedSection = $(`li#section-${data.sectionnumber}.state-visible`);
                                     if (expandedSection.length === 0) {
-                                        require(["format_tiles/course"], function (course) {
-                                            course.populateAndExpandSection(
-                                                data.coursecontextid, data.sectionid, data.sectionnumber
-                                            );
-                                        });
+                                        if (usingJsNav) {
+                                            require(["format_tiles/course"], function (course) {
+                                                course.populateAndExpandSection(
+                                                    data.coursecontextid, data.sectionid, data.sectionnumber
+                                                );
+                                            });
+                                        }
                                     }
 
                                     launchCmModal(
@@ -551,8 +553,8 @@ define(["jquery", "core/modal_factory", "core/config", "core/templates", "core/n
                                         if (usingJsNav) {
                                             window.location.href = `${config.wwwroot}/course/view.php?id=${courseId}&cmid=${cmId}`;
                                         } else {
-                                            const sectionElement = link.closest('ul.courseindex-sectioncontent');
-                                            const sectionNumber = sectionElement ? sectionElement.data('id') : 0;
+                                            const sectionElement = link.closest('.courseindex-section');
+                                            const sectionNumber = sectionElement ? sectionElement.data('number') : 0;
                                             window.location.href = `${config.wwwroot}/course/view.php?id=${courseId}`
                                                 + `&section=${sectionNumber}&cmid=${cmId}`;
                                         }
