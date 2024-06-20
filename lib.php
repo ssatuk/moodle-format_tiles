@@ -166,13 +166,15 @@ class format_tiles extends core_courseformat\base {
         } else {
             $sectionno = $section;
         }
+
         if ($sectionno !== null) {
-            if ($sr) {
+            if ($sr !== null) {
+                $url->set_anchor('section-' . $sectionno);
                 $sectionno = $sr;
             }
             if ($sectionno != 0) {
                 $url->param('section', $sectionno);
-            } else {
+            } else if ($sr === null) {
                 if (!empty($options['navigation'])) {
                     return null;
                 }
