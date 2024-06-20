@@ -111,7 +111,7 @@ class modal_helper {
                         "SELECT cm.id FROM {url} u
                              JOIN {course_modules} cm ON cm.instance = u.id
                              JOIN {modules} m ON m.id = cm.module AND m.name = 'url'
-                             WHERE u.course = :course AND u.display $insql", $params
+                             WHERE u.course = :course AND cm.deletioninprogress = 0 AND u.display $insql", $params
                     ));
                 } else if (in_array($allowedmodule, ['pdf', 'html'])) {
                     // First get file cmids of relevant mime type.
@@ -122,7 +122,7 @@ class modal_helper {
                     JOIN {context} ctx ON ctx.contextlevel = :contextmodule AND ctx.instanceid = cm.id
                     JOIN {files} f ON f.component = 'mod_resource' AND f.filearea = 'content' AND f.contextid = ctx.id
                         AND f.itemid = 0 AND f.filesize > 0 and f.filename != '.' AND f.mimetype = :mimetype
-                    WHERE cm.course = :courseid";
+                    WHERE cm.course = :courseid AND cm.deletioninprogress = 0";
                     $cmids = array_merge($cmids, $DB->get_fieldset_sql(
                         $sql,
                         [
@@ -156,7 +156,14 @@ class modal_helper {
         $result = [];
         if (!empty($cmids)) {
             foreach ($cmids as $cmid) {
-                $cm = $modinfo->get_cm($cmid);
+                try {
+                    $cm = $modinfo->get_cm($cmid);
+                } catch (\Exception $e) {
+                    // This is unexpected, but we don't want an exception in the footer so continue.
+                    debugging("Could not find course mod $cmid " . $e->getMessage());
+                    continue;
+                }
+
                 if (!$cm->onclick && $cm->uservisible) {
                     $result[] = (int)$cm->id; // Must be ints for JS to interpret correctly.
                 }
