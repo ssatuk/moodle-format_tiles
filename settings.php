@@ -33,7 +33,6 @@ if ($ADMIN->fulltree) {
         'formatsettingtiles', get_string('pluginname', 'format_tiles')
     );
 
-
     // Colour settings.
     $page = new admin_settingpage('format_tiles/tab-colours', get_string('colours', 'format_tiles'));
 
