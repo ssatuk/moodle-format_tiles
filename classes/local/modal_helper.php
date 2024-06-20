@@ -68,6 +68,9 @@ class modal_helper {
         if ($modname == 'resource' && $resourcetype && in_array($resourcetype, $allowedmodmodals['resources'])) {
             return true;
         }
+        if ($modname == 'url' && in_array($modname, $allowedmodmodals['resources'])) {
+            return true;
+        }
         if (in_array($modname, $allowedmodmodals['modules'])) {
             return true;
         }
@@ -84,7 +87,6 @@ class modal_helper {
      */
     public static function get_modal_allowed_cmids(int $courseid, array $allowedmodals): array {
         global $DB, $CFG;
-        require_once("$CFG->libdir/resourcelib.php");  // To import RESOURCELIB_DISPLAY_XXX.
         if (empty($allowedmodals)) {
             return [];
         }
@@ -99,6 +101,9 @@ class modal_helper {
         if ($cachedvalue === false) {
             // Config values to be added to templates for JS to retrieve.
             // May move more to this from existing JS init in format.php.
+
+            // To import RESOURCELIB_DISPLAY_XXX.
+            require_once("$CFG->libdir/resourcelib.php");
 
             foreach ($allowedmodals as $allowedmodule) {
                 if ($allowedmodule == 'url') {
