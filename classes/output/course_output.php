@@ -31,7 +31,6 @@ use format_tiles\local\filters;
 defined('MOODLE_INTERNAL') || die();
 global $CFG;
 require_once($CFG->dirroot .'/course/format/lib.php');
-require_once("$CFG->libdir/resourcelib.php");  // To import RESOURCELIB_DISPLAY_POPUP.
 
 /**
  * Tiles course format, main course output class to prepare data for mustache templates

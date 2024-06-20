@@ -83,8 +83,8 @@ class modal_helper {
      * @return array course module IDs to launch in modals.
      */
     public static function get_modal_allowed_cmids(int $courseid, array $allowedmodals): array {
-        global $DB;
-
+        global $DB, $CFG;
+        require_once("$CFG->libdir/resourcelib.php");  // To import RESOURCELIB_DISPLAY_XXX.
         if (empty($allowedmodals)) {
             return [];
         }
