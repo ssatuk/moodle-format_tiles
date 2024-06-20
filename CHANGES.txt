@@ -457,3 +457,7 @@ Other
 - After save an activty, return to course main page, with # scroll to section edited
 - Remove set icon menu control for section zero
 - Avoid footer cache issue when course is restored deleting existing content.
+
+4.3.0.36 (2024062002)
+=====================
+- Fix URL activity modal when launched from course index.
