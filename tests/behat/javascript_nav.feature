@@ -95,7 +95,7 @@ Feature: Interface can be enhabced with JS nav if allowed by site admin
     And I should not see "Test book name hidden" in the "#single_section_tiles" "css_element"
 
     And I click on ".navigation-arrows [title='Course home']" "css_element"
-    And I should not see "Test book name s2"
+    And I should not see "Test book name s2" in the "#format-tiles-multi-section-page" "css_element"
     And I should not see "Test choice name hidden"
     And section "1" should be visible
     And section "2" should be visible

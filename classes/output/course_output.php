@@ -137,7 +137,7 @@ class course_output implements \renderable, \templatable {
      * @param int|null $sectionnum the id of the current section.
      * @param \renderer_base|null $courserenderer the course renderer.
      */
-    public function __construct($course, $fromajax = false, $sectionnum = null, \renderer_base $courserenderer = null) {
+    public function __construct($course, $fromajax = false, $sectionnum = null, \renderer_base|null $courserenderer = null) {
         $this->course = $course;
         $this->fromajax = $fromajax;
         $this->sectionnum = $sectionnum;
