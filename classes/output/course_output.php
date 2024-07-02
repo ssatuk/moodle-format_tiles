@@ -581,7 +581,7 @@ class course_output implements \renderable, \templatable {
                     'current' => course_get_format($this->course)->is_section_current($section),
                     'hidden' => !$section->visible,
                     'visible' => $section->visible,
-                    'restricted' => !($section->available),
+                    'restrictionlock' => !($section->available),
                     'userclickable' => $section->available || $section->uservisible,
                     'activity_summary' => self::temp_section_activity_summary($section),
                     'titleclass' => strlen($title) >= $longtitlelength ? ' longtitle' : '',
