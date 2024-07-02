@@ -120,7 +120,7 @@ if ($url = $tilephoto->get_image_url()) {
         );
     } else {
         $formparams['aspectratiomessage'] = html_writer::span(
-            $aspectratiocheck['messageshort'],
+            $aspectratiocheck['messageshort'] ?? '',
             'alert alert-success d-inline-block'
         );
     }
@@ -151,6 +151,10 @@ if ($mform->is_cancelled()) {
             $tempfile->delete();
         } else {
             try {
+
+                // Delete any existing file attached to this section.
+                \format_tiles\local\tile_photo::delete_files_from_ids($courseid, $sectionid);
+
                 $newfile = $tilephoto->set_file_from_stored_file($tempfile, $newfilename);
                 $verifyaspectratio = $tilephoto->verify_aspect_ratio();
                 if ($verifyaspectratio['status'] !== true) {
