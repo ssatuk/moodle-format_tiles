@@ -59,7 +59,7 @@ class section extends section_base {
                 $data->phototileurl = $tilephotourl;
                 $data->phototileediturl = new \moodle_url(
                     '/course/format/tiles/editor/editimage.php',
-                    ['courseid' => $this->section->course, 'sectionid' => $this->section->id]
+                    ['sectionid' => $this->section->id]
                 );
             }
 

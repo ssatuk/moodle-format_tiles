@@ -439,7 +439,7 @@ class course_output implements \renderable, \templatable {
                 $data['phototileurl'] = $tilephotourl;
                 $data['phototileediturl'] = new \moodle_url(
                     '/course/format/tiles/editor/editimage.php',
-                    ['courseid' => $this->course->id, 'sectionid' => $thissection->id]
+                    ['sectionid' => $thissection->id]
                 );
             }
         }
@@ -601,7 +601,7 @@ class course_output implements \renderable, \templatable {
                     $newtile['phototileurl'] = $tilephotourl;
                     $newtile['phototileediturl'] = new \moodle_url(
                         '/course/format/tiles/editor/editimage.php',
-                        ['courseid' => $this->course->id, 'sectionid' => $section->id]
+                        ['sectionid' => $section->id]
                     );
                 }
 
