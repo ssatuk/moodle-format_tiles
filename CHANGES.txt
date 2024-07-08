@@ -467,6 +467,7 @@ Other
 - Fix issue #131 image overwrite
 - Fix issue #207 course modules indent (non-subtiles only)
 - Fix issue #211 icon fallbacks
+- Fix issue with course_sections error when trying to upload an image to a tile which already has one
 - Possible fix for intermittent issue #213 (Class "format_tiles\output\courseformat\content\cm\controlmenu" not found)
 - Section expanded when editor returns
 - Remove duplicate lock icon
