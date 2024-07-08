@@ -23,6 +23,7 @@ use core_external\external_value;
 use core_external\external_description;
 use core_external\external_single_structure;
 use core_external\external_warnings;
+use format_tiles\local\format_option;
 use invalid_parameter_exception;
 use dml_exception;
 use file_exception;
@@ -263,9 +264,13 @@ class external extends external_api {
         );
         if ($data['image'] == $defaulticonthiscourse) {
             // Using default icon for a tile do don't store anything in database = default.
-            $result = \format_tiles\local\format_option::unset($data['courseid'], $optiontype, $elementid);
+            // Unset any icon.
+            format_option::unset($data['courseid'], format_option::OPTION_SECTION_ICON, $elementid);
+            // Also unset any photo.
+            format_option::unset($data['courseid'], format_option::OPTION_SECTION_PHOTO, $elementid);
+            return true;
         } else {
-            $result = \format_tiles\local\format_option::set($data['courseid'], $optiontype, $elementid, $data['image']);
+            $result = format_option::set($data['courseid'], $optiontype, $elementid, $data['image']);
         }
 
         if ($result) {
