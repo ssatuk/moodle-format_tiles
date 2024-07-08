@@ -264,7 +264,7 @@ class icon_set {
             'format_tiles:toggle-off' => 'fa-toggle-off',
             'format_tiles:toggle-on' => 'fa-toggle-on',
             'format_tiles:completion-check' => 'fa-check',
-            'format_tiles:completion-fail' => 'fa-times'
+            'format_tiles:completion-fail' => 'fa-times',
         ];
 
         $tileicons = [];

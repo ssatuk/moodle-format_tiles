@@ -454,10 +454,21 @@ Other
 4.3.0.35 (2024062000)
 =====================
 - Course index admin setting defaults to on for Tiles
-- After save an activty, return to course main page, with # scroll to section edited
+- After save an activity, return to course main page, with # scroll to section edited
 - Remove set icon menu control for section zero
 - Avoid footer cache issue when course is restored deleting existing content.
 
 4.3.0.36 (2024062002)
 =====================
 - Fix URL activity modal when launched from course index.
+
+4.3.0.37 (2024070803)
+=====================
+- Fix issue #131 image overwrite
+- Fix issue #207 course modules indent (non-subtiles only)
+- Fix issue #211 icon fallbacks
+- Possible fix for intermittent issue #213 (Class "format_tiles\output\courseformat\content\cm\controlmenu" not found)
+- Section expanded when editor returns
+- Remove duplicate lock icon
+- Add test to check course/edit.php works when tiles is on
+- Debugging messages set to DEBUG_DEVELOPER
