@@ -574,7 +574,8 @@ class behat_format_tiles extends behat_base {
         if (!$nodestyle || strpos($nodestyle, $imagebaseurl) === false || strpos($nodestyle, $imageextension) === false) {
             throw new \Behat\Mink\Exception\ExpectationException(
                 "Tile $sectionnumber :Photo not displaying as background tile $sectionnumber course $coursename"
-                . " could not find image base URL '$imagebaseurl' or extension '$imageextension' in style string '$nodestyle' for tile style '$tilestyle'",
+                . " could not find image base URL '$imagebaseurl' or extension '$imageextension'"
+                . "in style string '$nodestyle' for tile style '$tilestyle'",
                 $this->getSession()
             );
         }
