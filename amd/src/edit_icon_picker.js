@@ -169,7 +169,7 @@ define(["jquery", "core/templates", "core/ajax", "core/str", "core/notification"
             var ajaxIconPickArgs = {
                 image: icon,
                 courseid: courseId,
-                sectionid: sectionId === undefined ? 0 : sectionId,
+                sectionid: Number(sectionId === undefined ? 0 : sectionId),
                 imagetype: imageType,
                 sourcecontextid: sourcecontextid === undefined ? 0 : sourcecontextid,
                 sourceitemid: sourceitemid === undefined ? 0 : sourceitemid,
@@ -333,7 +333,7 @@ define(["jquery", "core/templates", "core/ajax", "core/str", "core/notification"
                                     });
                                 }
                                 if (allowPhotoTiles) {
-                                    // Set the URL for the photo tile button if used (done dynamically as contains section id).
+                                    // Set the URL for the photo upload button if used (done dynamically as contains section id).
                                     var url = getPhotoTileButtonUrl(courseId, sectionId);
                                     modalRoot.find('#phototilebtn')
                                         .attr('href', url);
@@ -381,7 +381,7 @@ define(["jquery", "core/templates", "core/ajax", "core/str", "core/notification"
                     modalStored.hide();
                 });
                 if (allowPhotoTiles) {
-                    // Set the URL for the photo tile button if used (done dynamically as contains section id).
+                    // Set the URL for the photo upload button if used (done dynamically as contains section id).
                     var url = getPhotoTileButtonUrl(courseId, sectionId);
                     modalStored.root.find('#phototilebtn')
                         .attr('href', url);
