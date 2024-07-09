@@ -482,3 +482,7 @@ Other
 - Remove duplicate lock icon
 - Add test to check course/edit.php works when tiles is on
 - Debugging messages set to DEBUG_DEVELOPER
+
+4.3.0.38 (2024070903)
+=====================
+- Remove photo options from icon picker modal when user is on course edit form (avoid course_sections error)
