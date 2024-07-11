@@ -484,6 +484,6 @@ Other
 - Debugging messages set to DEBUG_DEVELOPER
 - Remove photo options from icon picker modal when user is on course edit form (avoid course_sections error)
 
-4.3.0.39 (2024071103)
+4.3.0.40 (2024071106)
 =====================
 - Add tip to section edit form for how to edit tile icon/photo
