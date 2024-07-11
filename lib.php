@@ -512,7 +512,7 @@ class format_tiles extends core_courseformat\base {
         if ($foreditform) {
             // Not ideal - we put an ignored option on section edit form, to ensure that create_edit_form_elements() is called.
             $sectionformatoptionsedit = [
-                'formattilesignoredfield' => ['label' => '', 'element_type' => 'hidden', 'type' => PARAM_INT, 'default' => 0]
+                'formattilesignoredfield' => ['label' => '', 'element_type' => 'hidden', 'type' => PARAM_INT, 'default' => 0],
             ];
 
             if ($usingoutcomesfilter) {
