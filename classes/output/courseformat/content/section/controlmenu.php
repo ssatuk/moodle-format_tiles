@@ -62,6 +62,9 @@ class controlmenu extends controlmenu_base {
             return $parentcontrols;
         }
 
+        // Unset the view item that points to /course/section.php.
+        unset($parentcontrols['view']);
+
         $coursecontext = context_course::instance($course->id);
 
         if ($sectionreturn) {
