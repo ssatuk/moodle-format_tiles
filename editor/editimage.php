@@ -64,6 +64,7 @@ $PAGE->navbar->add(get_string('uploadnewphoto', 'format_tiles'));
 $tilephoto = new \format_tiles\local\tile_photo($coursecontext, $sectionid);
 
 if ($deletephoto) {
+    require_sesskey();
     $tilephoto->clear();
     // Delete any other stored photo files for this tile.
     \format_tiles\local\tile_photo::delete_files_from_ids($courseid, $sectionid);
