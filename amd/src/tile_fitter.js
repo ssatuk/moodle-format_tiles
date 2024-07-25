@@ -35,7 +35,7 @@ define(["jquery", "core/ajax"], function ($, ajax) {
         TILE: ".tile",
         TILEID: "#tile-",
         TILE_COLLAPSED: ".tile-collapsed",
-        TILES: ".format-tiles.jsenabled ul.tiles",
+        TILES: ".format-tiles.jsenabled #format-tiles-multi-section-page",
         ACTIVITY: ".activity",
         SPACER: ".spacer",
         SECTION_ID: "#section-",
