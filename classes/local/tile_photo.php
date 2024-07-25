@@ -182,7 +182,8 @@ class tile_photo {
         $fs = get_file_storage();
         if (!$cmid) {
             if (!$sectionid || $sectionid < -1) {
-                throw new \Exception("Must pass in a positive section ID or -1 if not limiting to a section");
+                debugging("Must pass in a positive section ID or -1 if not limiting to a section", DEBUG_DEVELOPER);
+                throw new \Exception("Invalid section");
             }
             $context = \context_course::instance($courseid, IGNORE_MISSING);
             if ($context) {

@@ -654,8 +654,6 @@ define(["jquery", "core/templates", "core/ajax", "format_tiles/browser_storage",
                     if (openTile !== 0) {
                         tileFitter.init(courseId, openTile, fitTilesToWidth, false);
                     } else {
-                        // Set focus to the first tile (not section zero).
-                        $(Selector.TILEID + "1").focus();
                         tileFitter.init(courseId, null, fitTilesToWidth, false);
                     }
 

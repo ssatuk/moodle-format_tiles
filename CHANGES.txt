@@ -481,3 +481,10 @@ Other
 4.3.0.40 (2024071106)
 =====================
 - Add tip to section edit form for how to edit tile icon/photo
+
+4.3.0.41 (2024072500)
+=====================
+- Delete unused tile photos files when they are unset
+- Fix issue #211 icon fallbacks (previous fix incomplete)
+- Remove tile 1 focus on page load
+- Fix issue #214 Tile misalignment after 4.3 update
