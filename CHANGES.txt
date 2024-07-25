@@ -482,7 +482,7 @@ Other
 =====================
 - Add tip to section edit form for how to edit tile icon/photo
 
-4.3.0.41 (2024072500)
+4.3.0.42 (2024072501)
 =====================
 - Delete unused tile photos files when they are unset
 - Fix issue #211 icon fallbacks (previous fix incomplete)

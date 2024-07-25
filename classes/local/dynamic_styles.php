@@ -32,6 +32,9 @@ namespace format_tiles\local;
  */
 class dynamic_styles {
 
+    /**
+     * Default hex tile colour if none other found.
+     */
     const DEFAULT_COLOUR = '#1670CC';
 
     /**
