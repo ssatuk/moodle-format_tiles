@@ -94,7 +94,6 @@
 {{#useSubtiles}}
     <li class="activity{{^is_label}} subtile{{/is_label}} {{#is_label}}fullwidth{{/is_label}} {{modname}} modtype_{{modname}}{{#modresourceicon}} resourcetype_{{modresourceicon}}{{/modresourceicon}}{{^clickable}} unclickable {{/clickable}}{{#clickable}} cursorpointer{{/clickable}} launch-tiles-{{launchtype}}{{#photourl}} hasphoto{{/photourl}} {{extraclasses}}"
         id="module-{{cmid}}" data-modtype="{{modname}}{{#modresourceicon}}_{{{modresourceicon}}}{{/modresourceicon}}"
-        tabindex="3"
         data-cmid="{{cmid}}" data-completion="{{completion}}"
         data-modinstance="{{modinstance}}" data-contextid="{{modcontextid}}"
         {{#pluginfileUrl}}data-url="{{{pluginfileUrl}}}" {{/pluginfileUrl}}

@@ -316,8 +316,8 @@
     box-shadow: 2px 4px 5px 0 #bdbdbd;
     position: relative;
 }
-.format-tiles .course-content ul.tiles .tile:focus-visible {
-    border-top-color: red;
+.format-tiles .tile a.tile-link:focus-visible {
+    box-shadow: rgb(96, 96, 96) 2px 4px 5px 0;
 }
 .format-tiles .course-content ul.tiles .tile:focus-visible h3 {
     text-decoration: underline;
@@ -485,7 +485,7 @@ li.activity .tileiconcontainer .tile-icon .icon.fa {
 .format-tiles .iconpickericons .icon,
 .format-site .iconpickericons .icon,
 .format-tiles .sectionbutton {
-    color: #979797;
+    color: #8c8c8c;
     opacity: 1;
 }
 .format-tiles:not(.editing) .course-content .completioncheckbox.complete .icon {
@@ -517,9 +517,6 @@ li.activity .tileiconcontainer .tile-icon .icon.fa {
 .format-tiles a.sectionbutton:hover {
     text-decoration: none;
 }
-.format-tiles .sectionbutton.closesectionbtn:focus {
-    outline: 1px dotted;
-}
 .format-tiles .sectionbutton img.icon {
     width: 18px;
     height: 18px;
@@ -540,7 +537,7 @@ li.activity .tileiconcontainer .tile-icon .icon.fa {
     z-index: 2;
 }
 .format-tiles .sectionbutton {
-    background-color: rgba(100, 100, 100, 0.05);
+    background-color: rgba(243, 243, 243);
     margin-left: 5px;
     opacity: 1;
     width: 45px;
@@ -926,10 +923,6 @@ body.jsenabled.format-tiles #collapsiblesec0 {
     font-size: 2em;
     padding-right: 7px;
 }
-.format-tiles .sectiontitle:focus {
-    outline: 1px dotted;
-}
-
 .format-tiles .sectiontitle::after,
 .format-tiles .sectiontitle::after {
     content: "";
