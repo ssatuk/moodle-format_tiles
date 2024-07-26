@@ -161,6 +161,7 @@ define(["jquery", "core/templates", "core/ajax", "format_tiles/browser_storage",
         };
 
         const overlay = $('#' + OVERLAY_ID);
+        overlay.attr('aria-hidden', true);
 
         /**
          * Used where the user clicks the window overlay but we want the active click to be behind the
@@ -208,14 +209,7 @@ define(["jquery", "core/templates", "core/ajax", "format_tiles/browser_storage",
                     // And vice versa if going backwards.
 
                     var activities = contentArea.find(Selector.ACTIVITY).not(Selector.SPACER);
-                    contentArea.on(Event.KEYDOWN, function (e) {
-                        if (e.keyCode === Keyboard.ESCAPE) {
-                            // Close open tile, and return focus to closed tile, for screen reader user.
-                            browserStorage.setLastVisitedSection(0);
-                            cancelTileSelections(0);
-                            $(Selector.TILEID + contentArea.data('section')).focus();
-                        }
-                    });
+
                     activities.on(Event.KEYDOWN, function (e) {
                         if (e.keyCode === Keyboard.RETURN) {
                             var toClick = $(e.currentTarget).find("a");
@@ -235,7 +229,7 @@ define(["jquery", "core/templates", "core/ajax", "format_tiles/browser_storage",
                                 // (I.e. we are trying to tab out of bottom of section) so move tab to section title instead.
                                 setTimeout(function () {
                                     // Allow very short delay so we dont skip forward on the basis of our last key press.
-                                    contentArea.find(Selector.SECTION_TITLE).focus();
+                                    contentArea.find(Selector.CLOSE_SEC_BTN).focus();
                                     contentArea.find(Selector.SECTION_BUTTONS).css("top", "");
                                 }, 200);
                             }
@@ -363,7 +357,7 @@ define(["jquery", "core/templates", "core/ajax", "format_tiles/browser_storage",
                     // Until mouse moves.
                     scrollTo += 1;
                 }
-                contentArea.find(Selector.SECTION_TITLE).focus();
+
                 // If user tries to scroll during animation, stop animation.
                 var events = "mousedown wheel DOMMouseScroll mousewheel keyup touchmove";
                 const page = $(Selector.PAGE);
@@ -380,7 +374,7 @@ define(["jquery", "core/templates", "core/ajax", "format_tiles/browser_storage",
                 openTile = sectionNumber;
 
                 // For users with screen readers, move focus to the section title within the tile.
-                contentArea.find(Selector.SECTION_TITLE).focus();
+                contentArea.find(Selector.CLOSE_SEC_BTN).focus();
 
                 // If we have any iframes in the section which were previous emptied out, re-populate.
                 // This will happen if we have previously closed a section with videos in, and they were muted.
@@ -445,9 +439,13 @@ define(["jquery", "core/templates", "core/ajax", "format_tiles/browser_storage",
             };
 
             if (fitTilesToScreenWidth) {
-                tileFitter.resizeTilesDivWidth(courseId);
+                tileFitter.resizeTilesDivWidth(courseId).done(() => {
+                    // Wait until resize is done to start re-org to allow tiles to settle.
+                    reOrgFunc();
+                });
+            } else {
+                reOrgFunc();
             }
-            reOrgFunc();
             return dfd.promise();
         };
 
@@ -735,7 +733,10 @@ define(["jquery", "core/templates", "core/ajax", "format_tiles/browser_storage",
 
                         // When user clicks to close a section using cross at top right in section.
                         pageContent.on(Event.CLICK, Selector.CLOSE_SEC_BTN, function (e) {
-                            cancelTileSelections($(e.currentTarget).data("section"));
+                            const currentSectionNumber = $(e.currentTarget).data("section");
+                            cancelTileSelections(currentSectionNumber);
+                            // For screen readers, move focus back to tile just closed so they can advance from there.
+                            $('#sectionlink-' + currentSectionNumber).focus();
                         });
 
                         setSectionZeroFromUserPref();
@@ -914,22 +915,6 @@ define(["jquery", "core/templates", "core/ajax", "format_tiles/browser_storage",
                                 });
                             }
                         });
-                    } else {
-                        // If user is NOT on mobile device.
-
-                        // If return is pressed while an item is in focus, click the item.
-                        // This is to make the tiles keyboard navigable for users using screen readers.
-                        // User tabbing between tiles is handled by tabindex in the HTML.
-                        // Once the tile is clicked, the expand tile function will move focus to the first content item.
-                        // On escape key, we clear all selections and collapse tiles (handled above not here).
-                        $(Selector.TILE).on(Event.KEYDOWN, function (e) {
-                            if (e.keyCode === Keyboard.RETURN) { // Return key pressed.
-                                $(e.currentTarget).click();
-                            }
-                        });
-
-                        // Move focus to the first tile in the course (not sec zero contents if present).
-                        // $("ul.tiles .tile").first().focus();
                     }
 
                     // When a section is open, fix close/edit buttons to top of screen (else hidden on scroll).

@@ -58,13 +58,13 @@ define(["jquery", "core/ajax"], function ($, ajax) {
      * @return {Promise}
      */
     var resizeTilesDivWidth = function() {
-        if (isSectionPage) {
-            // No tile fitting on single section page.
-            return;
-        }
         const winWidth = $(window).width();
         // Create a new Deferred.
         const dfd = new $.Deferred();
+        if (isSectionPage) {
+            // No tile fitting on single section page.
+            dfd.resolve();
+        }
         const tiles = $(Selector.TILES);
         const tilesOuter = $(Selector.TILES_OUTER);
         const TILE_WIDTHS = {
@@ -333,7 +333,7 @@ define(["jquery", "core/ajax"], function ($, ajax) {
             $(document).ready(function() {
                 if (!isSectionPage) {
                     if ($(Selector.TILES).css("opacity") === "1") {
-                        organiser.runReOrg(false).done(function() {
+                        organiser.runReOrg().done(function() {
                             if (sectionOpen !== 0) {
                                 // Tiles are already visible so open the tile user was on previously (if any).
                                 $(Selector.TILEID + sectionOpen).click();
@@ -345,7 +345,7 @@ define(["jquery", "core/ajax"], function ($, ajax) {
                     // Put them in the correct rows according to which row of tiles they relate to.
                     // Only then do we re-open the last section the user had open.
                     var organiseAndRevealTiles = function () {
-                        organiser.runReOrg(false).done(function() {
+                        organiser.runReOrg().done(function() {
                             if (sectionOpen !== 0 && $(Selector.OPEN_SECTION).length === 0) {
                                 // Now open the tile user was on previously (if any).
                                 $(Selector.TILEID + sectionOpen).click();
@@ -370,8 +370,8 @@ define(["jquery", "core/ajax"], function ($, ajax) {
         resizeTilesDivWidth: function() {
             return resizeTilesDivWidth();
         },
-        runReOrg: function (delayBefore) {
-            return organiser.runReOrg(delayBefore);
+        runReOrg: function () {
+            return organiser.runReOrg();
         }
     };
 });
