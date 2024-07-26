@@ -284,10 +284,10 @@ class behat_format_tiles extends behat_base {
      * @throws Exception
      */
     public function i_click_on_tile($tileumber) {
-        $tileid = behat_context_helper::escape("tile-" . $tileumber);
+        $tileid = behat_context_helper::escape("sectionlink-" . $tileumber);
 
         // Click the tile.
-        $this->execute("behat_general::i_click_on", ["//li[@id=" . $tileid . "]", "xpath_element"]);
+        $this->execute("behat_general::i_click_on", ["//a[@id=" . $tileid . "]", "xpath_element"]);
         $this->getSession()->wait(1500); // Important to wait here as page is scrolling and might click wrong thing after.
         $this->wait_for_pending_js(); // Wait for AJAX request to complete.
     }
