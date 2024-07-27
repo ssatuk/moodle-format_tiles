@@ -155,7 +155,7 @@ class modal_helper {
                              WHERE u.course = :course AND cm.deletioninprogress = 0 AND u.display $insql", $params
                     ));
                 } else if (in_array($allowedmodule, ['pdf', 'html'])) {
-                    $resourcecmids = \format_tiles\local\modal_helper::get_resource_modal_cmids(
+                    $resourcecmids = self::get_resource_modal_cmids(
                         $courseid, $allowedmodule == 'pdf' ? 'application/pdf' : 'text/html'
                     );
                     $cmids = array_merge($cmids, $resourcecmids);
@@ -170,7 +170,9 @@ class modal_helper {
             }
 
             // Ensure all are ints for JS and sort to ease debugging.
-            $cmids = array_map(function($cmid) { return (int)$cmid; }, $cmids);
+            $cmids = array_map(function($cmid) {
+                return (int)$cmid;
+            }, $cmids);
             sort($cmids);
 
             // Now we can set the cached value for all users, before going on to check visibility for this user only.
@@ -212,7 +214,7 @@ class modal_helper {
      * @param int $cmid
      * @return bool
      */
-    public static function cm_has_modal(int $courseid, int $cmid):bool {
+    public static function cm_has_modal(int $courseid, int $cmid): bool {
         $cmids = self::get_modal_allowed_cm_ids($courseid, false);
         return !empty($cmids) && in_array($cmid, $cmids);
     }
