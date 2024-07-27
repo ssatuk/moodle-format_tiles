@@ -70,7 +70,6 @@ define(["jquery", "core/templates", "core/ajax", "format_tiles/browser_storage",
             HIDE_SEC0_BTN: ".buttonhidesec0",
             SECTION_ZERO: "#section-0",
             MOODLE_VIDEO: ".mediaplugin.mediaplugin_videojs",
-            LAUNCH_STANDARD: '[data-action="launch-tiles-standard"]',
             MANUAL_COMPLETION: '[data-action="toggle-manual-completion"]',
             TOOLTIP: "[data-toggle=tooltip]",
             MATHJAX_EQUATION: ".filter_mathjaxloader_equation"
@@ -79,7 +78,6 @@ define(["jquery", "core/templates", "core/ajax", "format_tiles/browser_storage",
             SELECTED: "selected",
             OPEN: "open",
             CLOSED: "closed",
-            LAUNCH_CM_MODAL: "launch-tiles-cm-modal",
             STATE_VISIBLE: 'state-visible', // This is a Snap theme class. Was added to make this format cooperate better with it.
             HAS_OPEN_TILE: 'format-tiles-tile-open',
             ON_TILE_CONTROL: 'on-tile-control' // Tiles may have controls on them which do not open the section when clicked.
@@ -213,11 +211,7 @@ define(["jquery", "core/templates", "core/ajax", "format_tiles/browser_storage",
                     activities.on(Event.KEYDOWN, function (e) {
                         if (e.keyCode === Keyboard.RETURN) {
                             var toClick = $(e.currentTarget).find("a");
-                            if (toClick.hasClass(ClassNames.LAUNCH_CM_MODAL)) {
-                                toClick.click();
-                            } else if (toClick.attr("href") !== undefined) {
-                                window.location.href = toClick.attr("href");
-                            }
+                            window.location.href = toClick.attr("href");
                         }
                     });
                     if (!isMobile) {

@@ -61,10 +61,10 @@ class course_output implements \renderable, \templatable {
     private $courserenderer;
 
     /**
-     * Names of the modules for which modal windows should be used e.g. 'page'
-     * @var array of resources and modules
+     * Course Module IDs for which modal windows should be used.
+     * @var array of CM IDs
      */
-    private $usemodalsforcoursemodules;
+    private array $modalscmids;
 
     /**
      * User's device type e.g. DEVICE_TYPE_MOBILE ('mobile')
@@ -145,7 +145,7 @@ class course_output implements \renderable, \templatable {
             $this->courserenderer = $courserenderer;
         }
         $this->devicetype = \core_useragent::get_device_type();
-        $this->usemodalsforcoursemodules = \format_tiles\local\modal_helper::allowed_modal_modules();
+        $this->modalscmids = \format_tiles\local\modal_helper::get_modal_allowed_cm_ids($this->course->id, false);
         $this->format = course_get_format($this->course);
         $this->modinfo = get_fast_modinfo($this->course);
 
@@ -855,7 +855,6 @@ class course_output implements \renderable, \templatable {
         $moduleobject['modname'] = $mod->modname;
         $moduleobject['url'] = $mod->url;
         $moduleobject['visible'] = $mod->visible;
-        $moduleobject['launchtype'] = 'standard';
         $moduleobject['content'] = $mod->get_formatted_content(['overflowdiv' => true, 'noclean' => true]);
         if (!$this->courseformatoptions['courseusesubtiles'] && $mod->indent) {
             $moduleobject['indentlevel'] = $mod->indent;
@@ -912,19 +911,12 @@ class course_output implements \renderable, \templatable {
         }
 
         // Specific handling for embedded resource items (e.g. PDFs)  as allowed by site admin.
+        $moduleobject['hasModal'] = $mod->onclick ? 0 : in_array($mod->id, $this->modalscmids);
         if ($mod->modname == 'resource') {
-            if (in_array($moduleobject['modresourceicon'], $this->usemodalsforcoursemodules['resources'])) {
+            if ($moduleobject['hasModal']) {
                 // Where onclick is truthy, suggests core JS will open in new window so don't treat as tiles modal.
-                $moduleobject['isEmbeddedResource'] = $mod->onclick ? 0 : 1;
-                $moduleobject['launchtype'] = $mod->onclick ? 'standard' : 'resource-modal';
                 $moduleobject['pluginfileUrl'] = self::plugin_file_url($mod);
                 $moduleobject['secondaryurl'] = $moduleobject['pluginfileUrl'] . '?redirect=1';
-            } else {
-                // We are not using modal, so add the standard moodle onclick event to the link to launch pop up if appropriate.
-                if ($mod->onclick) {
-                    $moduleobject['onclick'] = htmlspecialchars_decode($mod->onclick, ENT_QUOTES);
-                    $moduleobject['launchtype'] = 'standard';
-                }
             }
         }
 
@@ -932,16 +924,8 @@ class course_output implements \renderable, \templatable {
         // Where onclick is truthy, suggests core JS will open in new window so don't treat as tiles modal.
         if ($mod->onclick) {
             $moduleobject['onclick'] = htmlspecialchars_decode($mod->onclick, ENT_QUOTES);
-            $moduleobject['launchtype'] = 'standard';
         }
 
-        // Specific handling for embedded course module items (e.g. page) as allowed by site admin.
-        if (in_array($mod->modname, $this->usemodalsforcoursemodules['modules'])) {
-            // Where onclick is truthy, suggests core JS will open in new window so don't treat as tiles modal.
-            $moduleobject['isEmbeddedModule'] = $mod->onclick ? 0 : 1;
-            $moduleobject['launchtype'] = $mod->onclick ? 'standard' : 'module-modal';
-
-        }
         $moduleobject['showdescription'] =
             isset($mod->showdescription) && !$treataslabel ? $mod->showdescription : 0;
         if ($moduleobject['showdescription']) {
@@ -994,8 +978,7 @@ class course_output implements \renderable, \templatable {
             $externalurl = $DB->get_field('url', 'externalurl', ['id' => $mod->instance]);
             $modifiedvideourl = self::check_modify_embedded_url($externalurl);
 
-            $usemodalsforurl = in_array('url', $this->usemodalsforcoursemodules['resources']);
-            if (!$mod->onclick && $usemodalsforurl) {
+            if ($moduleobject['hasModal']) {
                 // We will be launching modal so need secondary URL under embed so users can click if embed doesn't work.
                 // We will also use it to redirect mobile users to YouTube or wherever since embed won't work well for them.
                 if ($modifiedvideourl) {
@@ -1005,7 +988,6 @@ class course_output implements \renderable, \templatable {
                     $moduleobject['pluginfileUrl'] = $externalurl;
                     $moduleobject['secondaryurl'] = $externalurl;
                 }
-                $moduleobject['launchtype'] = 'url-modal';
             }
 
             if ($modifiedvideourl || self::is_video_url($externalurl)) {

@@ -471,18 +471,13 @@ define(["jquery", "core/modal_factory", "core/config", "core/templates", "core/n
                             });
                         }
 
-                        const launchModalDataActions =
-                            ["launch-tiles-resource-modal", "launch-tiles-module-modal", "launch-tiles-url-modal"];
-                        var modalSelectors = launchModalDataActions.map(function (action) {
-                            return `[data-action="${action}"]`;
-                        }).join(", ");
-
                         var pageContent = $(Selector.pageContent);
                         if (pageContent.length === 0) {
                             // Some themes e.g. RemUI do not have a #page-content div, so use #region-main.
                             pageContent = $(Selector.regionMain);
                         }
-                        pageContent.on("click", modalSelectors, function (e) {
+
+                        pageContent.on("click", `[data-action="launch-tiles-cm-modal"]`, function (e) {
                             // If click is on a completion checkbox within activity, ignore here as handled elsewhere.
                             const tgt = $(e.target);
                             const isExcludedControl = tgt.hasClass(CLASS.COMPLETION_CHECK_BOX)

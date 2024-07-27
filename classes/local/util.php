@@ -348,7 +348,7 @@ class util {
             $modnames = array_merge($allowedmodals['modules'] ?? [], $allowedmodals['resources'] ?? []);
             $jsconfigvalues['modalAllowedModNames'] = json_encode($modnames);
             $jsconfigvalues['modalAllowedCmids'] = json_encode(
-                \format_tiles\local\modal_helper::get_modal_allowed_cmids($courseid, $modnames)
+                \format_tiles\local\modal_helper::get_modal_allowed_cm_ids($courseid, true)
             );
         }
 
