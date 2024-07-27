@@ -307,7 +307,7 @@
     max-width: 260px;
     flex-grow: 1;
     margin: 7px;
-    max-height: 175px;
+    height: 175px;
     vertical-align: top;
     background-color: #fff;
     border-top: 0.45em solid transparent;

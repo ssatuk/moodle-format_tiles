@@ -270,7 +270,6 @@ class behat_format_tiles extends behat_base {
      * @Then /^activity in format tiles is not dimmed "(?P<activityname_string>(?:[^"]|\\")*)"$/
      * @param string $activityname
      * @return bool
-     * @throws \Behat\Mink\Exception\ExpectationException
      */
     public function activity_in_format_tiles_is_not_dimmed($activityname) {
         return !$this->activity_in_format_tiles_is_dimmed($activityname);
@@ -448,7 +447,6 @@ class behat_format_tiles extends behat_base {
      * @Given /^I hide tile "(?P<section_number>\d+)"$/
      * @param int $sectionnumber
      * @throws coding_exception
-     * @throws \Behat\Mink\Exception\ExpectationException
      */
     public function i_hide_tile($sectionnumber) {
         // Ensures the section exists.
@@ -461,7 +459,6 @@ class behat_format_tiles extends behat_base {
      *
      * @Given /^I show tile "(?P<section_number>\d+)"$/
      * @param int $sectionnumber
-     * @throws \Behat\Mink\Exception\ExpectationException
      * @throws coding_exception
      */
     public function i_show_tile($sectionnumber) {

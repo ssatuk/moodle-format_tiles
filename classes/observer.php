@@ -125,7 +125,6 @@ class observer {
      * @param int $courseid
      * @return void
      * @throws \coding_exception
-     * @throws \dml_exception
      */
     private static function clear_cache_modal_cmids(int $courseid) {
         $cache = \cache::make('format_tiles', 'modalcmids');

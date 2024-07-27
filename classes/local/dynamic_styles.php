@@ -147,7 +147,6 @@ class dynamic_styles {
      */
     public static function get_tile_base_colour($coursebasecolour): string {
         global $PAGE;
-        $result = null;
 
         $hexpattern = '/^#(?:[0-9a-fA-F]{3}){1,2}$/';
 

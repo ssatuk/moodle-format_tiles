@@ -56,6 +56,7 @@ class modal_helper {
     /**
      * Get the course module IDs for any resource modules in this course that need a modal.
      * @param int $courseid
+     * @param string $mimetype
      * @return array
      */
     public static function get_resource_modal_cmids(int $courseid, string $mimetype): array {
@@ -88,31 +89,6 @@ class modal_helper {
                         AND f.itemid = 0 AND f.filesize > 0 and f.filename != '.' AND f.mimetype = :mimetype
                     WHERE cm.course = :courseid AND cm.deletioninprogress = 0 AND r.display $insql";
         return $DB->get_fieldset_sql($sql, $params);
-    }
-
-    /**
-     * Is a particular modname e.g. page allowed a modal.
-     * For resource we check the resource type as well e.g. pdf.
-     * @param string $modname e.g. page, resource, url.
-     * @param string $resourcetype only used for modname = resource, e.g. pdf, html, docx.
-     * @return bool
-     * @throws \dml_exception
-     */
-    public static function is_allowed_modal(string $modname, string $resourcetype): bool {
-        if (!$modname) {
-            return false;
-        }
-        $allowedmodmodals = self::allowed_modal_modules();
-        if ($modname == 'resource' && $resourcetype && in_array($resourcetype, $allowedmodmodals['resources'])) {
-            return true;
-        }
-        if ($modname == 'url' && in_array($modname, $allowedmodmodals['resources'])) {
-            return true;
-        }
-        if (in_array($modname, $allowedmodmodals['modules'])) {
-            return true;
-        }
-        return false;
     }
 
     /**

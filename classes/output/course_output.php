@@ -23,7 +23,6 @@
  */
 namespace format_tiles\output;
 
-use format_tiles\local\dynamic_styles;
 use format_tiles\local\format_option;
 use format_tiles\local\tile_photo;
 use format_tiles\local\filters;

@@ -550,7 +550,7 @@ class format_tiles extends core_courseformat\base {
      * @throws dml_exception
      */
     public function create_edit_form_elements(&$mform, $forsection = false) {
-        global $COURSE, $PAGE, $USER;
+        global $COURSE, $PAGE;
         $elements = parent::create_edit_form_elements($mform, $forsection);
 
         // Call the JS edit_form_helper.js, which in turn will call edit_icon_picker.js.
@@ -852,7 +852,7 @@ class format_tiles extends core_courseformat\base {
      * @throws moodle_exception
      */
     public function page_set_course(moodle_page $page) {
-        global $SESSION, $OUTPUT;
+        global $SESSION;
         if (get_config('format_tiles', 'usejavascriptnav')) {
             if (optional_param('stopjsnav', 0, PARAM_INT) == 1) {
                 // User is toggling JS nav setting.
@@ -1039,8 +1039,6 @@ function format_tiles_output_fragment_get_cm_content(array $args): string {
  * Callback to add head elements.  Used to add dynamic CSS used by Tiles format.
  * @see \core_renderer::standard_head_html()
  * @return string the HTML to inject.
- * @throws coding_exception
- * @throws moodle_exception
  */
 function format_tiles_before_standard_html_head(): string {
     $html = '';
