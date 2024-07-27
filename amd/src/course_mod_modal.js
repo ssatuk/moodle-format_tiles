@@ -458,6 +458,19 @@ define(["jquery", "core/modal_factory", "core/config", "core/templates", "core/n
                             pageContent = $(Selector.regionMain);
                         }
 
+                        pageContent.on("keydown", `[data-action="launch-tiles-cm-modal"]`, function (e) {
+                            const ENTER_KEY = 13;
+                            if (e.keyCode === ENTER_KEY) {
+                                // User has tabbed to a modal capable activity and pressed enter.
+                                // To improve accessibility, do not launch a modal but show them standard activity screen.
+                                e.preventDefault();
+                                const url = $(e.target).attr('href');
+                                if (url) {
+                                    window.location.href = url;
+                                }
+                            }
+                        });
+
                         pageContent.on("click", `[data-action="launch-tiles-cm-modal"]`, function (e) {
                             // If click is on a completion checkbox within activity, ignore here as handled elsewhere.
                             const tgt = $(e.target);

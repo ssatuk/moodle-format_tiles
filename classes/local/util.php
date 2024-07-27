@@ -301,10 +301,9 @@ class util {
                 'fitTilesToWidth' => self::using_tile_fitter(),
                 'enablecompletion' => $course->enablecompletion,
                 'usesubtiles' => get_config('format_tiles', 'allowsubtilesview') && $course->courseusesubtiles,
+                'courseContextId' => $contextid,
             ];
-            $PAGE->requires->js_call_amd(
-                'format_tiles/course', 'init', array_merge($jsparams, ['courseContextId' => $contextid])
-            );
+            $PAGE->requires->js_call_amd('format_tiles/course', 'init', $jsparams);
         } else {
             // Initialise JS for when editing mode is on.
             $editparams = [

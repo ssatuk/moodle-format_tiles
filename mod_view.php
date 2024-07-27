@@ -76,11 +76,13 @@ if ($cm->modname === 'resource') {
 } else if ($cm->modname === 'url') {
     url_view($modobject, $course, $cm, $context);
     $redirecturl = $modobject->externalurl;
-    if (!optional_param('noembed', false, PARAM_BOOL)) {
-        // If the URL is a youtube video, it may need converting into an embed URL.
-        $redirecturl = \format_tiles\output\course_output::check_modify_embedded_url($redirecturl);
-    }
-    redirect(new moodle_url($redirecturl));
+
+    // If the URL is a youtube video, it may need converting into an embed URL.
+    $modifiedurl = !optional_param('noembed', false, PARAM_BOOL)
+        ? \format_tiles\output\course_output::check_modify_embedded_url($redirecturl)
+        : null;
+
+    redirect(new moodle_url($modifiedurl ?: $redirecturl));
 }
 
 // Should never reach here.

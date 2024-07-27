@@ -96,9 +96,8 @@ define(["jquery", "core/templates", "core/ajax", "format_tiles/browser_storage",
             BG_COLOUR: "background-color"
         };
         var Keyboard = {
-            ESCAPE: 27,
             TAB: 9,
-            RETURN: 13
+            ENTER: 13
         };
 
         const OVERLAY_ID = 'format_tiles_overlay';
@@ -206,10 +205,10 @@ define(["jquery", "core/templates", "core/ajax", "format_tiles/browser_storage",
                     // When user reaches last item, send them back to first.
                     // And vice versa if going backwards.
 
-                    var activities = contentArea.find(Selector.ACTIVITY).not(Selector.SPACER);
+                    var activities = contentArea.find(Selector.ACTIVITY_NAME);
 
                     activities.on(Event.KEYDOWN, function (e) {
-                        if (e.keyCode === Keyboard.RETURN) {
+                        if (e.keyCode === Keyboard.ENTER) {
                             var toClick = $(e.currentTarget).find("a");
                             window.location.href = toClick.attr("href");
                         }
@@ -602,6 +601,8 @@ define(["jquery", "core/templates", "core/ajax", "format_tiles/browser_storage",
                     userId
                 );
                 $(document).ready(function () {
+                    const isMultiSectionPage = $(Selector.TILES).length === 1;
+
                     if (useSubTiles) {
                         // We need to be able to style tooltips outside of ul.tiles element.
                         $(Selector.BODY).addClass('format-tiles-subtiles');
@@ -736,9 +737,11 @@ define(["jquery", "core/templates", "core/ajax", "format_tiles/browser_storage",
                         setSectionZeroFromUserPref();
                         // Most filter button related JS is in filter_buttons.js module which is required below.
 
-                        // Remove section and cmid URL params is present as we are using JS nav.
-                        removeUrlParam(/(&|\\?)cmid=\d+/gi);
-                        removeUrlParam(/(&|\\?)section=\d+/gi);
+                        if (isMultiSectionPage) {
+                            // Remove section and cmid URL params if present as we are using JS nav and showing all tiles.
+                            removeUrlParam(/(&|\\?)cmid=\d+/gi);
+                            removeUrlParam(/(&|\\?)section=\d+/gi);
+                        }
                     } else if (fitTilesToWidth) {
                         tileFitter.resizeTilesDivWidth(courseId);
                     }

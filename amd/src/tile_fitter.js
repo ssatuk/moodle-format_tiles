@@ -47,8 +47,9 @@ define(["jquery", "core/ajax"], function ($, ajax) {
 
     // Used to store a delayed AJAX request so we can replace it if user sets again within one second or two.
     var timeoutBeforeResizeAjax = null;
-    const urlParams = new URLSearchParams(window.location.search);
-    const isSectionPage = urlParams.has('section');
+
+    // If we are in non JS nav mode, we may be on a single section page i.e/. &section=xx.
+    const isSectionPage = $(Selector.TILES).length === 0;
 
     /**
      * If we have a single tile on the last row it looks odd.
