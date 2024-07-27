@@ -56,27 +56,29 @@ class modal_helper {
     /**
      * Get the course module IDs for any resource modules in this course that need a modal.
      * @param int $courseid
-     * @param string $mimetype
+     * @param array $mimetypes
      * @return array
      */
-    public static function get_resource_modal_cmids(int $courseid, string $mimetype): array {
+    public static function get_resource_modal_cmids(int $courseid, array $mimetypes): array {
         global $DB;
-        if (!in_array($mimetype, ['application/pdf', 'text/html'])) {
-            debugging("Unexpected MIME type " . $mimetype, DEBUG_DEVELOPER);
+        if (empty($mimetypes)) {
             return [];
         }
 
-        // This is not very efficient so we cache the results elsewhere.
+        // This is not very efficient, so we cache the results elsewhere.
         // When multiple files are uploaded to a single resource activity, Moodle displays the lowest sort order item
         // Here we use the index on the files table component-filearea-contextid-itemid.
         $excludeddisplaytypes = [
             RESOURCELIB_DISPLAY_POPUP, RESOURCELIB_DISPLAY_NEW, RESOURCELIB_DISPLAY_DOWNLOAD,
         ];
-        list($insql, $params) =
+        list($notinsql, $params) =
             $DB->get_in_or_equal($excludeddisplaytypes, SQL_PARAMS_NAMED, 'param', false);
         $params['courseid'] = $courseid;
         $params['contextmodule'] = CONTEXT_MODULE;
-        $params['mimetype'] = $mimetype;
+
+        list($insql, $insqlparams) = $DB->get_in_or_equal($mimetypes, SQL_PARAMS_NAMED);
+
+        $params = array_merge($params, $insqlparams);
 
         // First get file cmids of relevant mime type.
         // There is an index on the files table component-filearea-contextid-itemid.
@@ -86,9 +88,11 @@ class modal_helper {
                     JOIN {resource} r ON cm.instance = r.id
                     JOIN {context} ctx ON ctx.contextlevel = :contextmodule AND ctx.instanceid = cm.id
                     JOIN {files} f ON f.component = 'mod_resource' AND f.filearea = 'content' AND f.contextid = ctx.id
-                        AND f.itemid = 0 AND f.filesize > 0 and f.filename != '.' AND f.mimetype = :mimetype
-                    WHERE cm.course = :courseid AND cm.deletioninprogress = 0 AND r.display $insql";
-        return $DB->get_fieldset_sql($sql, $params);
+                        AND f.itemid = 0 AND f.filesize > 0 and f.filename != '.' AND f.mimetype $insql
+                    WHERE cm.course = :courseid AND cm.deletioninprogress = 0 AND r.display $notinsql";
+        return array_map(function($cmid) {
+            return (int)$cmid;
+        }, $DB->get_fieldset_sql($sql, $params));
     }
 
     /**
@@ -100,8 +104,15 @@ class modal_helper {
      */
     public static function get_modal_allowed_cm_ids(int $courseid, bool $excludeunavailable): array {
         global $DB, $CFG;
-        $modinfo = null;
 
+        // First check what modals site admin is allowing.
+        $allowedmodals = self::allowed_modal_modules();
+        $allowedmodals = array_merge($allowedmodals['modules'] ?? [], $allowedmodals['resources'] ?? []);
+        if (empty($allowedmodals)) {
+            return [];
+        }
+
+        $modinfo = null;
         $cmids = [];
 
         // The cached value is for the course and does not take user visibility into account.
@@ -113,39 +124,48 @@ class modal_helper {
             // Config values to be added to templates for JS to retrieve.
             // May move more to this from existing JS init in format.php.
 
-            // To import RESOURCELIB_DISPLAY_XXX.
+            // To import RESOURCELIB_DISPLAY_XXX etc.
             require_once("$CFG->libdir/resourcelib.php");
 
-            $allowedmodals = self::allowed_modal_modules();
-            $allowedmodals = array_merge($allowedmodals['modules'] ?? [], $allowedmodals['resources'] ?? []);
             foreach ($allowedmodals as $allowedmodule) {
-                if ($allowedmodule == 'url') {
+                if (in_array($allowedmodule, ['pdf', 'html'])) {
+                    // These are dealt with separately below, outside the loop, as more efficient.
+                    continue;
+                } else if ($allowedmodule == 'url') {
                     $excludeddisplaytypes = [RESOURCELIB_DISPLAY_POPUP, RESOURCELIB_DISPLAY_NEW];
-                    list($insql, $params) =
+                    list($notinsql, $params) =
                         $DB->get_in_or_equal($excludeddisplaytypes, SQL_PARAMS_NAMED, 'param', false);
                     $params['course'] = $courseid;
-                    $cmids = array_merge($cmids, $DB->get_fieldset_sql(
-                        "SELECT DISTINCT cm.id FROM {url} u
+                    $sql = "SELECT DISTINCT cm.id FROM {url} u
                              JOIN {course_modules} cm ON cm.instance = u.id
                              JOIN {modules} m ON m.id = cm.module AND m.name = 'url'
-                             WHERE u.course = :course AND cm.deletioninprogress = 0 AND u.display $insql", $params
-                    ));
-                } else if (in_array($allowedmodule, ['pdf', 'html'])) {
-                    $resourcecmids = self::get_resource_modal_cmids(
-                        $courseid, $allowedmodule == 'pdf' ? 'application/pdf' : 'text/html'
-                    );
-                    $cmids = array_merge($cmids, $resourcecmids);
+                             WHERE u.course = :course AND cm.deletioninprogress = 0 AND u.display $notinsql";
+                    $cmids = array_merge($cmids, $DB->get_fieldset_sql($sql, $params));
+
                 } else if ($allowedmodule == 'page') {
                     $cmids = [];
                     $pagecms
                         = $modinfo->get_instances_of('page');
                     foreach ($pagecms as $pagecm) {
-                        $cmids[] = $pagecm->id;
+                        $cmids[] = (int)$pagecm->id;
                     }
+                } else {
+                    debugging("Unexpected module: $allowedmodule", DEBUG_DEVELOPER);
                 }
             }
 
-            // Ensure all are ints for JS and sort to ease debugging.
+            // Now deal with PDF and HTML files if any.
+            $mimemapping = ['pdf' => 'application/pdf', 'html' => 'text/html'];
+            $allowedresourcemimetypes = [];
+            foreach ($mimemapping as $key => $value) {
+                if (in_array($key, $allowedmodals)) {
+                    $allowedresourcemimetypes[] = $value;
+                }
+            }
+            $resourcecmids = self::get_resource_modal_cmids($courseid, $allowedresourcemimetypes);
+            $cmids = array_merge($cmids, $resourcecmids);
+
+            // Ensure all CM IDs are integers for JS and sort to ease debugging.
             $cmids = array_map(function($cmid) {
                 return (int)$cmid;
             }, $cmids);
@@ -160,6 +180,7 @@ class modal_helper {
         }
 
         if (!$excludeunavailable) {
+            // We may want to skip the availability check for efficiency, where it doesn't matter.
             return $cmids;
         }
 
