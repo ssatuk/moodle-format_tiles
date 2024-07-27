@@ -66,16 +66,6 @@ class util {
                 $resourcetype = '';
             }
 
-            $modalallowed = \format_tiles\local\modal_helper::is_allowed_modal($cmrecord->modname, $resourcetype);
-
-            $pluginfileurl = $isresource ? \format_tiles\output\course_output::plugin_file_url($cm) : '';
-            if ($modalallowed && $cmrecord->modname === 'url') {
-                // Extra check that is set to embed.
-                $url = $DB->get_record('url', ['id' => $cm->instance], '*', MUST_EXIST);
-                $modifiedvideourl = \format_tiles\output\course_output::check_modify_embedded_url($url->externalurl);
-                $pluginfileurl = $modifiedvideourl ?: $url->externalurl;
-            }
-
             return (object)[
                 'id' => $cm->id,
                 'courseid' => $courseid,
@@ -91,8 +81,7 @@ class util {
                     ? 1 : 0,
                 'ismanualcompletion' => $cm->completion == COMPLETION_TRACKING_MANUAL,
                 'resourcetype' => $resourcetype,
-                'pluginfileurl' => $pluginfileurl,
-                'modalallowed' => $modalallowed,
+                'modalallowed' => \format_tiles\local\modal_helper::cm_has_modal($courseid, $cmrecord->id),
             ];
         }
         return null;

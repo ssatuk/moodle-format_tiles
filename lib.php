@@ -998,17 +998,17 @@ function format_tiles_output_fragment_get_cm_list(array $args): string {
  * @return string The HTML to add to page.
  */
 function format_tiles_output_fragment_get_cm_content(array $args): string {
-    global $DB;
-    $context = context::instance_by_id($args['contextid']);
-    $coursecontext = $context->get_course_context();
-    if ($context->contextlevel !== CONTEXT_MODULE) {
+    global $DB, $CFG;
+    $modcontext = context::instance_by_id($args['contextid']);
+    if ($modcontext->contextlevel !== CONTEXT_MODULE) {
         throw new invalid_parameter_exception(
-            "Invalid context level " . $context->contextlevel . ' for ID ' . $args['contextid']
+            "Invalid context level " . $modcontext->contextlevel . ' for ID ' . $args['contextid']
         );
     }
 
-    $mod = get_fast_modinfo($coursecontext->instanceid)->get_cm($context->instanceid);
-    require_capability('mod/' . $mod->modname . ':view', $context);
+    $coursecontext = $modcontext->get_course_context();
+    $mod = get_fast_modinfo($coursecontext->instanceid)->get_cm($modcontext->instanceid);
+    require_capability('mod/' . $mod->modname . ':view', $modcontext);
 
     if ($mod) {
         $allowedmodules = explode(",", get_config('format_tiles', 'modalmodules'));
@@ -1017,12 +1017,15 @@ function format_tiles_output_fragment_get_cm_content(array $args): string {
             throw new invalid_parameter_exception('Not allowed to call this mod type - disabled by site admin');
         }
         if (!$mod->uservisible) {
-            require_capability('moodle/course:viewhiddenactivities', $context);
+            require_capability('moodle/course:viewhiddenactivities', $modcontext);
         }
         if ($mod->modname == 'page') {
             // Record from the page table.
-            $record = $DB->get_record($mod->modname, ['id' => $mod->instance], 'intro, content, revision, contentformat');
-            return \format_tiles\local\util::format_cm_content_text($mod->modname, $record, $context);
+            $record = $DB->get_record($mod->modname, ['id' => $mod->instance]);
+            list($course, $cm) = get_course_and_cm_from_cmid($mod->id);
+            require_once("$CFG->dirroot/mod/page/lib.php");
+            page_view($record, $course, $cm, $modcontext);
+            return \format_tiles\local\util::format_cm_content_text($mod->modname, $record, $modcontext);
         }
         if ($treataslabel) {
             return $mod->get_formatted_content(['overflowdiv' => true, 'noclean' => true]);
@@ -1098,7 +1101,7 @@ function format_tiles_before_footer() {
                 if ($launchmodalcmid) {
                     // Need to check if this cm allowed a modal.
                     $modalallowed =
-                        format_tiles\local\util::get_course_mod_info($PAGE->course->id, $launchmodalcmid)->modalallowed ?? false;
+                        \format_tiles\local\modal_helper::cm_has_modal($PAGE->course->id, $launchmodalcmid);
                     if (!$modalallowed) {
                         $launchmodalcmid = null;
                     }

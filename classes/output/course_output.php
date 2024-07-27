@@ -912,13 +912,6 @@ class course_output implements \renderable, \templatable {
 
         // Specific handling for embedded resource items (e.g. PDFs)  as allowed by site admin.
         $moduleobject['hasModal'] = $mod->onclick ? 0 : in_array($mod->id, $this->modalscmids);
-        if ($mod->modname == 'resource') {
-            if ($moduleobject['hasModal']) {
-                // Where onclick is truthy, suggests core JS will open in new window so don't treat as tiles modal.
-                $moduleobject['pluginfileUrl'] = self::plugin_file_url($mod);
-                $moduleobject['secondaryurl'] = $moduleobject['pluginfileUrl'] . '?redirect=1';
-            }
-        }
 
         // Issue 67 handling for LTI set to open in new window.
         // Where onclick is truthy, suggests core JS will open in new window so don't treat as tiles modal.
@@ -977,18 +970,6 @@ class course_output implements \renderable, \templatable {
         if ($mod->modname == 'url') {
             $externalurl = $DB->get_field('url', 'externalurl', ['id' => $mod->instance]);
             $modifiedvideourl = self::check_modify_embedded_url($externalurl);
-
-            if ($moduleobject['hasModal']) {
-                // We will be launching modal so need secondary URL under embed so users can click if embed doesn't work.
-                // We will also use it to redirect mobile users to YouTube or wherever since embed won't work well for them.
-                if ($modifiedvideourl) {
-                    $moduleobject['pluginfileUrl'] = $modifiedvideourl;
-                    $moduleobject['secondaryurl'] = $externalurl;
-                } else {
-                    $moduleobject['pluginfileUrl'] = $externalurl;
-                    $moduleobject['secondaryurl'] = $externalurl;
-                }
-            }
 
             if ($modifiedvideourl || self::is_video_url($externalurl)) {
                 // Even though it's really a URL activity, display it as "video" activity with video icon.
@@ -1052,31 +1033,6 @@ class course_output implements \renderable, \templatable {
             }
         }
         return $moduleobject;
-    }
-
-    /**
-     * Adapted from mod/resource/view.php
-     * @param \cm_info $cm the course module object
-     * @return string url for file
-     * @throws \coding_exception
-     * @throws \dml_exception
-     */
-    public static function plugin_file_url($cm) {
-        global $DB, $CFG;
-        $context = \context_module::instance($cm->id);
-        $resource = $DB->get_record('resource', ['id' => $cm->instance], '*', MUST_EXIST);
-        $fs = get_file_storage();
-        $files = $fs->get_area_files(
-            $context->id, 'mod_resource', 'content', 0, 'sortorder DESC, id ASC', false
-        );
-        if (!empty($files)) {
-            $file = reset($files);
-            unset($files);
-            $resource->mainfile = $file->get_filename();
-            return $CFG->wwwroot . '/pluginfile.php/' . $context->id . '/mod_resource/content/'
-                . $resource->revision . $file->get_filepath() . rawurlencode($file->get_filename());
-        }
-        return '';
     }
 
     /**

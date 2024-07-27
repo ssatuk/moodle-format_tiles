@@ -52,6 +52,44 @@ class modal_helper {
         }
     }
 
+
+    /**
+     * Get the course module IDs for any resource modules in this course that need a modal.
+     * @param int $courseid
+     * @return array
+     */
+    public static function get_resource_modal_cmids(int $courseid, string $mimetype): array {
+        global $DB;
+        if (!in_array($mimetype, ['application/pdf', 'text/html'])) {
+            debugging("Unexpected MIME type " . $mimetype, DEBUG_DEVELOPER);
+            return [];
+        }
+
+        // This is not very efficient so we cache the results elsewhere.
+        // When multiple files are uploaded to a single resource activity, Moodle displays the lowest sort order item
+        // Here we use the index on the files table component-filearea-contextid-itemid.
+        $excludeddisplaytypes = [
+            RESOURCELIB_DISPLAY_POPUP, RESOURCELIB_DISPLAY_NEW, RESOURCELIB_DISPLAY_DOWNLOAD,
+        ];
+        list($insql, $params) =
+            $DB->get_in_or_equal($excludeddisplaytypes, SQL_PARAMS_NAMED, 'param', false);
+        $params['courseid'] = $courseid;
+        $params['contextmodule'] = CONTEXT_MODULE;
+        $params['mimetype'] = $mimetype;
+
+        // First get file cmids of relevant mime type.
+        // There is an index on the files table component-filearea-contextid-itemid.
+        $sql = "SELECT DISTINCT cm.id
+                    FROM {course_modules} cm
+                    JOIN {modules} m ON m.id = cm.module and m.name = 'resource'
+                    JOIN {resource} r ON cm.instance = r.id
+                    JOIN {context} ctx ON ctx.contextlevel = :contextmodule AND ctx.instanceid = cm.id
+                    JOIN {files} f ON f.component = 'mod_resource' AND f.filearea = 'content' AND f.contextid = ctx.id
+                        AND f.itemid = 0 AND f.filesize > 0 and f.filename != '.' AND f.mimetype = :mimetype
+                    WHERE cm.course = :courseid AND cm.deletioninprogress = 0 AND r.display $insql";
+        return $DB->get_fieldset_sql($sql, $params);
+    }
+
     /**
      * Is a particular modname e.g. page allowed a modal.
      * For resource we check the resource type as well e.g. pdf.
@@ -80,7 +118,6 @@ class modal_helper {
     /**
      * This is to avoid re-implementing multiple files from the course index.
      * To know which resources to launch in modals, we can get the cmids of all resources which will launch as modals.
-     * This takes no account of whether a user can see the module - handled elsewhere.
      * @param int $courseid
      * @param bool $excludeunavailable should we check availability of each cm in list and exclude unavailable?
      * @return array course module IDs to launch in modals.
@@ -112,33 +149,16 @@ class modal_helper {
                         $DB->get_in_or_equal($excludeddisplaytypes, SQL_PARAMS_NAMED, 'param', false);
                     $params['course'] = $courseid;
                     $cmids = array_merge($cmids, $DB->get_fieldset_sql(
-                        "SELECT cm.id FROM {url} u
+                        "SELECT DISTINCT cm.id FROM {url} u
                              JOIN {course_modules} cm ON cm.instance = u.id
                              JOIN {modules} m ON m.id = cm.module AND m.name = 'url'
                              WHERE u.course = :course AND cm.deletioninprogress = 0 AND u.display $insql", $params
                     ));
                 } else if (in_array($allowedmodule, ['pdf', 'html'])) {
-                    $excludeddisplaytypes = [
-                        RESOURCELIB_DISPLAY_POPUP, RESOURCELIB_DISPLAY_NEW, RESOURCELIB_DISPLAY_DOWNLOAD,
-                    ];
-                    list($insql, $params) =
-                        $DB->get_in_or_equal($excludeddisplaytypes, SQL_PARAMS_NAMED, 'param', false);
-                    $params['courseid'] = $courseid;
-                    $params['mimetype'] = $allowedmodule == 'pdf' ? 'application/pdf' : 'text/html';
-                    $params['contextmodule'] = CONTEXT_MODULE;
-
-                    // First get file cmids of relevant mime type.
-                    // There is an index on the files table component-filearea-contextid-itemid.
-                    $sql = "SELECT cm.id
-                    FROM {course_modules} cm
-                    JOIN {modules} m ON m.id = cm.module and m.name = 'resource'
-                    JOIN {resource} r ON cm.instance = r.id
-                    JOIN {context} ctx ON ctx.contextlevel = :contextmodule AND ctx.instanceid = cm.id
-                    JOIN {files} f ON f.component = 'mod_resource' AND f.filearea = 'content' AND f.contextid = ctx.id
-                        AND f.itemid = 0 AND f.filesize > 0 and f.filename != '.' AND f.mimetype = :mimetype
-                    WHERE cm.course = :courseid AND cm.deletioninprogress = 0 AND r.display $insql";
-                    $cmids = array_merge($cmids, $DB->get_fieldset_sql($sql, $params));
-
+                    $resourcecmids = \format_tiles\local\modal_helper::get_resource_modal_cmids(
+                        $courseid, $allowedmodule == 'pdf' ? 'application/pdf' : 'text/html'
+                    );
+                    $cmids = array_merge($cmids, $resourcecmids);
                 } else if ($allowedmodule == 'page') {
                     $cmids = [];
                     $pagecms
@@ -184,5 +204,16 @@ class modal_helper {
             }
         }
         return $result;
+    }
+
+    /**
+     * Does a particular course module use a modal.
+     * @param int $courseid
+     * @param int $cmid
+     * @return bool
+     */
+    public static function cm_has_modal(int $courseid, int $cmid):bool {
+        $cmids = self::get_modal_allowed_cm_ids($courseid, false);
+        return !empty($cmids) && in_array($cmid, $cmids);
     }
 }

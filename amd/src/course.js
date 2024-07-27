@@ -889,28 +889,6 @@ define(["jquery", "core/templates", "core/ajax", "format_tiles/browser_storage",
                         });
                     });
 
-                    // If a mobile user clicks an embedded video activity, we don't show them a modal.
-                    // It won't work well. Instead we direct them to the original site e.g. YouTube.
-                    if (isMobile) {
-                        pageContent.on(Event.CLICK, Selector.ACTIVITY + ".video a", function(e) {
-                            var target = $(e.currentTarget);
-                            var url = target.closest(Selector.ACTIVITY).data("url-secondary");
-                            if (url !== undefined) {
-                                e.preventDefault();
-                                e.stopPropagation();
-                                var cm = target.closest(Selector.ACTIVITY);
-                                ajax.call([{
-                                    methodname: "format_tiles_log_mod_view", args: {
-                                        courseid: courseId,
-                                        cmid: cm.data("cmid")
-                                    }
-                                }])[0].done(function () {
-                                    window.location.href = url;
-                                });
-                            }
-                        });
-                    }
-
                     // When a section is open, fix close/edit buttons to top of screen (else hidden on scroll).
                     let fixButtonsDisabled = false;
                     $(window).scroll(function() {
