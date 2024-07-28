@@ -60,10 +60,13 @@ class modal_helper {
      * @return array
      */
     public static function get_resource_modal_cmids(int $courseid, array $mimetypes): array {
-        global $DB;
+        global $DB, $CFG;
         if (empty($mimetypes)) {
             return [];
         }
+
+        // To import RESOURCELIB_DISPLAY_XXX etc.
+        require_once("$CFG->libdir/resourcelib.php");
 
         // This is not very efficient, so we cache the results elsewhere.
         // When multiple files are uploaded to a single resource activity, Moodle displays the lowest sort order item
@@ -121,8 +124,6 @@ class modal_helper {
         $cachedvalue = $cache->get($courseid);
         if ($cachedvalue === false) {
             $modinfo = get_fast_modinfo($courseid);
-            // Config values to be added to templates for JS to retrieve.
-            // May move more to this from existing JS init in format.php.
 
             // To import RESOURCELIB_DISPLAY_XXX etc.
             require_once("$CFG->libdir/resourcelib.php");
