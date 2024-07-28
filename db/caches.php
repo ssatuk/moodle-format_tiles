@@ -37,5 +37,8 @@ $definitions = [
         'simpledata' => false,
         'staticacceleration' => true,
         'staticaccelerationsize' => 30,
+        'invalidationevents' => [
+            'format_tiles/modaladminsettingchanged',
+        ],
     ],
 ];

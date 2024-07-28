@@ -119,6 +119,11 @@ if ($ADMIN->fulltree) {
         $allowedmodtypes,
         $options
     );
+    $setting->set_updatedcallback(
+        function() {
+            \cache_helper::purge_by_event('format_tiles/modaladminsettingchanged');
+        }
+    );
     $page->add($setting);
 
     // Modal windows for resources.
