@@ -298,8 +298,6 @@
 .format-tiles .course-content ul li.section.main.moveablesection {
     padding: 30px 10px 10px 10px;
     margin-left: 7px;
-    /* For snap theme*/
-    visibility: visible;
 }
 .format-tiles .course-content ul.tiles .tile {
     display: flex;
@@ -376,7 +374,7 @@
 }
 
 .format-tiles .course-content ul.tiles .tile-clickable:hover,
-li.activity.subtile:not(.unclickable):hover {
+.format-tiles li.activity.subtile:not(.unclickable):hover {
     transform: translateY(-6px);
     transition: 0.3s ease-in-out;
 }
@@ -446,7 +444,7 @@ li.activity.subtile:not(.unclickable):hover {
     font-size: 1em;
 }
 
-li.activity .tileiconcontainer {
+.format-tiles li.activity .tileiconcontainer {
     padding: 10px;
     border-radius: 100%;
     width: 105px;
@@ -455,7 +453,7 @@ li.activity .tileiconcontainer {
     margin-top: 25px;
 }
 
-li.activity .tileiconcontainer .tile-icon .icon {
+.format-tiles li.activity .tileiconcontainer .tile-icon .icon {
     color: #fff;
     width: 65px;
     height: 65px;
@@ -464,7 +462,7 @@ li.activity .tileiconcontainer .tile-icon .icon {
     margin: 0;
 }
 
-li.activity .tileiconcontainer .tile-icon .icon.fa {
+.format-tiles li.activity .tileiconcontainer .tile-icon .icon.fa {
     font-size: 60px;
 }
 .format-tiles li.section .tiles-editor-image .tile-icon img {
@@ -640,21 +638,13 @@ li.activity .tileiconcontainer .tile-icon .icon.fa {
     margin-bottom: 0;
 }
 
-.format-tile .ul.tiles .single-section .section-navigation {
+.format-tiles .ul.tiles .single-section .section-navigation {
     margin-bottom: 0;
 }
 
 .format-tiles ul.tiles li.section .format_tiles_section_content .modtype_label .no-overflow,
 .format-tiles #section-0 .format_tiles_section_content .summary .no-overflow {
     margin-bottom: 5px;
-}
-.format-tiles ul.tiles li.section .format_tiles_section_content:not(.collapse) {
-    /*For snap theme*/
-    display: block;
-}
-
-.format-tiles.theme-snap .course-content {
-    max-width: inherit;
 }
 .format-tiles .label_content {
     overflow: hidden;
@@ -668,10 +658,6 @@ li.activity .tileiconcontainer .tile-icon .icon.fa {
 .format-tiles .expand-collapse-all-btns {
     width: 100%;
     text-align: right;
-}
-.format-tiles .expand-collapse-all-btns .btn-secondary {
-    /*Adatpable theme*/
-    min-height: unset;
 }
 .format-tiles .buttonhidesec0 {
     display: none;
@@ -906,11 +892,6 @@ body.jsenabled.format-tiles #collapsiblesec0 {
     font-weight: normal;
     color: #333;
     word-wrap: break-word;
-}
-.format-tiles.theme-snap ul.tiles .tile h3,
-.format-tiles.theme-snap ul.tiles .subtile h4,
-.format-tiles.theme-snap ul.tiles .tile .tile-textinner.longtitle h3 {
-    font-size: 1em;
 }
 .format-tiles .sectiontitlecontainer {
     margin: 0 0 0.5em 0.5em;
@@ -1542,10 +1523,6 @@ body.jsenabled.format-tiles #collapsiblesec0 {
     margin-left: 30px;
 }
 
-/*Lambda theme*/
-.format-tiles .activity-information {
-    float: none;
-}
 .format-tiles .margin-rt .section-cm-edit-actions {
     margin-right: 35px;
 }
@@ -1665,8 +1642,8 @@ body.jsenabled.format-tiles #collapsiblesec0 {
     right: 0;
 }
 
-.section.main:not(.course-section) .activity.subtile .availabilityinfo,
-.section.main:not(.course-section) .activity.subtile .contentafterlink {
+.format_tiles .section.main:not(.course-section) .activity.subtile .availabilityinfo,
+.format_tiles .section.main:not(.course-section) .activity.subtile .contentafterlink {
     margin-left: 0;
     padding: 0;
 }
@@ -1959,10 +1936,6 @@ allow tiles to be taller and thinner so can fit two side by side in portrait on 
         /* stylelint-disable-next-line declaration-no-important */
         padding-left: 0 !important;
     }
-    .format-tiles .card .card-body {
-        /* Moove theme.*/
-        padding: 0;
-    }
     .format-tiles .course-content ul.section {
         padding: 1em;
     }
@@ -2012,7 +1985,7 @@ allow tiles to be taller and thinner so can fit two side by side in portrait on 
         font-size: 1em;
     }
     .format-tiles #page.container-fluid,
-    .path-course-view li.activity > div {
+    .format-tiles .path-course-view li.activity > div {
         /* stylelint-disable-next-line declaration-no-important */
         padding: 0 !important;
     }
