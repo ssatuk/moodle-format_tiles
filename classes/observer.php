@@ -21,7 +21,7 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 namespace format_tiles;
-use \format_tiles\local\modal_helper;
+use format_tiles\local\modal_helper;
 
 /**
  * Event observers supported by this format.
