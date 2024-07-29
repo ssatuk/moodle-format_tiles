@@ -32,3 +32,6 @@ body.format-tiles.path-course-view.format-tiles-tile-open #page-content aside.bl
     /* Avoid empty white blocks showing on grey overlay at bottom of page*/
     background-color: inherit;
 }
+.format-tiles .expand-collapse-all-btns .btn-secondary {
+    min-height: unset;
+}

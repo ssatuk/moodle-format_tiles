@@ -43,7 +43,6 @@ class util {
      * @throws \moodle_exception
      */
     public static function get_course_mod_info(int $courseid, int $cmid): ?object {
-        global $DB;
         $coursecontext = \context_course::instance($courseid);
         $modinfo = get_fast_modinfo($courseid);
         $cm = $modinfo->get_cm($cmid);
@@ -66,16 +65,6 @@ class util {
                 $resourcetype = '';
             }
 
-            $modalallowed = \format_tiles\local\modal_helper::is_allowed_modal($cmrecord->modname, $resourcetype);
-
-            $pluginfileurl = $isresource ? \format_tiles\output\course_output::plugin_file_url($cm) : '';
-            if ($modalallowed && $cmrecord->modname === 'url') {
-                // Extra check that is set to embed.
-                $url = $DB->get_record('url', ['id' => $cm->instance], '*', MUST_EXIST);
-                $modifiedvideourl = \format_tiles\output\course_output::check_modify_embedded_url($url->externalurl);
-                $pluginfileurl = $modifiedvideourl ?: $url->externalurl;
-            }
-
             return (object)[
                 'id' => $cm->id,
                 'courseid' => $courseid,
@@ -91,8 +80,7 @@ class util {
                     ? 1 : 0,
                 'ismanualcompletion' => $cm->completion == COMPLETION_TRACKING_MANUAL,
                 'resourcetype' => $resourcetype,
-                'pluginfileurl' => $pluginfileurl,
-                'modalallowed' => $modalallowed,
+                'modalallowed' => \format_tiles\local\modal_helper::cm_has_modal($courseid, $cmrecord->id),
             ];
         }
         return null;
@@ -229,6 +217,41 @@ class util {
     }
 
     /**
+     * Is the current user using tile fitter?
+     * @return bool
+     * @throws \coding_exception
+     * @throws \dml_exception
+     */
+    public static function using_tile_fitter(): bool {
+        global $SESSION;
+
+        if (optional_param('skipcheck', 0, PARAM_INT)) {
+            // The skipcheck param is for anyone stuck at loading icon who clicks it - they escape it for session.
+            $SESSION->format_tiles_skip_width_check = 1;
+            return false;
+        }
+
+        return get_config('format_tiles', 'fittilestowidth')
+            && \core_useragent::get_device_type() != \core_useragent::DEVICETYPE_MOBILE
+            && ($SESSION->format_tiles_skip_width_check ?? null) != 1;
+    }
+
+
+    /**
+     * If tile fitter has already set a max width for page, what is it?
+     * @param int $courseid
+     * @return int
+     */
+    public static function get_tile_fitter_max_width(int $courseid): int {
+        global $SESSION;
+        if (!$courseid) {
+            return 0;
+        }
+        $var = 'format_tiles_width_' . $courseid;
+        return $SESSION->$var ?? 0;
+    }
+
+    /**
      * Iterates through all the colours entered by the administrator under the plugin settings page
      * @return array list of all the colours and their names for use in the settings forms
      * @throws \dml_exception
@@ -274,16 +297,12 @@ class util {
                 'assumeDataStoreContent' => get_config('format_tiles', 'assumedatastoreconsent'),
                 'reOpenLastSection' => get_config('format_tiles', 'reopenlastsection'),
                 'userId' => $USER->id,
-                'fitTilesToWidth' => get_config('format_tiles', 'fittilestowidth')
-                    && !optional_param("skipcheck", 0, PARAM_INT)
-                    && !isset($SESSION->format_tiles_skip_width_check)
-                    && $usejsnav,
+                'fitTilesToWidth' => self::using_tile_fitter(),
                 'enablecompletion' => $course->enablecompletion,
                 'usesubtiles' => get_config('format_tiles', 'allowsubtilesview') && $course->courseusesubtiles,
+                'courseContextId' => $contextid,
             ];
-            $PAGE->requires->js_call_amd(
-                'format_tiles/course', 'init', array_merge($jsparams, ['courseContextId' => $contextid])
-            );
+            $PAGE->requires->js_call_amd('format_tiles/course', 'init', $jsparams);
         } else {
             // Initialise JS for when editing mode is on.
             $editparams = [
@@ -316,7 +335,7 @@ class util {
             $modnames = array_merge($allowedmodals['modules'] ?? [], $allowedmodals['resources'] ?? []);
             $jsconfigvalues['modalAllowedModNames'] = json_encode($modnames);
             $jsconfigvalues['modalAllowedCmids'] = json_encode(
-                \format_tiles\local\modal_helper::get_modal_allowed_cmids($courseid, $modnames)
+                \format_tiles\local\modal_helper::get_modal_allowed_cm_ids($courseid, true)
             );
         }
 
