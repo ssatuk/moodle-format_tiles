@@ -233,7 +233,7 @@ class course_output implements \renderable, \templatable {
 
         $data['useSubtiles'] = get_config('format_tiles', 'allowsubtilesview') && $this->courseformatoptions['courseusesubtiles'];
         $data['usetooltips'] = get_config('format_tiles', 'usetooltips');
-        $data['ulextraclasses'] = get_config('format_tiles', 'subtileiconcolourbackground')
+        $data['outerextraclasses'] = get_config('format_tiles', 'subtileiconcolourbackground')
             ? 'format-tiles-colour-subtile-icon-bg' : '';
 
         foreach ($this->courseformatoptions as $k => $v) {

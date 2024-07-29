@@ -496,3 +496,10 @@ Other
 - Remove tile 1 focus on page load
 - Fix issue #214 Tile misalignment after 4.3 update
 - Simplify tile fitter JS to speed up tile re-org when course index opened/closed
+
+4.4.0.13 (2024072941)
+=====================
+- Accessibility improvements
+- Code simplification (modals incl pluginfile URLs)
+- Allow tile fitter to work without JS nav being on
+- Improve sub-tile icon border/background

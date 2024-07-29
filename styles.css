@@ -1878,48 +1878,59 @@ body.jsenabled.format-tiles #collapsiblesec0 {
     width: 45px;
     height: 45px;
 }
-
 .format-tiles li.subtile .tileiconcontainer.administration {
-    border: 3px solid #da58ef;
+    border: 1px dashed #da58ef30;
 }
 .format-tiles li.subtile .tileiconcontainer.assessment {
-    border: 3px solid #f90086;
+    border: 1px dashed #f9008630;
+    background-color: #f9008606;
 }
 .format-tiles li.subtile .tileiconcontainer.content {
-    border: 3px solid #0099ad;
+    border: 1px dashed #0099ad30;
+    background-color: #0099ad06;
 }
 .format-tiles li.subtile .tileiconcontainer.collaboration {
-    border: 3px solid #6f46f7;
+    border: 1px dashed #6f46f730;
+    background-color: #6f46f706;
 }
 .format-tiles li.subtile .tileiconcontainer.communication {
-    border: 3px solid #eb6200;
+    border: 1px dashed #eb620030;
+    background-color: #eb620006;
 }
 .format-tiles li.subtile .tileiconcontainer.interactivecontent {
-    border: 3px solid #8d3d1b;
+    border: 1px dashed #8d3d1b30;
+    background-color: #8d3d1b06;
 }
 .format-tiles li.subtile .tileiconcontainer.other {
-    border: 3px solid #212529;
+    border: 1px dashed #21252930;
+    background-color: #21252906;
 }
 .format-tiles .format-tiles-colour-subtile-icon-bg li.subtile .tileiconcontainer.administration {
     background-color: #da58ef;
+    border: none;
 }
 .format-tiles .format-tiles-colour-subtile-icon-bg li.subtile .tileiconcontainer.assessment {
     background-color: #f90086;
 }
 .format-tiles .format-tiles-colour-subtile-icon-bg li.subtile .tileiconcontainer.content {
     background-color: #0099ad;
+    border: none;
 }
 .format-tiles .format-tiles-colour-subtile-icon-bg li.subtile .tileiconcontainer.collaboration {
     background-color: #6f46f7;
+    border: none;
 }
 .format-tiles .format-tiles-colour-subtile-icon-bg li.subtile .tileiconcontainer.communication {
     background-color: #eb6200;
+    border: none;
 }
 .format-tiles .format-tiles-colour-subtile-icon-bg li.subtile .tileiconcontainer.interactivecontent {
     background-color: #8d3d1b;
+    border: none;
 }
 .format-tiles .format-tiles-colour-subtile-icon-bg li.subtile .tileiconcontainer.other {
     background-color: #212529;
+    border: none;
 }
 .format-tiles .format-tiles-colour-subtile-icon-bg li.subtile .activityiconcontainer:not(.isbranded) .activityicon:not(.nofilter),
 .format-tiles .format-tiles-colour-subtile-icon-bg li.subtile .activityiconcontainer:not(.isbranded) .icon:not(.nofilter) {

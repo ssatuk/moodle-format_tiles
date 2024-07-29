@@ -57,7 +57,7 @@ class cm extends core_cm {
         $data->ismoodle44 = $moodlerelease === 4.4;
         $data->ismoodle40 = $moodlerelease === 4.0;
         $data->modcontextid = $this->mod->context->id;
-
+        $data->cmtitle = $this->mod->get_formatted_name();
         $childadded = true; // We did add some data above.
         return $parentadded || $childadded;
     }
