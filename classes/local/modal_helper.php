@@ -216,4 +216,24 @@ class modal_helper {
         $cmids = self::get_modal_allowed_cm_ids($courseid, false);
         return !empty($cmids) && in_array($cmid, $cmids);
     }
+
+    /**
+     * Is this module one which uses the cache to store modal cm data?
+     * @param string $modname
+     * @return bool
+     */
+    public static function mod_uses_cm_modal_cache(string $modname): bool {
+        return in_array($modname, ['resource', 'page', 'url']);
+    }
+
+    /**
+     * Clear the cache of resource modal IDs for a given course.
+     * @param int $courseid
+     * @return void
+     */
+    public static function clear_cache_modal_cmids(int $courseid) {
+        // See also \cache_helper::purge_by_event('format_tiles/modaladminsettingchanged') in settings.php.
+        $cache = \cache::make('format_tiles', 'modalcmids');
+        $cache->delete($courseid);
+    }
 }
