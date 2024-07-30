@@ -875,7 +875,7 @@ class course_output implements \renderable, \templatable {
             $moduleobject['modinstance'] = $mod->instance;
         }
         $moduleobject['modresourceicon'] = $mod->modname == 'resource'
-            ? \format_tiles\local\util::get_mod_resource_icon_name($mod->context->id) : null;
+            ? \format_tiles\local\util::get_mod_resource_type($mod->icon) : null;
 
         $treataslabel = $mod->has_custom_cmlist_item();
         if (!$treataslabel && get_config('format_tiles', 'allowphototiles')) {
@@ -901,6 +901,12 @@ class course_output implements \renderable, \templatable {
             } else if ($mod->modname == 'customcert') {
                 // Temporary icon for mod_customcert.
                 $modiconurl = $output->image_url('tileicon/award-solid', 'format_tiles');
+            } else if (in_array($moduleobject['modresourceicon'], ['video', 'audio'])) {
+                // Override icon with local version.
+                $modiconurl = $output->image_url(
+                    'resource_subtile/' . $moduleobject['modresourceicon'],
+                    'format_tiles'
+                );
             } else {
                 $modiconurl = $mod->get_icon_url($output);
             }
@@ -978,7 +984,7 @@ class course_output implements \renderable, \templatable {
                     $moduleobject['modnameDisplay'] = $videostring;
                 }
                 $moduleobject['icon'] = [
-                    'url' => $output->image_url("circle-play", 'format_tiles'),
+                    'url' => $output->image_url("resource_subtile/mp4", 'format_tiles'),
                     'label' => $videostring,
                 ];
             }

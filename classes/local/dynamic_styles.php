@@ -99,8 +99,6 @@ class dynamic_styles {
                 ? 1 : 0,
             // Site admin may have added additional CSS via the plugin settings.
             'pluginconfigcss' => trim(get_config('format_tiles', 'customcss') ?? ''),
-            'ismoodle42minus' => \format_tiles\local\util::get_moodle_release() <= 4.2,
-            'ismoodle44' => \format_tiles\local\util::get_moodle_release() === 4.4,
         ];
 
         if (get_config('format_tiles', 'allowphototiles')) {

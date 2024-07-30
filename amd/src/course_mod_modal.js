@@ -150,7 +150,7 @@ define(["jquery", "core/modal_factory", "core/config", "core/templates", "core/n
                     };
 
                     var template = null;
-                    if (objectType === "resource_html") {
+                    if (["resource_html", 'resource_markup'].includes(objectType)) {
                         templateData.objectType = "text/html";
                         template = 'format_tiles/embed_file_modal_body';
                     } else if (objectType === "resource_pdf") {

@@ -931,6 +931,7 @@ body.jsenabled.format-tiles #collapsiblesec0 {
     /* We use important here as core-course-dragdrop is not replacing this.originalstyle correctly. */
     /* stylelint-disable-next-line declaration-no-important */
     opacity: 1 !important;
+    border-radius: 10px;
 }
 .format-tiles .hidden #hiddeneye {
     background-image: url([[pix:format_tiles|eye-slash]]);
