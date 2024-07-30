@@ -370,7 +370,7 @@ define(["jquery", "core/templates", "core/ajax", "format_tiles/browser_storage",
                 // Short timeout for this to allow for animation to finish.
                 // (Not using the animation callback for the delay as it's slightly too slow.)
                 setTimeout(() => {
-                    contentArea.find(Selector.FOCUSSABLE_ELEMS).eq(0).focus();
+                    contentArea.find(Selector.FOCUSABLE_ELEMS).eq(0).focus();
                 }, 300);
 
                 openTile = sectionNumber;
