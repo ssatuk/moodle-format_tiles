@@ -215,27 +215,30 @@ define(["jquery", "core/templates", "core/ajax", "format_tiles/browser_storage",
                     });
 
                     if (!isMobile) {
-                        activityLinks.last().on(Event.KEYDOWN, function (e) {
+                        const focusableElements = contentArea.find(Selector.FOCUSABLE_ELEMS);
+                        const firstFocusableElement = focusableElements.eq(0);
+                        const lastFocusableElement = focusableElements.eq(focusableElements.length - 1);
+                        lastFocusableElement.on(Event.KEYDOWN, function (e) {
                             if (e.keyCode === Keyboard.TAB && !e.shiftKey
                                 && $(e.relatedTarget).closest(Selector.SECTION_MAIN).attr("id") !== contentArea.attr("id")) {
                                 // RelatedTarget is the item we tabbed to.
                                 // If we reached here, the item we are on is not a member of the section we were in.
-                                // (I.e. we are trying to tab out of bottom of section) so move tab to section title instead.
+                                // (I.e. we are trying to tab out of bottom of section) so move tab to first item instead.
                                 setTimeout(function () {
-                                    // Allow very short delay so we dont skip forward on the basis of our last key press.
-                                    contentArea.find(Selector.FOCUSABLE_ELEMS).eq(0).focus();
+                                    // Allow very short delay so we don't skip forward on the basis of our last key press.
+                                    firstFocusableElement.focus();
                                     contentArea.find(Selector.SECTION_BUTTONS).css("top", "");
                                 }, 100);
                             }
                         });
-                        contentArea.find(Selector.FOCUSABLE_ELEMS).eq(0).on(Event.KEYDOWN, function (e) {
+                        firstFocusableElement.on(Event.KEYDOWN, function (e) {
                             if (e.keyCode === Keyboard.TAB && e.shiftKey
                                 && $(e.relatedTarget).closest(Selector.SECTION_MAIN).attr("id") !== contentArea.attr("id")) {
                                 // See explanation previous block.
                                 // Here we are trying to tab backwards out of the top of our section.
                                 // So take us to last item instead.
                                 setTimeout(function () {
-                                    activityLinks.last().focus();
+                                    lastFocusableElement.focus();
                                 }, 100);
                             }
                         });
@@ -364,11 +367,13 @@ define(["jquery", "core/templates", "core/ajax", "format_tiles/browser_storage",
                     page.off(events, function () {
                         page.stop();
                     });
+                    // For users with screen readers, move focus to the first item within the tile.
+                    contentArea.find(Selector.FOCUSABLE_ELEMS).eq(0).focus();
                 });
 
                 // For users with screen readers, move focus to the first item within the tile.
                 // Short timeout for this to allow for animation to finish.
-                // (Not using the animation callback for the delay as it's slightly too slow.)
+                // (Not relying on the animation callback alone for the delay as it's slightly too slow.)
                 setTimeout(() => {
                     contentArea.find(Selector.FOCUSABLE_ELEMS).eq(0).focus();
                 }, 300);
