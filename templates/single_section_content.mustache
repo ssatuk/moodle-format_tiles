@@ -65,12 +65,12 @@
                         </a>
                     {{/editing}}
                 {{/canedit}}
-                <a class="sectionbutton closesectionbtn" id="closesectionbtn-{{tileid}}"  href="#"
+                <button class="sectionbutton closesectionbtn" id="closesectionbtn-{{tileid}}"
                    title="{{#str}}close, format_tiles{{/str}}" data-section="{{tileid}}">
                 <span class="d-flex justify-content-center align-items-center h-100">
                     {{#pix}}close, format_tiles, {{#str}}close, format_tiles{{/str}}{{/pix}}
                 </span>
-                </a>
+                </button>
             </div>
         {{/usingjsnav}}
     </div>
@@ -84,18 +84,7 @@
             </a>
         {{/editing}}
         <ul class="format-tiles-cm-list {{^useSubtiles}}no{{/useSubtiles}}subtiles">
-            {{#course_modules}}
-                {{>format_tiles/course_module}}
-            {{/course_modules}}
-            {{#useSubtiles}}
-                <li class="activity subtile spacer" aria-hidden="true"></li>
-                <li class="activity subtile spacer" aria-hidden="true"></li>
-                <li class="activity subtile spacer" aria-hidden="true"></li>
-                <li class="activity subtile spacer" aria-hidden="true"></li>
-                <li class="activity subtile spacer" aria-hidden="true"></li>
-                <li class="activity subtile spacer" aria-hidden="true"></li>
-                <li class="activity subtile spacer" aria-hidden="true"></li>
-            {{/useSubtiles}}
+            {{>format_tiles/course_modules}}
         </ul>
 
         {{#editing}}

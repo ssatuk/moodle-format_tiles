@@ -576,6 +576,7 @@ class course_output implements \renderable, \templatable {
                     'tileid' => $section->section,
                     'secid' => $section->id,
                     'title' => $title,
+                    'tilearialabel' => get_string('tilearialabel', 'format_tiles', $title),
                     'tileicon' => format_option::get($this->course->id, format_option::OPTION_SECTION_ICON, $section->id),
                     'current' => course_get_format($this->course)->is_section_current($section),
                     'hidden' => !$section->visible,
@@ -866,7 +867,7 @@ class course_output implements \renderable, \templatable {
         if ($treataslabel) {
             $moduleobject['is_label'] = true;
             $moduleobject['long_label'] = strlen($mod->content) > 300 ? 1 : 0;
-            if ($isfirst && !$previouswaslabel && $this->courseformatoptions['courseusesubtiles']) {
+            if (!$isfirst && !$previouswaslabel && $this->courseformatoptions['courseusesubtiles']) {
                 $moduleobject['hasSpacersBefore'] = 1;
             }
         }
@@ -877,7 +878,6 @@ class course_output implements \renderable, \templatable {
         $moduleobject['modresourceicon'] = $mod->modname == 'resource'
             ? \format_tiles\local\util::get_mod_resource_type($mod->icon) : null;
 
-        $treataslabel = $mod->has_custom_cmlist_item();
         if (!$treataslabel && get_config('format_tiles', 'allowphototiles')) {
             $iconclass = '';
             if ($mod->modname == 'resource' && $this->moodlerelease <= 4.2) {

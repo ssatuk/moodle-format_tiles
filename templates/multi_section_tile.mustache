@@ -50,7 +50,7 @@
     id="tile-{{tileid}}" data-section="{{tileid}}" data-true-sectionid="{{secid}}" {{#hastilephoto}}{{{phototileinlinestyle}}}{{/hastilephoto}}>
     {{^hastilephoto}}<div class="tile-bg"></div>{{/hastilephoto}}
     <a class="tile-link"{{#userclickable}} href="{{{config.wwwroot}}}/course/view.php?id={{courseid}}&section={{tileid}}"{{/userclickable}}
-       data-section="{{tileid}}" id="sectionlink-{{tileid}}">
+       data-section="{{tileid}}" id="sectionlink-{{tileid}}" aria-label="{{tilearialabel}}">
 
         {{^hastilephoto}}
             <div class="tile-content" id="tilecontent-{{tileid}}">

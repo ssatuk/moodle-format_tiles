@@ -60,6 +60,7 @@ define(["jquery", "core/templates", "core/ajax", "format_tiles/browser_storage",
             ACTIVITY: ".activity",
             ACTIVITY_NAME: ".activityname",
             ABOVE_TILES: "#abovetiles",
+            FOCUSABLE_ELEMS: 'button, a, input:not([type="hidden"]), select, textarea, [tabindex]:not([tabindex="-1"])',
             INSTANCE_NAME: ".instancename",
             SPACER: ".spacer",
             SECTION_ID: "#section-",
@@ -205,37 +206,37 @@ define(["jquery", "core/templates", "core/ajax", "format_tiles/browser_storage",
                     // When user reaches last item, send them back to first.
                     // And vice versa if going backwards.
 
-                    var activities = contentArea.find(Selector.ACTIVITY_NAME);
-
-                    activities.on(Event.KEYDOWN, function (e) {
+                    const activityLinks = contentArea.find(Selector.ACTIVITY).not(Selector.SPACER).find('a');
+                    activityLinks.on(Event.KEYDOWN, function (e) {
                         if (e.keyCode === Keyboard.ENTER) {
                             var toClick = $(e.currentTarget).find("a");
                             window.location.href = toClick.attr("href");
                         }
                     });
+
                     if (!isMobile) {
-                        activities.last().on(Event.KEYDOWN, function (e) {
+                        activityLinks.last().on(Event.KEYDOWN, function (e) {
                             if (e.keyCode === Keyboard.TAB && !e.shiftKey
-                                    && $(e.relatedTarget).closest(Selector.SECTION_MAIN).attr("id") !== contentArea.attr("id")) {
+                                && $(e.relatedTarget).closest(Selector.SECTION_MAIN).attr("id") !== contentArea.attr("id")) {
                                 // RelatedTarget is the item we tabbed to.
                                 // If we reached here, the item we are on is not a member of the section we were in.
                                 // (I.e. we are trying to tab out of bottom of section) so move tab to section title instead.
                                 setTimeout(function () {
                                     // Allow very short delay so we dont skip forward on the basis of our last key press.
-                                    contentArea.find(Selector.CLOSE_SEC_BTN).focus();
+                                    contentArea.find(Selector.FOCUSABLE_ELEMS).eq(0).focus();
                                     contentArea.find(Selector.SECTION_BUTTONS).css("top", "");
-                                }, 200);
+                                }, 100);
                             }
                         });
-                        contentArea.find(Selector.SECTION_TITLE).on(Event.KEYDOWN, function (e) {
+                        contentArea.find(Selector.FOCUSABLE_ELEMS).eq(0).on(Event.KEYDOWN, function (e) {
                             if (e.keyCode === Keyboard.TAB && e.shiftKey
-                                    && $(e.relatedTarget).closest(Selector.SECTION_MAIN).attr("id") !== contentArea.attr("id")) {
+                                && $(e.relatedTarget).closest(Selector.SECTION_MAIN).attr("id") !== contentArea.attr("id")) {
                                 // See explanation previous block.
                                 // Here we are trying to tab backwards out of the top of our section.
                                 // So take us to last item instead.
                                 setTimeout(function () {
-                                    activities.last().focus();
-                                }, 200);
+                                    activityLinks.last().focus();
+                                }, 100);
                             }
                         });
                     }
@@ -364,10 +365,15 @@ define(["jquery", "core/templates", "core/ajax", "format_tiles/browser_storage",
                         page.stop();
                     });
                 });
-                openTile = sectionNumber;
 
-                // For users with screen readers, move focus to the section title within the tile.
-                contentArea.find(Selector.CLOSE_SEC_BTN).focus();
+                // For users with screen readers, move focus to the first item within the tile.
+                // Short timeout for this to allow for animation to finish.
+                // (Not using the animation callback for the delay as it's slightly too slow.)
+                setTimeout(() => {
+                    contentArea.find(Selector.FOCUSSABLE_ELEMS).eq(0).focus();
+                }, 300);
+
+                openTile = sectionNumber;
 
                 // If we have any iframes in the section which were previous emptied out, re-populate.
                 // This will happen if we have previously closed a section with videos in, and they were muted.
