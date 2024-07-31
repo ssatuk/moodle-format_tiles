@@ -497,7 +497,7 @@ Other
 - Fix issue #214 Tile misalignment after 4.3 update
 - Simplify tile fitter JS to speed up tile re-org when course index opened/closed
 
-4.4.0.13 (2024072941)
+4.4.0.14 (2024073140)
 =====================
 - Accessibility improvements
 - Code simplification (modals incl pluginfile URLs)

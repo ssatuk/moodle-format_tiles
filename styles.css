@@ -1909,7 +1909,8 @@ body.jsenabled.format-tiles #collapsiblesec0 {
     border: 1px dashed #8d3d1b30;
     background-color: #8d3d1b06;
 }
-.format-tiles li.subtile .tileiconcontainer.other {
+/*Default will include .other*/
+.format-tiles li.subtile .tileiconcontainer {
     border: 1px dashed #21252930;
     background-color: #21252906;
 }
@@ -1949,6 +1950,15 @@ body.jsenabled.format-tiles #collapsiblesec0 {
     display: flex;
     justify-content: center;
     align-items: center;
+}
+
+/*Moodle 4.4+ specific styles*/
+.format-tiles li.activity.subtile .tileiconcontainer .tile-icon .icon {
+    max-width: 70px;
+    max-height: 70px;
+    width: 70px;
+    height: 70px;
+    padding: 0;
 }
 
 @media (min-width: 768px) {
