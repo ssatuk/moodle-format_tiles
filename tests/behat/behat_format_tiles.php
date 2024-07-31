@@ -322,7 +322,7 @@ class behat_format_tiles extends behat_base {
 
         // Click the button.
         $this->wait_for_pending_js();
-        $this->execute("behat_general::i_click_on", ["//a[@id=" . $tileid . "]", "xpath_element"]);
+        $this->execute("behat_general::i_click_on", ["//button[@id=" . $tileid . "]", "xpath_element"]);
         $this->execute('behat_general::wait_until_the_page_is_ready');
         $this->getSession()->wait(2000);
         $this->wait_for_pending_js(); // Wait for AJAX request to complete.

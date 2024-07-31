@@ -578,6 +578,7 @@ class course_output implements \renderable, \templatable {
                     'tileid' => $section->section,
                     'secid' => $section->id,
                     'title' => $title,
+                    'tilearialabel' => get_string('tilearialabel', 'format_tiles', $title),
                     'tileicon' => format_option::get($this->course->id, format_option::OPTION_SECTION_ICON, $section->id),
                     'current' => course_get_format($this->course)->is_section_current($section),
                     'hidden' => !$section->visible,
@@ -868,7 +869,7 @@ class course_output implements \renderable, \templatable {
         if ($treataslabel) {
             $moduleobject['is_label'] = true;
             $moduleobject['long_label'] = strlen($mod->content) > 300 ? 1 : 0;
-            if ($isfirst && !$previouswaslabel && $this->courseformatoptions['courseusesubtiles']) {
+            if (!$isfirst && !$previouswaslabel && $this->courseformatoptions['courseusesubtiles']) {
                 $moduleobject['hasSpacersBefore'] = 1;
             }
         }
@@ -877,9 +878,8 @@ class course_output implements \renderable, \templatable {
             $moduleobject['modinstance'] = $mod->instance;
         }
         $moduleobject['modresourceicon'] = $mod->modname == 'resource'
-            ? \format_tiles\local\util::get_mod_resource_icon_name($mod->context->id) : null;
+            ? \format_tiles\local\util::get_mod_resource_type($mod->icon) : null;
 
-        $treataslabel = $mod->has_custom_cmlist_item();
         if (!$treataslabel && get_config('format_tiles', 'allowphototiles')) {
             $iconclass = '';
             if ($mod->modname == 'resource' && $this->moodlerelease <= 4.2) {
@@ -903,6 +903,12 @@ class course_output implements \renderable, \templatable {
             } else if ($mod->modname == 'customcert') {
                 // Temporary icon for mod_customcert.
                 $modiconurl = $output->image_url('tileicon/award-solid', 'format_tiles');
+            } else if (in_array($moduleobject['modresourceicon'], ['video', 'audio'])) {
+                // Override icon with local version.
+                $modiconurl = $output->image_url(
+                    'resource_subtile/' . $moduleobject['modresourceicon'],
+                    'format_tiles'
+                );
             } else {
                 $modiconurl = $mod->get_icon_url($output);
             }
@@ -987,7 +993,7 @@ class course_output implements \renderable, \templatable {
                     $moduleobject['modnameDisplay'] = $videostring;
                 }
                 $moduleobject['icon'] = [
-                    'url' => $output->image_url("circle-play", 'format_tiles'),
+                    'url' => $output->image_url("resource_subtile/mp4", 'format_tiles'),
                     'label' => $videostring,
                 ];
             }

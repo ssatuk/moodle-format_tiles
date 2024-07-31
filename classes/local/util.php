@@ -60,7 +60,7 @@ class util {
 
             if ($isresource) {
                 // If it's a resource, could be a file e.g. PDF/HTML or could be a URL activity.
-                $resourcetype = $cm->modname == 'url' ? 'url' : self::get_mod_resource_icon_name($cm->context->id);
+                $resourcetype = $cm->modname == 'url' ? 'url' : self::get_mod_resource_type($cm->icon);
             } else {
                 $resourcetype = '';
             }
@@ -151,56 +151,14 @@ class util {
         return format_text($text, $record->contentformat, $formatoptions);
     }
 
-
     /**
-     * Get resource file type e.g. 'doc' from the icon URL e.g. 'document-24.png'
-     * So that we know which icon to display on sub-tiles.
-     *
-     * @param int $modcontextid the mod info object we are checking
-     * @return null|string the type e.g. 'doc'
+     * Get the mod resource type e.g. pdf, video, audio , html from the icon string.
+     * @param string $modicon
+     * @return string|null
      */
-    public static function get_mod_resource_icon_name(int $modcontextid): ?string {
-        $file = self::get_mod_resource_file($modcontextid);
-        if (!$file) {
-            return null;
-        }
-        $extensions = [
-            'powerpoint' => 'ppt',
-            'document' => 'doc',
-            'spreadsheet' => 'xls',
-            'archive' => 'zip',
-            'application/pdf' => 'pdf',
-            'mp3' => 'mp3',
-            'mpeg' => 'mp4',
-            'image/jpeg' => 'image',
-            'image/png' => 'image',
-            'image/gif' => 'image',
-            'image/svg+' => 'image',
-            'text/plain' => 'txt',
-            'text/html' => 'html',
-        ];
-        $extension = $extensions[$file->get_mimetype()] ?? pathinfo($file->get_filename(), PATHINFO_EXTENSION);
-        $extension = in_array($extension, ['docx', 'odf']) ? 'doc' : $extension;
-        $extension = in_array($extension, ['xlsx', 'ods']) ? 'xls' : $extension;
-        $extension = in_array($extension, ['pptx', 'odp']) ? 'ppt' : $extension;
-        return $extension;
-    }
-
-    /**
-     * Get the file relating to a resource course module from context ID.
-     * @param int $modcontextid
-     * @return \stored_file|null
-     * @throws \coding_exception
-     */
-    public static function get_mod_resource_file(int $modcontextid): ?\stored_file {
-        $fs = get_file_storage();
-        $files = $fs->get_area_files($modcontextid, 'mod_resource', 'content');
-        foreach ($files as $file) {
-            if ($file->get_filesize() && $file->get_filename() != '.' && $file->get_mimetype()) {
-                return $file;
-            }
-        }
-        return null;
+    public static function get_mod_resource_type(string $modicon): ?string {
+        // Expect the mod icon string to be like f/pdf, f/video, f/html, f/audio.
+        return explode('/', $modicon)[1] ?? null;
     }
 
     /**

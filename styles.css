@@ -53,9 +53,13 @@
 }
 
 .format-tiles .filterbutton:hover,
-.sectionbutton:hover {
+.format-tiles .sectionbutton:hover {
     background-color: var(--format-tiles-colour-1);
     transition: all 0.1s ease-in-out;
+}
+.format-tiles .sectionbutton:focus-visible,
+.format-tiles .sectionbutton:focus {
+    outline: 1px solid black;
 }
 
 .format-tiles .filterbutton.selected {
@@ -423,6 +427,7 @@
     max-width: 240px;
     flex-grow: 1;
     margin: 5px;
+    visibility: hidden;
 }
 .format-tiles ul.tiles .tile .topic-number {
     display: inline-block;
@@ -545,6 +550,7 @@
     text-align: center;
     display: inline-block;
     border-radius: 50%;
+    border: none;
 }
 .format-tiles .expand-section,
 .format-tiles .collapse-section {
@@ -933,6 +939,7 @@ body.jsenabled.format-tiles #collapsiblesec0 {
     /* We use important here as core-course-dragdrop is not replacing this.originalstyle correctly. */
     /* stylelint-disable-next-line declaration-no-important */
     opacity: 1 !important;
+    border-radius: 10px;
 }
 .format-tiles .hidden #hiddeneye {
     background-image: url([[pix:format_tiles|eye-slash]]);
@@ -1510,7 +1517,8 @@ body.jsenabled.format-tiles #collapsiblesec0 {
 .format-tiles li.activity.subtile:not(:focus) {
     outline: unset;
 }
-.format-tiles :link:focus {
+.format-tiles a.cm-link:focus,
+.format-tiles a.tile-link:focus {
     outline: unset;
     box-shadow: 2px 4px 5px 0 #bdbdbd;
 }
