@@ -495,3 +495,7 @@ Other
 - Accessibility improvements
 - Code simplification (modals incl pluginfile URLs)
 - Allow tile fitter to work without JS nav being on
+
+4.3.0.45 (2024073131)
+=====================
+- Fix issue #215 hidden mod titles
