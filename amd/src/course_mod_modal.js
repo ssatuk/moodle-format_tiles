@@ -364,6 +364,7 @@ define(["jquery", "core/modal_factory", "core/config", "core/templates", "core/n
                         // If any link in the course index on the left is clicked, check if it needs a modal.
                         // If it does, launch the modal instead of following the link.
                         // This isn't ideal but saves plugin re-implementing / maintaining large volume of course index code.
+                        // TODO use reactive UI approach as in course/format/amd/src/local/courseindex.
                         if (courseIndex.length > 0) {
                             courseIndex.on('click', function(e) {
                                 const target = $(e.target);
@@ -373,16 +374,16 @@ define(["jquery", "core/modal_factory", "core/config", "core/templates", "core/n
                                     const linkUrl = link.attr('href');
                                     if (linkUrl) {
                                         const cmId = link.closest('li.courseindex-item').data('id');
-                                        if (modalRequired(cmId, linkUrl)) {
-                                            ajax.call([{
-                                                methodname: "format_tiles_get_course_mod_info", args: {cmid: cmId}
-                                            }])[0].done(function (data) {
+                                        ajax.call([{
+                                            methodname: "format_tiles_get_course_mod_info", args: {cmid: cmId}
+                                        }])[0].done(function (data) {
+                                            const expandedSection = $(`li#section-${data.sectionnumber}.state-visible`);
+                                            if (modalRequired(cmId, linkUrl)) {
                                                 if (!data || !data.modalallowed) {
                                                     window.location.href = linkUrl;
                                                     return;
                                                 }
                                                 if (usingJsNav) {
-                                                    const expandedSection = $(`li#section-${data.sectionnumber}.state-visible`);
                                                     if (expandedSection.length === 0) {
                                                         require(["format_tiles/course"], function (course) {
                                                             course.populateAndExpandSection(
@@ -406,13 +407,31 @@ define(["jquery", "core/modal_factory", "core/config", "core/templates", "core/n
                                                         + `/course/view.php?id=${courseId}`
                                                         + `&section=${data.sectionnumber}&cmid=${cmId}`;
                                                 }
-                                            })
-                                            .fail(function() {
-                                                window.location.href = linkUrl;
-                                            });
-                                        } else {
+                                            } else {
+                                                // Link URL may be anchor e.g. #module-138 if the item is a label.
+                                                const isAnchorLink = link.data('anchor') || linkUrl.startsWith('#');
+                                                if (!isAnchorLink) {
+                                                    window.location.href = linkUrl;
+                                                } else {
+                                                    if (usingJsNav) {
+                                                        if (expandedSection.length === 0) {
+                                                            require(["format_tiles/course"], function (course) {
+                                                                course.populateAndExpandSection(
+                                                                    data.coursecontextid, data.sectionid, data.sectionnumber
+                                                                );
+                                                            });
+                                                        }
+                                                    } else {
+                                                        window.location.href = config.wwwroot
+                                                            + `/course/view.php?id=${courseId}`
+                                                            + `&section=${data.sectionnumber}`;
+                                                    }
+                                                }
+                                            }
+                                        })
+                                        .fail(function() {
                                             window.location.href = linkUrl;
-                                        }
+                                        });
                                     }
                                 }
                             });
