@@ -1640,6 +1640,8 @@ body.jsenabled.format-tiles #collapsiblesec0 {
 .format-tiles .course-content ul.tiles .tile.phototile.tilestyle-2 .photo-tile-text h3 {
     font-size: 20px;
     box-decoration-break: clone;
+    /*Chrome needs this*/
+    -webkit-box-decoration-break: clone;
 }
 .format-tiles ul.tiles .tile.phototile .tile-text {
     margin-top: 35px;
