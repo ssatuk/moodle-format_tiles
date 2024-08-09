@@ -71,6 +71,7 @@ define(["jquery", "core/templates", "core/ajax", "format_tiles/browser_storage",
             HIDE_SEC0_BTN: ".buttonhidesec0",
             SECTION_ZERO: "#section-0",
             MOODLE_VIDEO: ".mediaplugin.mediaplugin_videojs",
+            MOODLE_DIALOGUE: ".moodle-dialogue-confirm", // E.g. glossary entry.
             MANUAL_COMPLETION: '[data-action="toggle-manual-completion"]',
             TOOLTIP: "[data-toggle=tooltip]",
             MATHJAX_EQUATION: ".filter_mathjaxloader_equation"
@@ -87,7 +88,6 @@ define(["jquery", "core/templates", "core/ajax", "format_tiles/browser_storage",
         var Event = {
             CLICK: "click",
             KEYDOWN: "keydown",
-            SCROLL: "scroll"
         };
 
         var CSS = {
@@ -156,6 +156,9 @@ define(["jquery", "core/templates", "core/ajax", "format_tiles/browser_storage",
             openTile = 0;
             $(Selector.BODY).removeClass(ClassNames.HAS_OPEN_TILE);
             overlay.fadeOut(300);
+
+            // If any moodle dialogues are open, close them (e.g. glossary auto links).
+            $(Selector.MOODLE_DIALOGUE).remove();
         };
 
         const overlay = $('#' + OVERLAY_ID);
@@ -573,6 +576,9 @@ define(["jquery", "core/templates", "core/ajax", "format_tiles/browser_storage",
                 });
             }
             browserStorage.setLastVisitedSection(sectionNumber);
+
+            // If any moodle dialogues are open, close them (e.g. glossary auto links).
+            $(Selector.MOODLE_DIALOGUE).remove();
         };
 
         const removeUrlParam = function (pattern) {
