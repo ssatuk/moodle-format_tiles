@@ -357,7 +357,7 @@ define(["jquery", "core/templates", "core/ajax", "format_tiles/browser_storage",
 
                 // If user tries to scroll during animation, stop animation.
                 var events = "mousedown wheel DOMMouseScroll mousewheel keyup touchmove";
-                const page = $(Selector.PAGE);
+                const page = $("html, body");
                 page.on(events, function () {
                     page.stop();
                 });
@@ -596,7 +596,7 @@ define(["jquery", "core/templates", "core/ajax", "format_tiles/browser_storage",
                 useSubTiles,
                 courseContextIdInit
             ) {
-                courseId = courseIdInit;
+                courseId = parseInt(courseIdInit);
                 courseContextId = courseContextIdInit;
                 isMobile = isMobileInit;
                 // Some args are strings or ints but we prefer bool.  Change to bool now as they are passed on elsewhere.
@@ -635,6 +635,29 @@ define(["jquery", "core/templates", "core/ajax", "format_tiles/browser_storage",
                             // And click it.
                         }
                     }
+
+                    // If there is an anchor e.g. #module-123 then open relevant section.
+                    const anchorMatches = (window.location.href).match(/#module-(\d+)$/gi);
+                    if (anchorMatches && anchorMatches.length) {
+                        const anchorCmId = parseInt(anchorMatches[0].split('-')[1]);
+                        if (anchorCmId) {
+                            // Set openTile to null for now so that null is passed to tile fitter before AJAX below returns.
+                            openTile = null;
+                            ajax.call([{
+                                methodname: "format_tiles_get_course_mod_info", args: {cmid: anchorCmId}
+                            }])[0].done(function (data) {
+                                if (data && data.courseid === courseId) {
+                                    openTile = data.sectionnumber;
+                                    if (useJavascriptNav) {
+                                        populateAndExpandSection(
+                                            data.coursecontextid, data.sectionid, data.sectionnumber
+                                        );
+                                    }
+                                }
+                            });
+                        }
+                    }
+
                     if (openTile !== 0) {
                         tileFitter.init(courseId, openTile, fitTilesToWidth, false);
                     } else {

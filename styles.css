@@ -631,6 +631,9 @@
     /* stylelint-disable-next-line declaration-no-important */
     margin-top: 0 !important;
 }
+.format-tiles .single-section h3.sectionname {
+    text-align: left;
+}
 
 .format-tiles #section-0 ul.section {
     margin: 1rem 1rem 0 1rem;

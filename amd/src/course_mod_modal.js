@@ -354,7 +354,7 @@ define(["jquery", "core/modal_factory", "core/config", "core/templates", "core/n
 
         return {
             init: function (courseIdInit, isEditing, pageType, launchModalCmid, usingJsNav) {
-                courseId = courseIdInit;
+                courseId = parseInt(courseIdInit);
                 $(document).ready(function () {
                     tilesConfig = $('#format-tiles-js-config').data();
                     const courseIndex = $('nav#courseindex');
@@ -364,8 +364,8 @@ define(["jquery", "core/modal_factory", "core/config", "core/templates", "core/n
                         // If any link in the course index on the left is clicked, check if it needs a modal.
                         // If it does, launch the modal instead of following the link.
                         // This isn't ideal but saves plugin re-implementing / maintaining large volume of course index code.
-                        // TODO use reactive UI approach as in course/format/amd/src/local/courseindex.
-                        if (courseIndex.length > 0) {
+                        // TODO use reactive UI - courseformat/activity:openAnchor in course/format/amd/src/local/courseindex.
+                        if (!isEditing && courseIndex.length > 0) {
                             courseIndex.on('click', function(e) {
                                 const target = $(e.target);
                                 const link = target.hasClass('courseindex-link') ? target : target.find('a.courseindex-link');
@@ -445,7 +445,7 @@ define(["jquery", "core/modal_factory", "core/config", "core/templates", "core/n
                             ajax.call([{
                                 methodname: "format_tiles_get_course_mod_info", args: {cmid: launchModalCmid}
                             }])[0].done(function (data) {
-                                if (data && data.modalallowed) {
+                                if (data && data.modalallowed && data.courseid === courseId) {
                                     const expandedSection = $(`li#section-${data.sectionnumber}.state-visible`);
                                     if (expandedSection.length === 0) {
                                         if (usingJsNav) {
