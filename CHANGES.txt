@@ -503,3 +503,11 @@ Other
 - Code simplification (modals incl pluginfile URLs)
 - Allow tile fitter to work without JS nav being on
 - Improve sub-tile icon border/background
+
+4.4.0.15 (2024080940)
+=====================
+- Minor style adjustments including chrome long tile title padding
+- Course index - click on label opens section
+- Fix scroll on tile open
+- Dismiss dialogues (e.g. glossary entries) when tile is closed or changed
+- Avoid double glossary dialogue when autolink in page modal is clicked
