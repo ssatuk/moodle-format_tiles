@@ -1889,11 +1889,6 @@ body.jsenabled.format-tiles #collapsiblesec0 {
 .format-tiles .activityiconcontainer {
     background-color: var(--format-tiles-colour);
 }
-.format-tiles .activityiconcontainer .activityicon:not(.nofilter),
-.format-tiles .activityiconcontainer .icon:not(.nofilter) {
-    filter: brightness(0) invert(1);
-}
-
 
 @media (min-width: 768px) {
     body.format-tiles.limitedwidth:not(.path-mod) #page.drawers .main-inner,
