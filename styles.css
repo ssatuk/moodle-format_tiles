@@ -1891,6 +1891,9 @@ body.jsenabled.format-tiles #collapsiblesec0 {
     width: 45px;
     height: 45px;
 }
+.format-tiles .activityiconcontainer.other {
+    background-color: var(--format-tiles-colour);
+}
 .format-tiles li.subtile .tileiconcontainer.administration {
     border: 1px dashed #da58ef30;
 }
