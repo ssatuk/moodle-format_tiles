@@ -79,8 +79,8 @@ class modal_helper {
 
         // First get file cmids of relevant mime type.
         // There is an index on the files table component-filearea-contextid-itemid.
-        // For resources with >1 file attached, we are interested in the last file, if it's the right MIME type.
-        // We use the last file (highest sort order) as that's what /mod/resource/view.php does.
+        // For resources with > 1 file attached, we are interested in the last file, if it's the right MIME type.
+        // We use the last file (highest sort order) as that's the "main" file and what /mod/resource/view.php does.
         $basesql = "SELECT cm.id AS cmid, MAX(f.sortorder) AS sortorder
                     FROM {course_modules} cm
                     JOIN {modules} m ON m.id = cm.module and m.name = 'resource'
@@ -92,27 +92,33 @@ class modal_helper {
 
         $result = [];
 
-        // Get the details of the highest sortorder file on each CM as that's the only one that could be relevant.
-        $firstfilecms = $DB->get_recordset_sql("$basesql GROUP BY cm.id", $params);
-
-        // Get the details of the highest sortorder file on each CM of the relevant mime type, to compare.
+        // Get the details of the highest sortorder file on each CM of the relevant mime type, to check against main files.
         list($insql, $insqlparams) = $DB->get_in_or_equal($mimetypes, SQL_PARAMS_NAMED);
         $params = array_merge($params, $insqlparams);
-        $firstmimetypefilecms = $DB->get_records_sql(
+        $lastmimetypefilecms = $DB->get_records_sql(
             "$basesql AND f.mimetype $insql GROUP BY cm.id",
             $params
         );
-        // Now check if the highest sortorder file on each CM is of the right MIME type.
-        if ($firstfilecms->valid()) {
-            foreach ($firstfilecms as $firstfilecm) {
-                $ismimetypefile = isset($firstmimetypefilecms[$firstfilecm->cmid])
-                    && $firstmimetypefilecms[$firstfilecm->cmid]->sortorder == $firstfilecm->sortorder;
+
+        if (empty($lastmimetypefilecms)) {
+            return $result;
+        }
+
+        // Get the details of the highest sortorder ("main") file on each CM, as that's the only one that could be relevant.
+        $mainfilecms = $DB->get_recordset_sql("$basesql GROUP BY cm.id", $params);
+
+        // Now check if the highest sortorder ("main") file on each CM is of the right MIME type.
+        if ($mainfilecms->valid()) {
+            foreach ($mainfilecms as $mainfilecm) {
+                $ismimetypefile = isset($lastmimetypefilecms[$mainfilecm->cmid])
+                    && $lastmimetypefilecms[$mainfilecm->cmid]->sortorder == $mainfilecm->sortorder;
                 if ($ismimetypefile) {
-                    $result[] = (int)$firstfilecm->cmid;
+                    // The "main" file has the right MIME type, so we have a hit for this CM.
+                    $result[] = (int)$mainfilecm->cmid;
                 }
             }
         }
-        $firstfilecms->close();
+        $mainfilecms->close();
         return $result;
     }
 
