@@ -1884,9 +1884,7 @@ body.jsenabled.format-tiles #collapsiblesec0 {
     width: 45px;
     height: 45px;
 }
-/*If an activityiconcontainer has no "purpose" class (e.g. .content) give it the default course colour.*/
-/*Would generally expect these to be overridden*/
-.format-tiles .activityiconcontainer {
+.format-tiles .activityiconcontainer.other {
     background-color: var(--format-tiles-colour);
 }
 
