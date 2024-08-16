@@ -303,8 +303,7 @@ final class format_tiles_test extends \advanced_testcase {
      * Test modal helper CM ID getter.
      * @covers \format_tiles\local\modal_helper::get_resource_modal_cmids
      */
-    public function test_modal_resource_cmids(): void
-    {
+    public function test_modal_resource_cmids(): void {
         $this->resetAfterTest();
         $course = $this->getDataGenerator()->create_course(
             $this->tilescourseformatoptions,
