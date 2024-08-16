@@ -517,3 +517,7 @@ Other
 - Fix modal bug where resource activity has multiple files
 - Icon background colour is course colour for activities which don't support "purpose"
 - Add branch description to readme
+
+4.4.0.17 (2024081641)
+=====================
+- Icon background colour correction for purpose "other" activities
