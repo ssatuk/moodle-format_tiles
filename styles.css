@@ -122,7 +122,9 @@
 .format-tiles ul.tiles li.section .format_tiles_section_content {
     margin: 0 10px 0 0;
 }
-
+.format-tiles .format-tiles-cm-list {
+    padding-inline-start: 10px;
+}
 .format-tiles li.section .format_tiles_section_content.dimmed {
     opacity: 0.6;
 }
