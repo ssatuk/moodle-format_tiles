@@ -55,70 +55,59 @@ class modal_helper {
 
     /**
      * Get the course module IDs for any resource modules in this course that need a modal.
+     * This leverages the fact that cached cminfo already contains the resource file type in the "icon" field.
+     * So we can avoid querying the files table to get that here.
      * @param int $courseid
      * @param array $mimetypes
      * @return array
      */
     public static function get_resource_modal_cmids(int $courseid, array $mimetypes): array {
-        global $DB, $CFG;
+        global $CFG;
+
         if (empty($mimetypes)) {
             return [];
+        }
+        foreach ($mimetypes as $mimetype) {
+            if (!array($mimetype, ['application/pdf', 'text/html'])) {
+                throw new \Exception("Unexpected MIME type '$mimetype'");
+            }
         }
 
         // To import RESOURCELIB_DISPLAY_XXX etc.
         require_once("$CFG->libdir/resourcelib.php");
 
-        // This is not very efficient, so we cache the results elsewhere.
+        $result = [];
+        $modinfo = get_fast_modinfo($courseid);
+        $cms = $modinfo->get_instances_of('resource');
         $excludeddisplaytypes = [
             RESOURCELIB_DISPLAY_POPUP, RESOURCELIB_DISPLAY_NEW, RESOURCELIB_DISPLAY_DOWNLOAD,
         ];
-        list($notinsql, $params) =
-            $DB->get_in_or_equal($excludeddisplaytypes, SQL_PARAMS_NAMED, 'param', false);
-        $params['courseid'] = $courseid;
-        $params['contextmodule'] = CONTEXT_MODULE;
 
-        // First get file cmids of relevant mime type.
-        // There is an index on the files table component-filearea-contextid-itemid.
-        // For resources with > 1 file attached, we are interested in the last file, if it's the right MIME type.
-        // We use the last file (highest sort order) as that's the "main" file and what /mod/resource/view.php does.
-        $basesql = "SELECT cm.id AS cmid, MAX(f.sortorder) AS sortorder
-                    FROM {course_modules} cm
-                    JOIN {modules} m ON m.id = cm.module and m.name = 'resource'
-                    JOIN {resource} r ON cm.instance = r.id
-                    JOIN {context} ctx ON ctx.contextlevel = :contextmodule AND ctx.instanceid = cm.id
-                    JOIN {files} f ON f.component = 'mod_resource' AND f.filearea = 'content' AND f.contextid = ctx.id
-                        AND f.itemid = 0 AND f.filesize > 0 and f.filename != '.'
-                    WHERE cm.course = :courseid AND cm.deletioninprogress = 0 AND r.display $notinsql";
-
-        $result = [];
-
-        // Get the details of the highest sortorder file on each CM of the relevant mime type, to check against main files.
-        list($insql, $insqlparams) = $DB->get_in_or_equal($mimetypes, SQL_PARAMS_NAMED);
-        $params = array_merge($params, $insqlparams);
-        $lastmimetypefilecms = $DB->get_records_sql(
-            "$basesql AND f.mimetype $insql GROUP BY cm.id",
-            $params
-        );
-
-        if (empty($lastmimetypefilecms)) {
-            return $result;
-        }
-
-        // Get the details of the highest sortorder ("main") file on each CM, as that's the only one that could be relevant.
-        $mainfilecms = $DB->get_recordset_sql("$basesql GROUP BY cm.id", $params);
-
-        // Now check if the highest sortorder ("main") file on each CM is of the right MIME type.
-        if ($mainfilecms->valid()) {
-            foreach ($mainfilecms as $mainfilecm) {
-                $ismimetypefile = isset($lastmimetypefilecms[$mainfilecm->cmid])
-                    && $lastmimetypefilecms[$mainfilecm->cmid]->sortorder == $mainfilecm->sortorder;
-                if ($ismimetypefile) {
-                    // The "main" file has the right MIME type, so we have a hit for this CM.
-                    $result[] = (int)$mainfilecm->cmid;
-                }
+        foreach ($cms as $cm) {
+            // If the CM has "onclick" set (e.g. open in new tab) then it won't use a modal.
+            if ($cm->onclick) {
+                continue;
             }
+
+            // We are only potentially interested in PDF and HTML files.
+            if (!in_array($cm->icon, ['f/pdf', 'f/html', 'f/markup'])) {
+                continue;
+            }
+            // We are only interested in file types allowed by site admin.
+            if ($cm->icon == 'f/pdf' && !in_array('application/pdf', $mimetypes)) {
+                continue;
+            }
+            if (in_array($cm->icon, ['f/html', 'f/markup']) && !in_array('text/html', $mimetypes)) {
+                continue;
+            }
+
+            // We are only interested if the cm's display value is of the relevant type.
+            $display = $cm->get_custom_data()['display'] ?? null;
+            if (in_array($display, $excludeddisplaytypes)) {
+                continue;
+            }
+            $result[] = (int)$cm->id;
         }
-        $mainfilecms->close();
         return $result;
     }
 
@@ -130,7 +119,7 @@ class modal_helper {
      * @return array course module IDs to launch in modals.
      */
     public static function get_modal_allowed_cm_ids(int $courseid, bool $excludeunavailable): array {
-        global $DB, $CFG;
+        global $CFG;
 
         // First check what modals site admin is allowing.
         $allowedmodals = self::allowed_modal_modules();
@@ -158,17 +147,13 @@ class modal_helper {
                     continue;
                 } else if ($allowedmodule == 'url') {
                     $excludeddisplaytypes = [RESOURCELIB_DISPLAY_POPUP, RESOURCELIB_DISPLAY_NEW];
-                    list($notinsql, $params) =
-                        $DB->get_in_or_equal($excludeddisplaytypes, SQL_PARAMS_NAMED, 'param', false);
-                    $params['course'] = $courseid;
-                    $sql = "SELECT DISTINCT cm.id FROM {url} u
-                             JOIN {course_modules} cm ON cm.instance = u.id
-                             JOIN {modules} m ON m.id = cm.module AND m.name = 'url'
-                             WHERE u.course = :course AND cm.deletioninprogress = 0 AND u.display $notinsql";
-                    $cmids = array_merge($cmids, $DB->get_fieldset_sql($sql, $params));
-
+                    $urlcms = $modinfo->get_instances_of('url');
+                    foreach ($urlcms as $urlcm) {
+                        if (!in_array($urlcm->get_custom_data()['display'] ?? null, $excludeddisplaytypes)) {
+                            $cmids[] = (int)$urlcm->id;
+                        }
+                    }
                 } else if ($allowedmodule == 'page') {
-                    $cmids = [];
                     $pagecms
                         = $modinfo->get_instances_of('page');
                     foreach ($pagecms as $pagecm) {
