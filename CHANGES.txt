@@ -523,3 +523,7 @@ Other
 4.3.0.49 (2024081634)
 =====================
 - Modal cache efficiency improvement
+
+4.3.0.50 (2024081635)
+=====================
+- Modal cache clear bug fix

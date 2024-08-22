@@ -478,4 +478,27 @@ final class format_tiles_test extends \advanced_testcase {
             \format_tiles\local\modal_helper::cm_has_modal($course->id, $instance->cmid)
         );
     }
+
+    /**
+     * Test modal helper CM ID clear.
+     * @covers \format_tiles\local\modal_helper::get_modal_allowed_cm_ids
+     * @covers \format_tiles\local\modal_helper::cm_modal_type
+     */
+    public function test_modal_cmids_cache_clear() {
+        $this->resetAfterTest();
+        $course = $this->getDataGenerator()->create_course(
+            $this->tilescourseformatoptions,
+            ['createsections' => true]);
+
+        // We never store data for label.
+        $this->assertFalse(
+            \format_tiles\local\modal_helper::clear_cache_modal_cmids($course->id, 'label')
+        );
+        // We do store data for others.
+        foreach (['resource', 'url', 'page'] as $modname) {
+            $this->assertTrue(
+                \format_tiles\local\modal_helper::clear_cache_modal_cmids($course->id, $modname)
+            );
+        }
+    }
 }

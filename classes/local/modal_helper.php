@@ -309,27 +309,29 @@ class modal_helper {
      * Clear the cache of resource modal IDs for a given course.
      * @param int $courseid
      * @param string $modulename optional module name e.g. resource, page, url.
-     * @return void
+     * @return bool
      */
-    public static function clear_cache_modal_cmids(int $courseid, string $modulename = '') {
+    public static function clear_cache_modal_cmids(int $courseid, string $modulename = ''): bool {
         // See also \cache_helper::purge_by_event('format_tiles/modaladminsettingchanged') in settings.php.
         $cache = \cache::make('format_tiles', 'modalcmids');
         switch ($modulename) {
             case 'resource':
                 $cache->delete($courseid . '_pdf');
                 $cache->delete($courseid . '_html');
-                return;
+                return true;
             case 'url':
             case 'page':
                 $cache->delete($courseid . '_' . $modulename);
-                return;
+                return true;
             case '':
                 foreach (['_page', '_url', '_pdf', '_html'] as $cachekey) {
                     $cache->delete($courseid . $cachekey);
                 }
-                return;
+                return true;
             default:
-                throw new \Exception("Invalid module $modulename");
+                // In this case do nothing.  E.g. if 'label' is passed we will reach here.
+                // This method may be called when a course module we have no data for is updated.
+                return false;
         }
     }
 }
