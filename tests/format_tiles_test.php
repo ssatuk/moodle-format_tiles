@@ -302,6 +302,7 @@ final class format_tiles_test extends \advanced_testcase {
     /**
      * Test modal helper CM ID getter.
      * @covers \format_tiles\local\modal_helper::get_resource_modal_cmids
+     * @covers \format_tiles\local\modal_helper::cm_modal_type
      */
     public function test_modal_resource_cmids(): void {
         global $CFG, $DB;
@@ -318,44 +319,29 @@ final class format_tiles_test extends \advanced_testcase {
         $this->setAdminUser();
 
         $generator = $this->getDataGenerator()->get_plugin_generator('mod_resource');
-        $generator->create_instance(['course' => $course->id]);
 
-        $allowedmodals = ['application/pdf', 'text/html'];
         $component = 'mod_resource';
         $filearea = 'content';
         $textfilepath = 'mod/resource/tests/fixtures/samplefile.txt';
+        $pdffilepath = 'course/format/tiles/tests/fixtures/test.pdf';
 
-        // A resource with a txt file attached should not results in any modals.
-        $generator->create_instance(['course' => $course->id, 'uploaded' => true, 'defaultfilename' => $textfilepath]);
-        $this->assertTrue(
-            \format_tiles\local\modal_helper::get_resource_modal_cmids($course->id, $allowedmodals) === []
+        // A resource with a txt file attached should not result in a modal.
+        $instance = $generator->create_instance(['course' => $course->id, 'uploaded' => true, 'defaultfilename' => $textfilepath]);
+        $this->assertFalse(
+            \format_tiles\local\modal_helper::cm_has_modal($course->id, $instance->cmid)
         );
 
-        // A resource with a PDF file attached should result in one modal.
-        $pdfresource = $generator->create_instance([
-            'course' => $course->id,
-            'uploaded' => true,
-            'defaultfilename' => 'course/format/tiles/tests/fixtures/test.pdf',
+        // A resource with a PDF file attached should result in a modal.
+        $instance = $generator->create_instance([
+            'course' => $course->id, 'uploaded' => true,
+            'defaultfilename' => $pdffilepath, 'display' => RESOURCELIB_DISPLAY_EMBED,
         ]);
+        $this->assertEquals(
+            'pdf', \format_tiles\local\modal_helper::cm_modal_type($course->id, $instance->cmid)
+        );
 
-        $expected = [$pdfresource->cmid];
-        $actual = \format_tiles\local\modal_helper::get_resource_modal_cmids($course->id, $allowedmodals);
-        $this->assertEquals($expected, $actual);
-
-        // A resource with an HTML file attached should result in another modal.
-        $htmlresource = $generator->create_instance([
-            'course' => $course->id,
-            'uploaded' => true,
-            'defaultfilename' => 'course/format/tiles/tests/fixtures/test.html',
-        ]);
-
-
-        $expected = [$pdfresource->cmid, $htmlresource->cmid];
-        $actual = \format_tiles\local\modal_helper::get_resource_modal_cmids($course->id, $allowedmodals);
-        $this->assertEquals($expected, $actual);
-
-        // Add a text file to the PDF activity.
-        $pdfcmcontext = \context_module::instance($pdfresource->cmid);
+        // Add a text file to the PDF existing resource activity.
+        $pdfcmcontext = \context_module::instance($instance->cmid);
         $filerecord = ['component' => $component, 'filearea' => $filearea,
             'contextid' => $pdfcmcontext->id, 'itemid' => 0,
             'filename' => basename('test.txt'), 'filepath' => '/'];
@@ -363,43 +349,64 @@ final class format_tiles_test extends \advanced_testcase {
         $fs->create_file_from_pathname($filerecord, $textfilepath);
 
         // At this point we added the HTML file so the PDF should still be the main file so it's still a modal activity.
-        $expected = [$pdfresource->cmid, $htmlresource->cmid];
-        $actual = \format_tiles\local\modal_helper::get_resource_modal_cmids($course->id, $allowedmodals);
-        $this->assertEquals($expected, $actual);
+        $this->assertEquals(
+            'pdf', \format_tiles\local\modal_helper::cm_modal_type($course->id, $instance->cmid)
+        );
+
+        // Add another PDF to make sure code is not confused by having multiple PDFs.
+        $filerecord = ['component' => $component, 'filearea' => $filearea,
+            'contextid' => $pdfcmcontext->id, 'itemid' => 0,
+            'filename' => basename('test2.pdf'), 'filepath' => '/'];
+        $fs = get_file_storage();
+        $fs->create_file_from_pathname($filerecord, $pdffilepath);
+
+        // At this point we added a text file and another PDF.
+        // The original PDF should still be the main file so it's still a modal activity.
+        $this->assertEquals(
+            'pdf', \format_tiles\local\modal_helper::cm_modal_type($course->id, $instance->cmid)
+        );
 
         // Now set the newly added text file as the main file so this is no longer a modal activity.
         file_reset_sortorder($pdfcmcontext->id, $component, $filearea, 0);
         file_set_sortorder($pdfcmcontext->id, $component, $filearea, 0, '/', 'test.txt', 1);
         rebuild_course_cache($course->id, true);
-        $expected = [$htmlresource->cmid];
-        $actual = \format_tiles\local\modal_helper::get_resource_modal_cmids($course->id, $allowedmodals);
-        $this->assertEquals($expected, $actual);
+        \format_tiles\local\modal_helper::clear_cache_modal_cmids($course->id);
+        $this->assertFalse(
+            \format_tiles\local\modal_helper::cm_has_modal($course->id, $instance->cmid)
+        );
 
         // Now set the PDF back to main file so it's a modal activity again.
         file_reset_sortorder($pdfcmcontext->id, $component, $filearea, 0);
         file_set_sortorder($pdfcmcontext->id, $component, $filearea, 0, '/', 'test.pdf', 1);
         rebuild_course_cache($course->id, true);
-        $expected = [$pdfresource->cmid, $htmlresource->cmid];
-        $actual = \format_tiles\local\modal_helper::get_resource_modal_cmids($course->id, $allowedmodals);
-        $this->assertEquals($expected, $actual);
+        \format_tiles\local\modal_helper::clear_cache_modal_cmids($course->id);
+        $this->assertEquals(
+            'pdf', \format_tiles\local\modal_helper::cm_modal_type($course->id, $instance->cmid)
+        );
 
-        // Now set some excluded display types to the files and check that they have no modal.
-        $DB->set_field('resource', 'display', RESOURCELIB_DISPLAY_POPUP, ['id' => $pdfresource->id]);
+        // Now set an excluded display types to the resource activity and check that it has no modal.
+        $DB->set_field('resource', 'display', RESOURCELIB_DISPLAY_POPUP, ['id' => $instance->id]);
         rebuild_course_cache($course->id, true);
-        $expected = [$htmlresource->cmid];
-        $actual = \format_tiles\local\modal_helper::get_resource_modal_cmids($course->id, $allowedmodals);
-        $this->assertEquals($expected, $actual);
+        \format_tiles\local\modal_helper::clear_cache_modal_cmids($course->id);
+        $this->assertFalse(
+            \format_tiles\local\modal_helper::cm_has_modal($course->id, $instance->cmid)
+        );
 
-        $DB->set_field('resource', 'display', RESOURCELIB_DISPLAY_DOWNLOAD, ['id' => $htmlresource->id]);
-        rebuild_course_cache($course->id, true);
-        $expected = [];
-        $actual = \format_tiles\local\modal_helper::get_resource_modal_cmids($course->id, $allowedmodals);
-        $this->assertEquals($expected, $actual);
+        // A resource with an HTML file attached should also result in a modal.
+        $instance = $generator->create_instance([
+            'course' => $course->id,
+            'uploaded' => true,
+            'defaultfilename' => 'course/format/tiles/tests/fixtures/test.html',
+        ]);
+        $this->assertEquals(
+            'html', \format_tiles\local\modal_helper::cm_modal_type($course->id, $instance->cmid)
+        );
     }
 
     /**
      * Test modal helper CM ID getter for URLs.
      * @covers \format_tiles\local\modal_helper::get_modal_allowed_cm_ids
+     * @covers \format_tiles\local\modal_helper::cm_modal_type
      */
     public function test_modal_url_cmids() {
         global $CFG, $DB;
@@ -423,32 +430,32 @@ final class format_tiles_test extends \advanced_testcase {
             'externalurl' => 'https://moodle.org/',
             'display' => RESOURCELIB_DISPLAY_AUTO,
         ]);
-
-        $expected = [$instance->cmid];
-        $actual = \format_tiles\local\modal_helper::get_modal_allowed_cm_ids($course->id, false);
-        $this->assertEquals($expected, $actual);
+        $this->assertEquals(
+            'url', \format_tiles\local\modal_helper::cm_modal_type($course->id, $instance->cmid)
+        );
 
         $DB->set_field('url', 'display', RESOURCELIB_DISPLAY_POPUP, ['id' => $instance->id]);
         rebuild_course_cache($course->id, true);
         \format_tiles\local\modal_helper::clear_cache_modal_cmids($course->id);
-
-        $expected = [];
-        $actual = \format_tiles\local\modal_helper::get_modal_allowed_cm_ids($course->id, false);
-        $this->assertEquals($expected, $actual);
+        $this->assertFalse(
+            \format_tiles\local\modal_helper::cm_has_modal($course->id, $instance->cmid)
+        );
 
         $DB->set_field('url', 'display', RESOURCELIB_DISPLAY_AUTO, ['id' => $instance->id]);
         rebuild_course_cache($course->id, true);
+        // Disallow all resource modals as site admin.
         set_config('modalresources', '', 'format_tiles');
         \format_tiles\local\modal_helper::clear_cache_modal_cmids($course->id);
+        $this->assertFalse(
+            \format_tiles\local\modal_helper::cm_has_modal($course->id, $instance->cmid)
+        );
 
-        $expected = [];
-        $actual = \format_tiles\local\modal_helper::get_modal_allowed_cm_ids($course->id, false);
-        $this->assertEquals($expected, $actual);
     }
 
     /**
      * Test modal helper CM ID getter for pages.
      * @covers \format_tiles\local\modal_helper::get_modal_allowed_cm_ids
+     * @covers \format_tiles\local\modal_helper::cm_modal_type
      */
     public function test_modal_page_cmids() {
         $this->resetAfterTest();
@@ -463,15 +470,15 @@ final class format_tiles_test extends \advanced_testcase {
 
         $instance = $generator->create_instance(['course' => $course->id]);
 
-        $expected = [$instance->cmid];
-        $actual = \format_tiles\local\modal_helper::get_modal_allowed_cm_ids($course->id, false);
-        $this->assertEquals($expected, $actual);
+        $this->assertEquals(
+            'page', \format_tiles\local\modal_helper::cm_modal_type($course->id, $instance->cmid)
+        );
 
         set_config('modalmodules', '', 'format_tiles');
         \format_tiles\local\modal_helper::clear_cache_modal_cmids($course->id);
 
-        $expected = [];
-        $actual = \format_tiles\local\modal_helper::get_modal_allowed_cm_ids($course->id, false);
-        $this->assertEquals($expected, $actual);
+        $this->assertFalse(
+            \format_tiles\local\modal_helper::cm_has_modal($course->id, $instance->cmid)
+        );
     }
 }
