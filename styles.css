@@ -1452,6 +1452,7 @@ body.jsenabled.format-tiles #collapsiblesec0 {
     position: absolute;
     left: unset;
     bottom: 60px;
+    background-color: inherit;
 }
 .format-tiles li.subtile.hasactivityname .availabilityinfo {
     left: 0;
@@ -1658,7 +1659,8 @@ body.jsenabled.format-tiles #collapsiblesec0 {
 }
 
 .format_tiles .section.main:not(.course-section) .activity.subtile .availabilityinfo,
-.format_tiles .section.main:not(.course-section) .activity.subtile .contentafterlink {
+.format_tiles .section.main:not(.course-section) .activity.subtile .contentafterlink,
+.path-course-view li.activity.subtile > div.contentafterlink {
     margin-left: 0;
     padding: 0;
 }
