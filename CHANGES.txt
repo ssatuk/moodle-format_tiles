@@ -513,3 +513,9 @@ Other
 - Fix modal bug where resource activity has multiple files
 - Icon background colour is course colour for activities which don't support "purpose"
 - Add branch description to readme
+
+4.3.0.48 (2024081633)
+=====================
+- Refactor modal handling for reliability
+- Show description in PDF modal if set to display in course
+- When JS navigation is deactivated by user, alert no longer persists
