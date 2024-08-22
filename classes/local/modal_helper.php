@@ -253,7 +253,7 @@ class modal_helper {
     /**
      * Get all the CM IDs allowed modals as a flat list of integers regardless of modal type.
      * @param int $courseid
-     * @param bool $excludeunavailable
+     * @param bool $excludeunavailable should we check availability of each cm in list and exclude unavailable?
      * @return array
      */
     public static function get_modal_allowed_cm_ids_integer_list(int $courseid, bool $excludeunavailable): array {
@@ -308,13 +308,28 @@ class modal_helper {
     /**
      * Clear the cache of resource modal IDs for a given course.
      * @param int $courseid
+     * @param string $modulename optional module name e.g. resource, page, url.
      * @return void
      */
-    public static function clear_cache_modal_cmids(int $courseid) {
+    public static function clear_cache_modal_cmids(int $courseid, string $modulename = '') {
         // See also \cache_helper::purge_by_event('format_tiles/modaladminsettingchanged') in settings.php.
         $cache = \cache::make('format_tiles', 'modalcmids');
-        foreach (['_page', '_url', '_pdf', '_html'] as $cachekey) {
-            $cache->delete($courseid . $cachekey);
+        switch ($modulename) {
+            case 'resource':
+                $cache->delete($courseid . '_pdf');
+                $cache->delete($courseid . '_html');
+                return;
+            case 'url':
+            case 'page':
+                $cache->delete($courseid . '_' . $modulename);
+                return;
+            case '':
+                foreach (['_page', '_url', '_pdf', '_html'] as $cachekey) {
+                    $cache->delete($courseid . $cachekey);
+                }
+                return;
+            default:
+                throw new \Exception("Invalid module $modulename");
         }
     }
 }

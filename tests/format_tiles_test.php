@@ -370,7 +370,7 @@ final class format_tiles_test extends \advanced_testcase {
         file_reset_sortorder($pdfcmcontext->id, $component, $filearea, 0);
         file_set_sortorder($pdfcmcontext->id, $component, $filearea, 0, '/', 'test.txt', 1);
         rebuild_course_cache($course->id, true);
-        \format_tiles\local\modal_helper::clear_cache_modal_cmids($course->id);
+        \format_tiles\local\modal_helper::clear_cache_modal_cmids($course->id, 'resource');
         $this->assertFalse(
             \format_tiles\local\modal_helper::cm_has_modal($course->id, $instance->cmid)
         );
@@ -379,7 +379,7 @@ final class format_tiles_test extends \advanced_testcase {
         file_reset_sortorder($pdfcmcontext->id, $component, $filearea, 0);
         file_set_sortorder($pdfcmcontext->id, $component, $filearea, 0, '/', 'test.pdf', 1);
         rebuild_course_cache($course->id, true);
-        \format_tiles\local\modal_helper::clear_cache_modal_cmids($course->id);
+        \format_tiles\local\modal_helper::clear_cache_modal_cmids($course->id, 'resource');
         $this->assertEquals(
             'pdf', \format_tiles\local\modal_helper::cm_modal_type($course->id, $instance->cmid)
         );
@@ -387,7 +387,7 @@ final class format_tiles_test extends \advanced_testcase {
         // Now set an excluded display types to the resource activity and check that it has no modal.
         $DB->set_field('resource', 'display', RESOURCELIB_DISPLAY_POPUP, ['id' => $instance->id]);
         rebuild_course_cache($course->id, true);
-        \format_tiles\local\modal_helper::clear_cache_modal_cmids($course->id);
+        \format_tiles\local\modal_helper::clear_cache_modal_cmids($course->id, 'resource');
         $this->assertFalse(
             \format_tiles\local\modal_helper::cm_has_modal($course->id, $instance->cmid)
         );
@@ -436,7 +436,7 @@ final class format_tiles_test extends \advanced_testcase {
 
         $DB->set_field('url', 'display', RESOURCELIB_DISPLAY_POPUP, ['id' => $instance->id]);
         rebuild_course_cache($course->id, true);
-        \format_tiles\local\modal_helper::clear_cache_modal_cmids($course->id);
+        \format_tiles\local\modal_helper::clear_cache_modal_cmids($course->id, 'url');
         $this->assertFalse(
             \format_tiles\local\modal_helper::cm_has_modal($course->id, $instance->cmid)
         );
@@ -445,7 +445,6 @@ final class format_tiles_test extends \advanced_testcase {
         rebuild_course_cache($course->id, true);
         // Disallow all resource modals as site admin.
         set_config('modalresources', '', 'format_tiles');
-        \format_tiles\local\modal_helper::clear_cache_modal_cmids($course->id);
         $this->assertFalse(
             \format_tiles\local\modal_helper::cm_has_modal($course->id, $instance->cmid)
         );
@@ -475,8 +474,6 @@ final class format_tiles_test extends \advanced_testcase {
         );
 
         set_config('modalmodules', '', 'format_tiles');
-        \format_tiles\local\modal_helper::clear_cache_modal_cmids($course->id);
-
         $this->assertFalse(
             \format_tiles\local\modal_helper::cm_has_modal($course->id, $instance->cmid)
         );
