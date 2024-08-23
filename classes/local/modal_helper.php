@@ -324,6 +324,7 @@ class modal_helper {
                 $cache->delete($courseid . '_' . $modulename);
                 return true;
             case '':
+                // In this case clear all caches for course.
                 foreach (['_page', '_url', '_pdf', '_html'] as $cachekey) {
                     $cache->delete($courseid . $cachekey);
                 }
