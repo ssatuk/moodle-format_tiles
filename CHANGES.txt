@@ -527,6 +527,7 @@ Other
 - Refactor modal handling for reliability
 - Show description in PDF modal if set to display in course
 - When JS navigation is deactivated by user, alert no longer persists
+- Fix issue #217 cm list padding
 
 4.3.0.49 (2024081634)
 =====================

@@ -408,7 +408,7 @@ final class format_tiles_test extends \advanced_testcase {
      * @covers \format_tiles\local\modal_helper::get_modal_allowed_cm_ids
      * @covers \format_tiles\local\modal_helper::cm_modal_type
      */
-    public function test_modal_url_cmids() {
+    public function test_modal_url_cmids(): void {
         global $CFG, $DB;
 
         // To import RESOURCELIB_DISPLAY_XXX etc.
@@ -456,7 +456,7 @@ final class format_tiles_test extends \advanced_testcase {
      * @covers \format_tiles\local\modal_helper::get_modal_allowed_cm_ids
      * @covers \format_tiles\local\modal_helper::cm_modal_type
      */
-    public function test_modal_page_cmids() {
+    public function test_modal_page_cmids(): void {
         $this->resetAfterTest();
         $course = $this->getDataGenerator()->create_course(
             $this->tilescourseformatoptions,
@@ -484,7 +484,7 @@ final class format_tiles_test extends \advanced_testcase {
      * @covers \format_tiles\local\modal_helper::get_modal_allowed_cm_ids
      * @covers \format_tiles\local\modal_helper::cm_modal_type
      */
-    public function test_modal_cmids_cache_clear() {
+    public function test_modal_cmids_cache_clear(): void {
         $this->resetAfterTest();
         $course = $this->getDataGenerator()->create_course(
             $this->tilescourseformatoptions,
