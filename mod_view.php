@@ -64,7 +64,7 @@ if ($cm->modname === 'resource') {
                 require_once("$CFG->dirroot/lib/filelib.php");
                 resource_view($modobject, $course, $cm, $context);
                 // We cannot just redirect to pluginfile.php as Safari will not follow that within an <object> tag.
-                // so instead we use file_pluginfile() which will still delegate serving the file to resource_pluginfile().
+                // So instead we use file_pluginfile() which will still delegate serving the file to resource_pluginfile().
                 // Capability/login was already checked above but resource_pluginfile() will also check it.
                 $relativepath = "/$context->id/mod_resource/content/$modobject->revision"
                     . $file->get_filepath() . $file->get_filename();
