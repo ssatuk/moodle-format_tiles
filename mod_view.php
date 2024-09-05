@@ -39,7 +39,7 @@ if (!in_array($cm->modname, $modnames)) {
     throw new invalid_parameter_exception("Invalid module");
 }
 
-if (!\format_tiles\local\modal_helper::cm_has_modal($course->id, $cm->id)) {
+if ($course->format !== 'tiles' || !\format_tiles\local\modal_helper::cm_has_modal($course->id, $cm->id)) {
     throw new invalid_parameter_exception("Course module has no modal");
 }
 
