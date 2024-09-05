@@ -537,7 +537,7 @@ Other
 =====================
 - Correct mustache template example typos
 
-4.3.0.52 (2024090532)
+4.4.0.21 (2024090540)
 =====================
 - Fix issue #219 filters not applying to non-subtile headings
 - Fix issue #221 unit test provider bug
