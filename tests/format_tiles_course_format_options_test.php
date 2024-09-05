@@ -111,13 +111,13 @@ final class format_tiles_course_format_options_test extends \advanced_testcase {
      * @return array
      */
     public static function restore_from_old_format_mbz_provider(): array {
-        return ['mbzfiles' =>
-            [
+        return [
+            'mbzfiles' => [
                 "moodle-311-sample.mbz",
                 "moodle-42-pre-2024.mbz",
                 "moodle-43-early-beta.mbz",
                 "moodle-43-late-beta.mbz",
-            ]
+            ],
         ];
     }
 

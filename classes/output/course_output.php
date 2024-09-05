@@ -924,7 +924,7 @@ class course_output implements \renderable, \templatable {
             $moduleobject['icon'] = [
                 'url' => $modiconurl,
                 'label' => $moduleobject['activityname'],
-                'iconclass' => $iconclass
+                'iconclass' => $iconclass,
             ];
             $moduleobject['tileicon'] = false; // Template is shared with top level tile, so avoiding inheriting parent icon.
             $moduleobject['purpose'] = plugin_supports('mod', $mod->modname, FEATURE_MOD_PURPOSE, MOD_PURPOSE_OTHER);
