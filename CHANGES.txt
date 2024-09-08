@@ -548,3 +548,7 @@ Other
 =====================
 - Fix previous merge error causing sub-tile spacing issue
 - Preparatory work for upcoming Moodle 4.5 around delegated sections / activity chooser button refactor (MDL-81765)
+
+4.4.0.23 (2024090840)
+=====================
+- Further preparatory work for upcoming Moodle 4.5 around delegated sections (implement for sub-tiles courses)
