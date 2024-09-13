@@ -1919,7 +1919,7 @@ body.jsenabled.format-tiles #collapsiblesec0 {
     background-color: #8d3d1b06;
 }
 .format-tiles li.subtile .tileiconcontainer.other {
-    background-color: var(--format-tiles-colour-05);
+    background-color: #767d8406;
 }
 /*Default*/
 .format-tiles li.subtile .tileiconcontainer {
