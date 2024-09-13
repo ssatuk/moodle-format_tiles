@@ -900,8 +900,8 @@ class course_output implements \renderable, \templatable {
                     // Stop unsupported icons appearing as a white box.
                     $iconclass = 'nofilter';
                 }
-            } else if ($mod->modname == 'customcert') {
-                // Temporary icon for mod_customcert.
+            } else if ($mod->modname == 'customcert' && !file_exists("$CFG->dirroot/mod/customcert/pix/monologo.svg")) {
+                // Temporary icon for mod_customcert where monologo not yet implemented (thier issue #568).
                 $modiconurl = $output->image_url('tileicon/award-solid', 'format_tiles');
             } else if (in_array($moduleobject['modresourceicon'], ['video', 'audio'])) {
                 // Override icon with local version.
