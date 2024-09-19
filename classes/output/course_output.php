@@ -26,6 +26,7 @@ namespace format_tiles\output;
 use format_tiles\local\format_option;
 use format_tiles\local\tile_photo;
 use format_tiles\local\filters;
+use format_tiles\local\util;
 
 defined('MOODLE_INTERNAL') || die();
 global $CFG;
@@ -159,7 +160,7 @@ class course_output implements \renderable, \templatable {
         $this->completionenabled = $course->enablecompletion && !isguestuser();
         $this->courseformatoptions = $this->get_course_format_options($this->fromajax);
 
-        $this->moodlerelease = \format_tiles\local\util::get_moodle_release();
+        $this->moodlerelease = util::get_moodle_release();
     }
 
     /**
@@ -429,6 +430,7 @@ class course_output implements \renderable, \templatable {
         $data['tileid'] = $thissection->section;
         $data['secid'] = $thissection->id;
         $data['tileicon'] = format_option::get($this->course->id, format_option::OPTION_SECTION_ICON, $thissection->id);
+        $data['tilenumber'] = $data['tileicon'] ? util::get_tile_number_from_icon_name($data['tileicon']) : null;
 
         // If photo tile backgrounds are allowed by site admin, prepare the image for this section.
         if (get_config('format_tiles', 'allowphototiles')) {
@@ -562,11 +564,17 @@ class course_output implements \renderable, \templatable {
             $showsection = $section->uservisible ||
                 ($section->visible && !$section->available && !empty($section->availableinfo));
             if ($sectionnum != 0 && $showsection) {
+                $rawtitle = $this->truncate_title(get_section_name($this->course, $sectionnum));
                 if ($uselinebreakfilter) {
-                    $title = $this->apply_linebreak_filter($this->truncate_title(get_section_name($this->course, $sectionnum)));
+                    $title = $this->apply_linebreak_filter($rawtitle);
                 } else {
-                    $title = format_string($this->truncate_title(get_section_name($this->course, $sectionnum)));
+                    $title = format_string($rawtitle);
                 }
+                $ariatitle = get_string('tilearialabel', 'format_tiles',
+                    trim($title)
+                        ? $title
+                        : get_string('tilearialabel', 'format_tiles', $this->format->get_default_section_name($section))
+                );
                 if ($allowedphototiles && $tilestyle == self::TILE_STYLE_BOTTOM_TITLE && $isphototile) {
                     // Replace the last space with &nbsp; to avoid having one word on the last line of the tile title.
                     $title = preg_replace('/\s(\S*)$/', '&nbsp;$1', $title);
@@ -578,7 +586,7 @@ class course_output implements \renderable, \templatable {
                     'tileid' => $section->section,
                     'secid' => $section->id,
                     'title' => $title,
-                    'tilearialabel' => get_string('tilearialabel', 'format_tiles', $title),
+                    'tilearialabel' => $ariatitle,
                     'tileicon' => format_option::get($this->course->id, format_option::OPTION_SECTION_ICON, $section->id),
                     'current' => course_get_format($this->course)->is_section_current($section),
                     'hidden' => !$section->visible,
@@ -591,6 +599,8 @@ class course_output implements \renderable, \templatable {
                     'isactive' => $this->course->marker == $section->section,
                     'extraclasses' => "tilestyle-$tilestyle ",
                 ];
+
+                $newtile['tilenumber'] = $newtile['tileicon'] ? util::get_tile_number_from_icon_name($newtile['tileicon']) : null;
 
                 // If photo tile backgrounds are allowed by site admin, prepare them for this tile.
                 if ($isphototile) {
@@ -878,7 +888,7 @@ class course_output implements \renderable, \templatable {
             $moduleobject['modinstance'] = $mod->instance;
         }
         $moduleobject['modresourceicon'] = $mod->modname == 'resource'
-            ? \format_tiles\local\util::get_mod_resource_type($mod->icon) : null;
+            ? util::get_mod_resource_type($mod->icon) : null;
 
         if (!$treataslabel) {
             $iconclass = '';
