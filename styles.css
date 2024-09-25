@@ -155,7 +155,6 @@
     padding: 7px 10px 5px 10px;
 }
 .format-tiles .progress-indic {
-    display: inline-block;
     color: #676767;
 }
 
@@ -1306,7 +1305,12 @@ body.jsenabled.format-tiles #collapsiblesec0 {
 .format-tiles li.tile:not(.phototile) .tileallcomplete {
     margin-top: 5px;
 }
-.format-tiles li.tile.is-complete .progress-indic {
+.format-tiles li.tile.is-complete .tiles-hide-if-complete,
+.format-tiles #tiles-overall-progress-outer.is-complete .tiles-hide-if-complete {
+    display: none;
+}
+.format-tiles li.tile:not(.is-complete) .tiles-hide-if-incomplete,
+.format-tiles #tiles-overall-progress-outer:not(.is-complete) .tiles-hide-if-incomplete {
     display: none;
 }
 .format-tiles li.tile .completioncheckbox {

@@ -276,13 +276,14 @@ class course_output implements \renderable, \templatable {
     /**
      * Temporary function for Moodle 4.0 upgrade - todo to be replaced.
      * @param object $section
-     * @return string|bool
+     * @return string|null
      * @throws \coding_exception
      */
-    private function temp_section_activity_summary($section) {
+    private function temp_section_activity_summary($section): ?string {
         $widgetclass = $this->format->get_output_classname('content\\section\\cmsummary');
         $widget = new $widgetclass($this->format, $section);
-        return $this->courserenderer->render($widget);
+        $result = $this->courserenderer->render($widget);
+        return trim(strip_tags($result)) ? $result : null;
     }
 
     /**
@@ -593,7 +594,7 @@ class course_output implements \renderable, \templatable {
                     'visible' => $section->visible,
                     'restrictionlock' => !($section->available),
                     'userclickable' => $section->available || $section->uservisible,
-                    'activity_summary' => self::temp_section_activity_summary($section),
+                    'activity_summary' => $data['usetooltips'] ? self::temp_section_activity_summary($section) : '',
                     'titleclass' => strlen($title) >= $longtitlelength ? ' longtitle' : '',
                     'progress' => false,
                     'isactive' => $this->course->marker == $section->section,
@@ -1122,6 +1123,13 @@ class course_output implements \renderable, \templatable {
             'isComplete' => $numcomplete > 0 && $numcomplete == $numoutof ? 1 : 0,
             'isOverall' => $isoverall,
         ];
+        if ($numoutof && $numcomplete < $numoutof) {
+            $progressdata['progresstitle'] = get_string(
+                'progresstitle',
+                'format_tiles',
+                (object)$progressdata
+            );
+        }
         if ($aspercent) {
             // Percent in circle.
             $progressdata['showAsPercent'] = true;
