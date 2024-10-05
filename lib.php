@@ -282,24 +282,29 @@ class format_tiles extends core_courseformat\base {
      * @return null|moodle_url
      */
     public function get_view_url($section, $options = []) {
-        // MDL-79986 introduced new /course/section.php page which we want to avoid  using JS nav.
-        if (get_config('format_tiles', 'usejavascriptnav')) {
-            if (!get_user_preferences('format_tiles_stopjsnav')) {
-                if (array_key_exists('sr', $options)) {
-                    $sectionno = $options['sr'];
-                } else if (is_object($section)) {
-                    $sectionno = $section->section;
-                } else {
-                    $sectionno = $section;
-                }
-                if ((!empty($options['navigation']) || array_key_exists('sr', $options)) && $sectionno !== null) {
-                    // Display section on separate page.
-                    $sectioninfo = $this->get_section($sectionno);
-                    return new moodle_url(
-                        '/course/view.php',
-                        ['id' => $sectioninfo->course, 'section' => $sectioninfo->sectionnum]
-                    );
-                }
+        global $PAGE;
+        if (array_key_exists('sr', $options)) {
+            $sectionno = $options['sr'];
+        } else if (is_object($section)) {
+            $sectionno = $section->section;
+        } else {
+            $sectionno = $section;
+        }
+
+        // MDL-79986 introduced new /course/section.php page.
+        // We want to avoid this in breadcrumb if using JS nav (e.g. on activity page breadcrumb when viewing Quiz).
+        // However if we are already on section page (e.g. editing) we return core URL, otherwise we get no breadcrumb at all.
+        $alreadyonpage =  $PAGE->url->compare(new moodle_url('/course/section.php'), URL_MATCH_BASE);
+        if ($alreadyonpage) {
+            return \core_courseformat\base::get_view_url($section, $options);
+        } else if (\format_tiles\local\util::using_js_nav()) {
+            if ((!empty($options['navigation']) || array_key_exists('sr', $options)) && $sectionno !== null) {
+                // Display section on course view page, not separate section.php page.
+                $sectioninfo = $this->get_section($sectionno);
+                return new moodle_url(
+                    '/course/view.php',
+                    ['id' => $sectioninfo->course, 'section' => $sectioninfo->sectionnum]
+                );
             }
         }
         return \core_courseformat\base::get_view_url($section, $options);
