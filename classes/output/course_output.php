@@ -289,13 +289,14 @@ class course_output implements \renderable, \templatable {
     /**
      * Temporary function for Moodle 4.0 upgrade - todo to be replaced.
      * @param object $section
-     * @return bool|string
+     * @return string|null
      * @throws \coding_exception
      */
-    private function temp_section_availability_message($section) {
+    private function temp_section_availability_message($section): ?string {
         $widgetclass = $this->format->get_output_classname('content\\section\\availability');
         $widget = new $widgetclass($this->format, $section);
-        return $this->courserenderer->render($widget);
+        $result = $this->courserenderer->render($widget);
+        return trim(strip_tags($result)) ? $result : null;
     }
 
     /**
@@ -432,6 +433,7 @@ class course_output implements \renderable, \templatable {
         $data['secid'] = $thissection->id;
         $data['tileicon'] = format_option::get($this->course->id, format_option::OPTION_SECTION_ICON, $thissection->id);
         $data['tilenumber'] = $data['tileicon'] ? util::get_tile_number_from_icon_name($data['tileicon']) : null;
+        $data['current'] = $this->format->is_section_current($thissection);
 
         // If photo tile backgrounds are allowed by site admin, prepare the image for this section.
         if (get_config('format_tiles', 'allowphototiles')) {
