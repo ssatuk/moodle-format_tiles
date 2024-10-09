@@ -879,6 +879,15 @@ class format_tiles extends core_courseformat\base {
                 unset($SESSION->format_tiles_jssuccessfullyused);
             }
         }
+        // On a single section page in non JS mode, do not remove core limited page width.
+        if ($page->pagetype == 'course-view' && $page->state <= $page::STATE_BEFORE_HEADER) {
+            $requiresbodyclass = (optional_param('section', 0, PARAM_INT)
+                || optional_param('singlesec', 0, PARAM_INT))
+                && !\format_tiles\local\util::using_js_nav();
+            if ($requiresbodyclass) {
+                $page->add_body_class("format-tiles-single-sec");
+            }
+        }
     }
 
     /**

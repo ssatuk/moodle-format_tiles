@@ -128,7 +128,12 @@ define(["jquery", "core/templates", "core/ajax", "core/str", "core/notification"
                 };
                 switch (imageType) {
                     case 'tileicon':
-                        templateToRender = 'tileicon';
+                        if (icon.match(/^number_[\d]{1,2}$/)) {
+                            templateToRender = 'tilenumber';
+                            templateParams.tilenumber = icon.match(/\d+/)[0];
+                        } else {
+                            templateToRender = 'tileicon';
+                        }
                         break;
                     case 'tilephoto':
                         if (!imageUrl) {
@@ -140,7 +145,7 @@ define(["jquery", "core/templates", "core/ajax", "core/str", "core/notification"
                         templateToRender = 'tilebarphoto';
                         templateParams.phototileurl = imageUrl;
                         templateParams.phototileediturl = getPhotoTileButtonUrl(courseId, sectionId);
-                        templateParams.iamgetype = imageType;
+                        templateParams.imagetype = imageType;
                         jqueryObjToChange.closest(".tileiconcontainer").addClass("hasphoto");
                         // Refresh the photos in library as may not are still be available.
                         setTimeout(function () {
@@ -151,7 +156,7 @@ define(["jquery", "core/templates", "core/ajax", "core/str", "core/notification"
                         templateToRender = 'tilebarphoto';
                         templateParams.phototileurl = imageUrl;
                         templateParams.phototileediturl = getPhotoTileButtonUrl(courseId, sectionId);
-                        templateParams.iamgetype = imageType;
+                        templateParams.imagetype = imageType;
                         break;
                     default:
                         throw new Error("Invalid image type " + imageType);
@@ -283,7 +288,9 @@ define(["jquery", "core/templates", "core/ajax", "core/str", "core/notification"
                         /* eslint-disable-next-line camelcase */
                         icon_picker_icons: iconSet,
                         showphotos: allowPhotoTiles,
+                        sectionnumber: section,
                         showicons: true, // Always include this but we can hide it when using photos.
+                        tilenumbers: Array.from({length: 21}, (e, i)=> i).filter((e) => e > 0),
                         wwwroot: config.wwwroot,
                         documentationurl: documentationurl
                     }).done(function (iconsHTML) {
@@ -301,6 +308,7 @@ define(["jquery", "core/templates", "core/ajax", "core/str", "core/notification"
                                 modalRoot.data("true-sectionid", sectionId);
                                 modalRoot.data("section", section);
                                 modalRoot.addClass("icon_picker_modal");
+                                modalRoot.find(`#tile-number-container-${section}`).addClass('suggested');
                                 modalRoot.on("click", ".pickericon", function (e) {
                                     var newIcon = $(e.currentTarget);
                                     setIcon(
@@ -370,6 +378,8 @@ define(["jquery", "core/templates", "core/ajax", "core/str", "core/notification"
                 modalStored.root.data("true-sectionid", sectionId);
                 modalStored.root.data("section", section);
                 modalStored.root.off("click");
+                modalStored.root.find(`.tile-number-container`).removeClass('suggested');
+                modalStored.root.find(`#tile-number-container-${section}`).addClass('suggested');
                 modalStored.root.on("click", ".pickericon", function (e) {
                     var newIcon = $(e.currentTarget);
                     setIcon(
