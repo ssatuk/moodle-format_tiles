@@ -558,7 +558,7 @@ Other
 - Fix issue with ampersand display on sub-tile title
 - Change format name to "Tiles" not "Tiles format" (consistent with core)
 
-4.3.0.54 (2024100930)
+4.4.0.25 (2024100940)
 =====================
 - Improve tile number icons
     - add new tab to icon picker for tile numbers with numbers up to 20

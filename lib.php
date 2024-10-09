@@ -294,8 +294,10 @@ class format_tiles extends core_courseformat\base {
         // MDL-79986 introduced new /course/section.php page.
         // We want to avoid this in breadcrumb if using JS nav (e.g. on activity page breadcrumb when viewing Quiz).
         // However if we are already on section page (e.g. editing) we return core URL, otherwise we get no breadcrumb at all.
-        $alreadyonpage =  $PAGE->url->compare(new moodle_url('/course/section.php'), URL_MATCH_BASE);
-        if ($alreadyonpage) {
+        $alreadyonsectionpage = $PAGE->pagelayout == 'course'
+            && in_array($PAGE->pagetype, ['section-view-tiles', 'course-view-section-tiles'])
+            && $PAGE->url->compare(new moodle_url('/course/section.php'), URL_MATCH_BASE);
+        if ($alreadyonsectionpage) {
             return \core_courseformat\base::get_view_url($section, $options);
         } else if (\format_tiles\local\util::using_js_nav()) {
             if ((!empty($options['navigation']) || array_key_exists('sr', $options)) && $sectionno !== null) {
