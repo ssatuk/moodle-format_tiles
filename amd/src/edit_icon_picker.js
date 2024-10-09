@@ -118,6 +118,8 @@ define(["jquery", "core/templates", "core/ajax", "core/str", "core/notification"
             sectionId, sectionNum, icon, displayname, pageType, courseId, imageType, sourcecontextid, sourceitemid
         ) {
             var selectedIcon = $("#selectedicon");
+
+            const onCoursePage = ['section-view-tiles', "course-view-tiles", 'course-view-section-tiles'].includes(pageType);
             var changeUiTilePhoto = function (jqueryObjToChange, imageUrl, imageType) {
                 var templateToRender = '';
                 var templateParams = {
@@ -161,7 +163,7 @@ define(["jquery", "core/templates", "core/ajax", "core/str", "core/notification"
                     default:
                         throw new Error("Invalid image type " + imageType);
                 }
-                var divToAnimate = pageType === "course-view-tiles" ? jqueryObjToChange : selectedIcon;
+                var divToAnimate = onCoursePage ? jqueryObjToChange : selectedIcon;
                 divToAnimate.animate({opacity: 0}, 500, function () {
                     Templates.render("format_tiles/" + templateToRender, templateParams)
                         .done(function (html) {
@@ -187,7 +189,7 @@ define(["jquery", "core/templates", "core/ajax", "core/str", "core/notification"
 
             setIconDbPromises[0].done(function (response) {
                 if (response.status === true) {
-                    if (pageType === "course-view-tiles") {
+                    if (onCoursePage) {
                         // We are changing an icon for a specific section from within the course.
                         // We are doing this by clicking an existing icon.
                         changeUiTilePhoto($("#tileicon_" + sectionNum), response.imageurl, imageType);
