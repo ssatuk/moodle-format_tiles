@@ -867,7 +867,7 @@ class format_tiles extends core_courseformat\base {
                     $reenablelink = html_writer::link(
                         new moodle_url('/course/view.php', ['id' => $page->course->id, 'stopjsnav' => 1]),
                         get_string('reactivate', 'format_tiles'),
-                        ['class' => 'btn btn-secondary ml-3']
+                        ['class' => 'btn btn-secondary ms-3']
                     );
                     \core\notification::warning(get_string('jsdeactivated', 'format_tiles') . $reenablelink);
                 } else {

@@ -252,8 +252,8 @@ class course_output implements \renderable, \templatable {
             $message = get_string('coursephotomigrationincomplete', 'format_tiles');
             $message .= \html_writer::link(
                 new \moodle_url('/course/format/tiles/editor/migratecoursedata.php', ['courseid' => $this->course->id]),
-                '<i class="icon fa fa-cog mr-1"></i>' . get_string('fixproblems', 'format_tiles'),
-                ['class' => 'ml-1']
+                '<i class="icon fa fa-cog me-1"></i>' . get_string('fixproblems', 'format_tiles'),
+                ['class' => 'ms-1']
             );
             $data['editorwarnings'][] = [
                 'text' => $message,
