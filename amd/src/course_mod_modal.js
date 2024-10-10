@@ -230,6 +230,7 @@ define(["jquery", "core/modal_factory", "core/config", "core/templates", "core/n
                 Templates.render("format_tiles/embed_module_modal_header_btns", headerTemplateData).done(function (html) {
                     modalRoot.find(Selector.embedModuleButtons).remove();
                     modalRoot.find($('button.close')).remove();
+                    modalRoot.find($('button.btn-close')).remove(); // Moodle 4.5+.
                     modalRoot.find(Selector.modalHeader).append(html);
                     modalRoot.find(Selector.closeBtn).detach().appendTo(modalRoot.find(Selector.embedModuleButtons));
                     const toggleCompletionSelector = '[data-action="toggle-manual-completion"]';
