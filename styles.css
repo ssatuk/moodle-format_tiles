@@ -727,7 +727,10 @@
 body.jsenabled.format-tiles .buttonhidesec0 {
     display: inline-block;
 }
-
+body#page-course-view-tiles.format-tiles {
+    /*Avoid layout changes in Chrome when tiles open/close and scrollbar appears/disappears.*/
+    overflow-y: scroll;
+}
 .format-tiles #collapsiblesec0 {
     display: block;
 }
