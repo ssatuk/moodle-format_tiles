@@ -580,3 +580,8 @@ Other
 - Reserve space for right scroll bar on tiles main screen
     (avoid layout change in Chrome when tiles open/close and scrollbar appears/disappears)
 - Mobile sub-tile layout adjustment
+
+4.5.0.1 (2024101250)
+====================
+- Improve sub-sections expanded state handling (e.g. when persist when content is reloaded)
+- Add behat test for sub-sections
