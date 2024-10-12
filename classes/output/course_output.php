@@ -483,7 +483,10 @@ class course_output implements \renderable, \templatable {
         if ($this->canviewhidden) {
             $data['availabilitymessage'] = self::temp_section_availability_message($thissection);
         }
-        $data['isdelegatedsection'] = $this->moodlerelease >= 4.5 && ($thissection->is_delegated() ?? false);
+        if ($this->moodlerelease >= 4.5 && ($thissection->is_delegated() ?? false)) {
+            $data['isdelegatedsection'] = true;
+            $data['contentcollapsed'] = true;
+        }
         return $data;
     }
 
