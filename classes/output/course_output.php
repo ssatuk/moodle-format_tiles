@@ -905,6 +905,13 @@ class course_output implements \renderable, \templatable {
                     $iconclass = 'nofilter';
                 }
             }
+
+            // No filter icons.  Big blue button has a coloured monologo which cannot be filtered.
+            $nofiltericons = ['bigbluebuttonbn'];
+            if (in_array($mod->modname, $nofiltericons)) {
+                $iconclass = 'nofilter';
+            }
+
             $moduleobject['icon'] = [
                 'url' => $modiconurl,
                 'label' => $moduleobject['activityname'],
