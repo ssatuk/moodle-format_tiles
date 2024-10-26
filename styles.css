@@ -1939,6 +1939,9 @@ body.jsenabled.format-tiles #collapsiblesec0 {
 .format-tiles li.subtile .tileiconcontainer.other {
     background-color: #767d84;
 }
+.format-tiles li.subtile.bigbluebuttonbn .tileiconcontainer.other {
+    background-color: #0f4d9d;
+}
 .format-tiles li.subtile .activityiconcontainer.other .icon:not(.nofilter) {
     filter: brightness(0) invert(1);
 }

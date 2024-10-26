@@ -912,6 +912,14 @@ class course_output implements \renderable, \templatable {
                 $iconclass = 'nofilter';
             }
 
+            // Turnitin logo is too small and blurry on subtiles and wrong colour.
+            if ($mod->modname === 'turnitintooltwo' && $this->courseformatoptions['courseusesubtiles']) {
+                if (file_exists("$CFG->dirroot/mod/turnitintooltwo/pix/tii-icon.png")) {
+                    $modiconurl = $output->image_url('tii-icon', 'turnitintooltwo');
+                    $iconclass = '';
+                }
+            }
+
             $moduleobject['icon'] = [
                 'url' => $modiconurl,
                 'label' => $moduleobject['activityname'],
