@@ -885,7 +885,7 @@ body.jsenabled.format-tiles #collapsiblesec0 {
     width: calc(100% - 40px);
 }
 .format-tiles .phototile .progress-indic {
-    color: rgba(255, 255, 255, 0.85);
+    color: rgba(255, 255, 255);
     padding: 2px 7px 2px 7px;
     position: absolute;
     bottom: 10px;
