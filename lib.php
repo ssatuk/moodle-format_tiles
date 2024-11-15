@@ -1066,15 +1066,20 @@ function format_tiles_output_fragment_get_cm_content(array $args): string {
  */
 function format_tiles_before_standard_html_head(): string {
     $html = '';
+    $debug = "Could not prepare format_tiles head data";
     try {
         // We have to be careful in this function as it's called on every page (not just tiles course pages).
         // The method get_tiles_dynamic_css() will check that we are on a page that really needs it.
-        $dynamiccss = \format_tiles\local\dynamic_styles::get_tiles_dynamic_css();
-        if ($dynamiccss) {
-            $html .= "<style id=\"format-tiles-dynamic-css\">$dynamiccss</style>";
+        if (method_exists('format_tiles\local\dynamic_styles', 'get_tiles_dynamic_css')) {
+            $dynamiccss = \format_tiles\local\dynamic_styles::get_tiles_dynamic_css();
+            if ($dynamiccss) {
+                $html .= "<style id=\"format-tiles-dynamic-css\">$dynamiccss</style>";
+            }
+        } else {
+            debugging("$debug: class not found");
         }
     } catch (\Exception $e) {
-        debugging("Could not prepare format_tiles head data: " . $e->getMessage(), DEBUG_DEVELOPER);
+        debugging("$debug: " . $e->getMessage(), DEBUG_DEVELOPER);
     }
     return $html;
 }
