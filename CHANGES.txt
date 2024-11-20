@@ -574,3 +574,7 @@ Other
 4.3.0.57 (2024111530)
 =====================
 - High contrast mode available (shown if activated by user preference)
+
+4.3.0.58 (2024111532)
+=====================
+- Simplify $displaysection
