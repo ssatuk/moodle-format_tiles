@@ -1100,8 +1100,6 @@ function format_tiles_before_standard_html_head(): string {
             if ($dynamiccss) {
                 $html .= "<style id=\"format-tiles-dynamic-css\">$dynamiccss</style>";
             }
-        } else {
-            debugging("$debug: class not found", DEBUG_DEVELOPER);
         }
     } catch (\Exception $e) {
         debugging("$debug: " . $e->getMessage(), DEBUG_DEVELOPER);
