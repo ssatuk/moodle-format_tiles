@@ -585,3 +585,7 @@ Other
 4.3.0.60 (2024120930)
 =====================
 - Remove debug message
+
+4.3.0.61 (2024120931)
+=====================
+- Allow null displaysection on js init
