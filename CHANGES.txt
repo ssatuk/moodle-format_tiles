@@ -581,3 +581,7 @@ Other
 - Improve scroll bar access when tile open (overlay in centre section only, exposing left and right drawers to user)
 - Include "General" heading (for section zero) at top of course index
 - In course index, clicks on section headings can open sections using JS nav (if enabled)
+
+4.3.0.60 (2024120930)
+=====================
+- Remove debug message

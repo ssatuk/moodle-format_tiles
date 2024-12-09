@@ -622,6 +622,10 @@ define(["jquery", "core/templates", "core/ajax", "format_tiles/browser_storage",
             }
         };
 
+
+        /**
+         * Watch the course index and, if a section link is clicked, treat it as a tile click.
+         */
         const initCourseIndexWatcher = () => {
             // We have to watch the parent element as the children are not populated on page load.
             const courseIndex = $('nav#courseindex');
