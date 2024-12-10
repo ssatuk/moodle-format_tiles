@@ -245,12 +245,12 @@ class util {
      * Include AMD module required for tiles course.
      * @param \stdClass $course
      * @param int $contextid
-     * @param int $sectionnumber
+     * @param int|null $sectionnumber
      * @return void
      * @throws \coding_exception
      * @throws \dml_exception
      */
-    public static function init_js($course, int $contextid, int $sectionnumber) {
+    public static function init_js($course, int $contextid, ?int $sectionnumber) {
         global $USER, $SESSION, $PAGE;
         if ($PAGE->user_allowed_editing()) {
             $SESSION->editing_last_edited_section = $course->id . "-" . $sectionnumber;
