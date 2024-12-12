@@ -602,3 +602,4 @@ Other
 - Include "General" heading (for section zero) at top of course index
 - In course index, clicks on section headings can open sections using JS nav (if enabled)
 - Remove debug message
+- Allow null displaysection on js init
