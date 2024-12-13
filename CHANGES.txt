@@ -603,3 +603,7 @@ Other
 - In course index, clicks on section headings can open sections using JS nav (if enabled)
 - Remove debug message
 - Allow null displaysection on js init
+
+4.5.0.4 (2024121250)
+====================
+- Adjust tests
