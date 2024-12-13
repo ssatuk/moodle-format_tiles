@@ -589,3 +589,7 @@ Other
 4.3.0.61 (2024120931)
 =====================
 - Allow null displaysection on js init
+
+4.3.0.62 (2024121230)
+=====================
+- Adjust tests
