@@ -62,7 +62,7 @@ Feature: Teacher can allocate photos to tiles
     And I click on "#tileicon_2" "css_element"
     And I wait until the page is ready
     And I wait "1" seconds
-    And I click on ".tile-icon[data-original-title=\"Refresh\"]" "css_element" in the "#icon_picker_modal" "css_element"
+    And I click on "button.pickericon[title=\"Refresh\"]" "css_element" in the "#icon_picker_modal" "css_element"
     And I wait until the page is ready
     And I wait "2" seconds
 
@@ -109,7 +109,7 @@ Feature: Teacher can allocate photos to tiles
     And I click on "#tileicon_1" "css_element"
     And I wait until the page is ready
     And I wait "1" seconds
-    And I click on ".tile-icon[data-original-title=\"Refresh\"]" "css_element" in the "#icon_picker_modal" "css_element"
+    And I click on "button.pickericon[title=\"Refresh\"]" "css_element" in the "#icon_picker_modal" "css_element"
     And I wait until the page is ready
     And I wait "2" seconds
 
@@ -118,7 +118,7 @@ Feature: Teacher can allocate photos to tiles
     And I click on "#tileicon_3" "css_element"
     And I wait until the page is ready
     And I wait "1" seconds
-    And I click on ".tile-icon[data-original-title=\"Refresh\"]" "css_element" in the "#icon_picker_modal" "css_element"
+    And I click on "button.pickericon[title=\"Refresh\"]" "css_element" in the "#icon_picker_modal" "css_element"
     And I wait until the page is ready
     And I wait "2" seconds
 
@@ -127,7 +127,7 @@ Feature: Teacher can allocate photos to tiles
     And I click on "#tileicon_7" "css_element"
     And I wait until the page is ready
     And I wait "1" seconds
-    And I click on ".tile-icon[data-original-title=\"Refresh\"]" "css_element" in the "#icon_picker_modal" "css_element"
+    And I click on "button.pickericon[title=\"Refresh\"]" "css_element" in the "#icon_picker_modal" "css_element"
     And I wait until the page is ready
     And I wait "2" seconds
 
